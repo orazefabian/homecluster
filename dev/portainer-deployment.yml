@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: portainer
+  namespace: halo # Namespace where Portainer will be deployed
+  labels:
+    app: portainer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: portainer
+  template:
+    metadata:
+      labels:
+        app: portainer
+    spec:
+      containers:
+        - name: portainer
+          image: portainer/portainer-ce:latest # Use the latest Portainer Community Edition image
+          ports:
+            - containerPort: 9000 # Port for the Portainer UI
+          volumeMounts:
+            - name: data
+              mountPath: /data # Persistent data storage path
+      volumes:
+        - name: data
+          emptyDir: {} # Replace with a PersistentVolumeClaim for production use
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: portainer
+  namespace: halo # Namespace where the service will be created
+spec:
+  type: NodePort # Expose Portainer on a NodePort (change to LoadBalancer or ClusterIP as needed)
+  ports:
+    - port: 9000 # Target port for the Portainer UI
+      targetPort: 9000
+      nodePort: 30000 # NodePort to access Portainer (adjust if needed)
+  selector:
+    app: portainer
+
