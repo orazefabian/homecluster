@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: halo-cluster
+  name: argocd-server
   namespace: argocd
 spec:
   project: default
