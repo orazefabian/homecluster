@@ -2,12 +2,15 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: longhorn-certificate
+  name: longhorn-fabseit-net-prod
   namespace: longhorn-system
 spec:
-  secretName: longhorn-certificate-secret
-  dnsNames:
-    - your-fqdn  # <-- Replace with your FQDN
+  secretName: longhorn-fabseit-net-prod-tls
   issuerRef:
-    name: cloudflare-clusterissuer
+    name: cloudflare-clusterissuer-prod
     kind: ClusterIssuer
+  commonName: "*.halo.fabseit.net"
+  dnsNames:
+    - "halo.fabseit.net"
+    - "*.halo.fabseit.net"
+

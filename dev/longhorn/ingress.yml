@@ -1,0 +1,24 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: longhorn
+  namespace: longhorn-system
+  
+spec:
+  ingressClassName: nginx # Specify the Traefik ingress class explicitly
+  rules:
+    - host: longhorn.halo.fabseit.net # Match the host
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: longhorn-frontend # Backend service name
+                port:
+                  number: 80 # Backend service port
+  tls:
+    - hosts:
+        - longhorn.halo.fabseit.net # TLS will apply to this host
+      secretName: longhorn-fabseit-net-prod-tls # Reference to the TLS secret
