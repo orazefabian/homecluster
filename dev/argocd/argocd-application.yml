@@ -4,7 +4,7 @@ metadata:
   name: argocd-server
   namespace: argocd
 spec:
-  project: halo-cluster
+  project: default
   source:
     repoURL: https://github.com/orazefabian/homecluster-helm
     targetRevision: HEAD
