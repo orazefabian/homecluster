@@ -8,7 +8,7 @@ spec:
     email: Tgddxytc6z@privaterelay.appleid.com
     server: https://acme-v02.api.letsencrypt.org/directory
     privateKeySecretRef:
-      name: 03f0966d3c1ecb01c967814fcb28bfb82af1c
+      name: cloudflare-api-key-secret
     solvers:
       - dns01:
           cloudflare:
