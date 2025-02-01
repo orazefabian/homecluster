@@ -1,0 +1,16 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: local-fabseit-net-prod
+  namespace: halo
+spec:
+  secretName: local-fabseit-net-prod-tls
+  issuerRef:
+    name: cloudflare-clusterissuer-prod
+    kind: ClusterIssuer
+  commonName: "*.halo.fabseit.net"
+  dnsNames:
+    - "halo.fabseit.net"
+    - "*.halo.fabseit.net"
+

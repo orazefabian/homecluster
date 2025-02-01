@@ -1,0 +1,63 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd-server
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/orazefabian/homecluster-helm
+    targetRevision: HEAD
+    path: dev
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: halo
+  
+  syncPolicy:
+    syncOptions:
+    - CreateNamespace=true
+
+    automated:
+      selfHeal: true
+      prune: true
+
+--- 
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: argocd-server
+  name: argocd-server
+  namespace: argocd
+spec:
+  ports:
+    - targetPort: 8080
+      port: 8080
+      nodePort: 30080
+  selector:
+    app: argocd-server
+  type: NodePort
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd-server
+  namespace: argocd
+spec:
+  ingressClassName: nginx # Specify the Traefik ingress class explicitly
+  rules:
+    - host: argocd.halo.fabseit.net # Match the host
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: argocd-server # Backend service name
+                port:
+                  number: 8080 # Backend service port
+  tls:
+    - hosts:
+        - argocd.halo.fabseit.net # TLS will apply to this host
+      secretName: argocd-fabseit-net-prod-tls # Reference to the TLS secret
