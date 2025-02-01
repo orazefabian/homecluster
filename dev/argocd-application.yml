@@ -11,9 +11,6 @@ spec:
   sources:
     - repoURL: https://github.com/orazefabian/homecluster-helm
       targetRevision: HEAD
-      path: dev/argocd
-    - repoURL: https://github.com/orazefabian/homecluster-helm
-      targetRevision: HEAD
       path: dev/portainer
   destination:
     server: https://kubernetes.default.svc
