@@ -4,11 +4,17 @@ metadata:
   name: argocd-server
   namespace: argocd
 spec:
-  project: default
+  project: halo-cluster
   source:
     repoURL: https://github.com/orazefabian/homecluster-helm
     targetRevision: HEAD
-    path: dev
+  sources:
+    - repoURL: https://github.com/orazefabian/homecluster-helm
+      targetRevision: HEAD
+      path: dev/argocd
+    - repoURL: https://github.com/orazefabian/homecluster-helm
+      targetRevision: HEAD
+      path: dev/portainer
   destination:
     server: https://kubernetes.default.svc
     namespace: halo
