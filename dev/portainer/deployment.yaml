@@ -41,10 +41,8 @@ spec:
   ports:
     - targetPort: 9000
       port: 9000
-      nodePort: 30090
   selector:
     app: portainer
-  type: NodePort
 
 ---
 apiVersion: networking.k8s.io/v1
