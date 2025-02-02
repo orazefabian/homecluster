@@ -1,0 +1,169 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: samba-server
+  labels:
+    app: samba
+  namespace: halo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: samba
+  template:
+    metadata:
+      labels:
+        app: samba
+    spec:
+      containers:
+      - name: samba
+        image: ghcr.io/crazy-max/samba
+        env:
+          - name: CONFIG_FILE
+            value: /data/config.yml
+          - name: FABIAN_PW
+            valueFrom:
+              secretKeyRef:
+                name: samba-passwords
+                key: fabian-password
+          - name: BENJAMIN_PW
+            valueFrom:
+              secretKeyRef:
+                name: samba-passwords
+                key: benjamin-password
+          - name: DAMIAN_PW
+            valueFrom:
+              secretKeyRef:
+                name: samba-passwords
+                key: damian-password
+          - name: SILVIA_PW
+            valueFrom:
+              secretKeyRef:
+                name: samba-passwords
+                key: silvia-password
+        ports:
+        - containerPort: 445  # SMB port
+          protocol: TCP
+        - containerPort: 139  # NetBIOS port
+          protocol: TCP
+        volumeMounts:
+        - name: samba-config
+          mountPath: /data/config.yml
+          subPath: config.yml
+        - name: samba-data-fabian
+          mountPath: /mnt/data/fabian
+        - name: samba-data-benjamin
+          mountPath: /mnt/data/benjamin
+        - name: samba-data-damian
+          mountPath: /mnt/data/damian
+        - name: samba-data-silvia
+          mountPath: /mnt/data/silvia
+        - name: samba-data-home
+          mountPath: /mnt/data/home
+      volumes:
+      - name: samba-config
+        configMap:
+          name: samba-config # must create a config map with users and stuff
+      - name: samba-data-fabian
+        persistentVolumeClaim:
+          claimName: samba-pvc-fabian
+      - name: samba-data-benjamin
+        persistentVolumeClaim:
+          claimName: samba-pvc-benjamin
+      - name: samba-data-damian
+        persistentVolumeClaim:
+          claimName: samba-pvc-damian
+      - name: samba-data-silvia
+        persistentVolumeClaim:
+          claimName: samba-pvc-silvia
+      - name: samba-data-home
+        persistentVolumeClaim:
+          claimName: samba-pvc-home
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: samba-config
+  namespace: halo
+data:
+  config.yml: |
+    auth:
+      - user: fabian
+        group: cevh
+        uid: 1000
+        gid: 1000
+        password: ${FABIAN_PW}
+      - user: benjamin
+        group: cevh
+        uid: 1001
+        gid: 1000
+        password: ${BENJAMIN_PW}
+      - user: damian
+        group: cevh
+        uid: 1002
+        gid: 1000
+        password: ${DAMIAN_PW}
+      - user: silvia
+        group: cevh
+        uid: 1003
+        gid: 1000
+        password: ${SILVIA_PW}
+
+    global:
+      - "force group = cevh"
+      - "hosts allow = 0.0.0.0/0"
+
+    share:
+      - name: fabian
+        path: /mnt/data/fabian
+        browsable: yes
+        readonly: no
+        guestok: no
+        validusers: fabian
+      - name: benjamin
+        path: /mnt/data/benjamin
+        browsable: yes
+        readonly: no
+        guestok: no
+        validusers: benjamin
+      - name: damian
+        path: /mnt/data/damian
+        browsable: yes
+        readonly: no
+        guestok: no
+        validusers: damian
+      - name: silvia
+        path: /mnt/data/sivlia
+        browsable: yes
+        readonly: no
+        guestok: no
+        validusers: silvia
+      - name: home
+        path: /mnt/data/home
+        browsable: yes
+        readonly: no
+        guestok: no
+        validusers: fabian,benjamin,damian,sivlia
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: samba
+  name: samba
+  namespace: halo
+spec:
+  ports:
+    - targetPort: 445
+      port: 445
+      protocol: TCP
+      name: smb
+    - targetPort: 139
+      port: 139
+      protocol: TCP
+      name: netbios
+  selector:
+    app: samba
+  type: LoadBalancer
+
+

@@ -1,0 +1,68 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: samba-pvc-fabian
+  namespace: halo
+spec:
+  accessModes:
+    - ReadWriteMany  # Allows multiple pods to access the volume
+  resources:
+    requests:
+      storage: 100Gi  # Adjust size as needed
+  storageClassName: longhorn  # Use Longhorn storage class
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: samba-pvc-benjamin
+  namespace: halo
+spec:
+  accessModes:
+    - ReadWriteMany  # Allows multiple pods to access the volume
+  resources:
+    requests:
+      storage: 50Gi  # Adjust size as needed
+  storageClassName: longhorn  # Use Longhorn storage class
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: samba-pvc-damian
+  namespace: halo
+spec:
+  accessModes:
+    - ReadWriteMany  # Allows multiple pods to access the volume
+  resources:
+    requests:
+      storage: 30Gi  # Adjust size as needed
+  storageClassName: longhorn  # Use Longhorn storage class
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: samba-pvc-silvia
+  namespace: halo
+spec:
+  accessModes:
+    - ReadWriteMany  # Allows multiple pods to access the volume
+  resources:
+    requests:
+      storage: 30Gi  # Adjust size as needed
+  storageClassName: longhorn  # Use Longhorn storage class
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: samba-pvc-home
+  namespace: halo
+spec:
+  accessModes:
+    - ReadWriteMany  # Allows multiple pods to access the volume
+  resources:
+    requests:
+      storage: 300Gi  # Adjust size as needed
+  storageClassName: longhorn  # Use Longhorn storage class
+
+
+
