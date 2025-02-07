@@ -8,11 +8,12 @@ spec:
     - list:
         elements:
           - name: portainer-app
-            path: ./apps/portainer
+            path: ./apps/portainer/manifests
             namespace: halo
           - name: samba-app
-            path: ./apps/samba-share/
+            path: ./apps/samba-share/manifests
             namespace: halo
+            manifests:
           - name: longhorn
             path: ./infrastructure/longhorn
             namespace: longhorn-system
