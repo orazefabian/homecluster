@@ -13,6 +13,9 @@ spec:
           - name: samba-app
             path: ./apps/samba-share/manifests
             namespace: halo
+          - name: pingvin-app
+            path: ./apps/pingvin/manifests
+            namespace: halo
           - name: longhorn
             path: ./infrastructure/longhorn/manifests
             namespace: longhorn-system

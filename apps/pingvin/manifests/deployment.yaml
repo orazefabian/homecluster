@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pingvin
+  labels:
+    app: pingvin
+  namespace: halo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pingvin
+  template:
+    metadata:
+      labels:
+        app: pingvin
+    spec:
+      containers:
+      - name: pingvin
+        image: stonith404/pingvin-share
+        ports:
+        - containerPort: 3000  # SMB port
+          protocol: TCP
+        volumeMounts:
+        - name: pingvin-data-claim
+          mountPath: /data
+      volumes:
+      - name: pingvin-data-claim
+        persistentVolumeClaim:
+          claimName: samba-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pingvin
+  name: pingvin
+  namespace: halo
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: "192.168.8.60"
+spec:
+  ports:
+    - targetPort: 3000
+      port: 3000
+      protocol: TCP
+      name: frontend
+  selector:
+    app: pingvin
+  type: LoadBalancer
