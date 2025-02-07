@@ -1,0 +1,5 @@
+namespace: longhorn-system
+persistence:
+  defaultClassReplicaCount: 2
+defaultSettings:
+  defaultReplicaCount: 2

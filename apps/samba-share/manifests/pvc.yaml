@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: samba-data
+  namespace: halo
+spec:
+  accessModes:
+    - ReadWriteMany # Allows multiple pods to access the volume
+  resources:
+    requests:
+      storage: 500Gi # Adjust size as needed
+  storageClassName: longhorn # Use Longhorn storage class
+

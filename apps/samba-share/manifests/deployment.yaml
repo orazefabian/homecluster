@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: samba-server
+  labels:
+    app: samba
+  namespace: halo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: samba
+  template:
+    metadata:
+      labels:
+        app: samba
+    spec:
+      containers:
+      - name: samba
+        image: ghcr.io/crazy-max/samba
+        env:
+          - name: CONFIG_FILE
+            value: /data/config.yml
+          - name: FABIAN_PW
+            valueFrom:
+              secretKeyRef:
+                name: samba-passwords
+                key: fabian-password
+          - name: BENJAMIN_PW
+            valueFrom:
+              secretKeyRef:
+                name: samba-passwords
+                key: benjamin-password
+          - name: DAMIAN_PW
+            valueFrom:
+              secretKeyRef:
+                name: samba-passwords
+                key: damian-password
+          - name: SILVIA_PW
+            valueFrom:
+              secretKeyRef:
+                name: samba-passwords
+                key: silvia-password
+        ports:
+        - containerPort: 445  # SMB port
+          protocol: TCP
+        - containerPort: 139  # NetBIOS port
+          protocol: TCP
+        volumeMounts:
+        - name: samba-config
+          mountPath: /data/config.yml
+          subPath: config.yml
+        - name: samba-data-claim
+          mountPath: /mnt/data/fabian
+          subPath: fabian
+        - name: samba-data-claim
+          mountPath: /mnt/data/benjamin
+          subPath: benjamin
+        - name: samba-data-claim
+          mountPath: /mnt/data/damian
+          subPath: damian
+        - name: samba-data-claim
+          mountPath: /mnt/data/silvia
+          subPath: silvia
+        - name: samba-data-claim
+          mountPath: /mnt/data/home
+          subPath: home
+      volumes:
+      - name: samba-config
+        configMap:
+          name: samba-config # must create a config map with users and stuff
+      - name: samba-data-claim
+        persistentVolumeClaim:
+          claimName: samba-data
+---
