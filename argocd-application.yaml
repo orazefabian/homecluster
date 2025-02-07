@@ -8,11 +8,24 @@ spec:
     - list:
         elements:
           - name: portainer-app
-            path: dev/portainer
+            path: ./apps/portainer
+            namespace: halo
+          - name: samba-app
+            path: ./apps/samba-share/
             namespace: halo
           - name: longhorn-app
-            path: dev/longhorn
+            path: ./infrastructure/longhorn
             namespace: longhorn-system
+          - name: cert-manager
+            path: ./infrastructure/cert-manager
+            namespace: cert-manager
+          - name: metallb
+            path: ./infrastructure/metallb
+            namespace: metallb-system
+          - name: ingress-nginx
+            path: ./infrastructure/ingress-nginx
+            namespace: ingress-nginx
+
   template:
     metadata:
       name: '{{name}}'
