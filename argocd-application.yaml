@@ -13,7 +13,7 @@ spec:
           - name: samba-app
             path: ./apps/samba-share/
             namespace: halo
-          - name: longhorn-app
+          - name: longhorn
             path: ./infrastructure/longhorn
             namespace: longhorn-system
           - name: cert-manager
