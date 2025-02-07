@@ -13,15 +13,14 @@ spec:
           - name: samba-app
             path: ./apps/samba-share/manifests
             namespace: halo
-            manifests:
           - name: longhorn
-            path: ./infrastructure/longhorn
+            path: ./infrastructure/longhorn/manifests
             namespace: longhorn-system
           - name: cert-manager
             path: ./infrastructure/cert-manager
             namespace: cert-manager
           - name: metallb
-            path: ./infrastructure/metallb
+            path: ./infrastructure/metallb/manifests
             namespace: metallb-system
           - name: ingress-nginx
             path: ./infrastructure/ingress-nginx
