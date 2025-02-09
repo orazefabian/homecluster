@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pingvin-data
+  namespace: halo
+spec:
+  accessModes:
+    - ReadWriteMany # Allows multiple pods to access the volume
+  resources:
+    requests:
+      storage: 20G # Adjust size as needed
+  storageClassName: longhorn # Use Longhorn storage class
+
