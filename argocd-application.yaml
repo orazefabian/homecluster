@@ -19,6 +19,9 @@ spec:
           - name: wireguard-app
             path: ./apps/wireguard/manifests
             namespace: halo
+          - name: homeassistant-app
+            path: ./apps/homeassistant/manifests
+            namespace: halo
           - name: longhorn
             path: ./infrastructure/longhorn/manifests
             namespace: longhorn-system

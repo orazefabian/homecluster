@@ -1,0 +1,78 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: homeassistant
+  labels:
+    app: homeassistant
+  namespace: halo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: homeassistant
+  template:
+    metadata:
+      labels:
+        app: homeassistant
+    spec:
+      containers:
+      - name: ha-database
+        image: postgres:15
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_USER
+          value: admin
+        - name: POSTGRES_PASSWORD
+          value: home
+        - name: POSTGRES_DB
+          value: homeassistant
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: data-storage
+          subPath: ha
+      - name: homeassistant
+        image: ghcr.io/home-assistant/home-assistant:2024.9.1 # Use latest stable version
+        ports:
+        - containerPort: 8123
+          protocol: TCP
+        env:
+        - name: TZ
+          value: Europe/London # Set your timezone
+        volumeMounts:
+        - mountPath: /config # Persistent storage for configuration files
+          name: config-storage
+        - mountPath: /dev/ttyUSB0 # USB device path for ConBee II
+          name: zigbee-device
+        securityContext:
+          privileged: true # Required for hardware access
+      volumes:
+      - name: config-storage
+        persistentVolumeClaim:
+          claimName: homeassistant-config-pvc # PVC for storage
+      - name: data-storage
+        persistentVolumeClaim:
+          claimName: homeassistant-data-pvc
+      - name: zigbee-device
+        hostPath:
+          path: /dev/ttyACM0 # Path to USB device on host node
+          type: CharDevice
+
+      # Add tolerations for master node taint
+      tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "homeassistant"
+        effect: "NoSchedule"
+
+      # Add node affinity to ensure scheduling only on the master node with the label `homeassistant=true`
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: "homeassistant"
+                operator: In
+                values:
+                - "true"
