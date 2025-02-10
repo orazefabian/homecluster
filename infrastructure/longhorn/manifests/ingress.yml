@@ -21,4 +21,4 @@ spec:
   tls:
     - hosts:
         - longhorn.halo.fabseit.net # TLS will apply to this host
-      secretName: longhorn-fabseit-net-dev-tls # Reference to the TLS secret
+      secretName: longhorn-fabseit-net-prod-tls # Reference to the TLS secret
