@@ -72,4 +72,20 @@ spec:
       - name: samba-data-claim
         persistentVolumeClaim:
           claimName: samba-data
----
+      
+      tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "homeassistant"
+        effect: "NoSchedule"
+
+
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: sambashare
+                operator: In
+                values:
+                - "true"

@@ -30,6 +30,9 @@ data:
     global:
       - "force group = cevh"
       - "hosts allow = 0.0.0.0/0"
+      - "vfs objects = aio_pthread"
+      - "aio write behind = true"
+      - "aio write size = 16384"
 
     share:
       - name: fabian
