@@ -32,7 +32,17 @@ data:
       - "hosts allow = 0.0.0.0/0"
       - "vfs objects = aio_pthread"
       - "aio write behind = true"
+      - "use sendfile = Yes"
+      - "strict allocate = Yes"
+      - "allocation roundup size = 4096"
+      - "read raw = Yes"
+      - "server signing = No"
+      - "write raw = Yes"
+      - "strict locking = No"
+      - "socket options = TCP_NODELAY IPTOS_LOWDELAY SO_RCVBUF=131072 SO_SNDBUF=131072"
+      - "min receivefile size = 16384"
       - "aio write size = 16384"
+      - "aio read size = 16384"
 
 
     share:
