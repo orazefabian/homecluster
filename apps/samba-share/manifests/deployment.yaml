@@ -72,20 +72,20 @@ spec:
       - name: samba-data-claim
         persistentVolumeClaim:
           claimName: samba-data
-      
+     
       tolerations:
       - key: "dedicated"
         operator: "Equal"
         value: "homeassistant"
         effect: "NoSchedule"
 
-
+      # Add node affinity to ensure scheduling only on the master node with the label `homeassistant=true`
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: sambashare
+              - key: "sambashare"
                 operator: In
                 values:
                 - "true"
