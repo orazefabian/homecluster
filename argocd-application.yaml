@@ -10,6 +10,9 @@ spec:
           - name: portainer-app
             path: ./apps/portainer/manifests
             namespace: halo
+          - name: bitwarden-app
+            path: ./apps/bitwarden/manifests
+            namespace: halo
           - name: samba-app
             path: ./apps/samba-share/manifests
             namespace: halo
