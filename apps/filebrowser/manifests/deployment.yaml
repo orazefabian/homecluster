@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: filebrowser
+  labels:
+    app: filebrowser
+  namespace: halo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: filebrowser
+  template:
+    metadata:
+      labels:
+        app: filebrowser
+    spec:
+      containers:
+      - name: filebrowser
+        image: filebrowser/filebrowser:s6
+        securityContext:
+          privileged: true # Required for NFS server to export shares
+        env:
+          - name: PUID
+            value: "1000"
+          - name: PGID
+            value: "1000"
+        ports:
+        - containerPort: 80 # NFS port
+        volumeMounts:
+        - name: samba-data-claim
+          mountPath: /srv/
+        - name: filebrowser-db-claim
+          mountPath: /database/
+      volumes:
+      - name: samba-data-claim
+        persistentVolumeClaim:
+          claimName: samba-data # Reuse the same PVC as Samba deployment for data storage
+      - name: filebrowser-db-claim
+        persistentVolumeClaim:
+          claimName: filebrowser-db
