@@ -19,4 +19,5 @@ spec:
   tls:
     - hosts:
         - homeassistant.halo.fabseit.net # TLS will apply to this host
+      secretName: local-fabseit-net-prod-tls # Reference to the TLS secret
  
