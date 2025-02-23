@@ -24,6 +24,7 @@ Here's how the repo is organized:
 .
 ├── apps/
 │   ├── portainer/
+│   ├── pihole/
 │   ├── bitwarden/
 │   ├── samba-share/
 │   ├── filebrowser/
@@ -41,6 +42,7 @@ Here's how the repo is organized:
 ### 🔑 Key Components:
 1. **Applications** (`apps/`):
     - `portainer`: Manage your Docker containers with ease. 🐳
+    - `pihole`: DNS sinkhole for ad blocking. 🚫
     - `bitwarden`: Secure password management. 🔐
     - `samba-share`: File sharing made simple. 📁
     - `filebrowser`: Web-based file manager. 🌐

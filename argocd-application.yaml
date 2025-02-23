@@ -7,6 +7,9 @@ spec:
   generators:
     - list:
         elements:
+          - name: pihole-app
+            path: ./apps/pihole/manifests
+            namespace: halo
           - name: portainer-app
             path: ./apps/portainer/manifests
             namespace: halo

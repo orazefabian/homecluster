@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: pihole
+  namespace: halo
+spec:
+  selector:
+    app: pihole
+  ports:
+  - name: http     
+    port: 80       # HTTP web interface.
+    protocol: TCP 
+    targetPort: 80 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pihole-ext-ip
+  namespace: halo
+  annotations:
+     metallb.universe.tf/loadBalancerIPs: "192.168.8.53"
+spec:
+  selector:
+    app: pihole
+  ports:
+  - name: dns-tcp
+    port: 53       # DNS TCP port.
+    protocol: TCP 
+    targetPort: 53 
+  - name: dns-udp 
+    port: 53       # DNS UDP port.
+    protocol: UDP 
+    targetPort: 53 
+  type: LoadBalancer
+
