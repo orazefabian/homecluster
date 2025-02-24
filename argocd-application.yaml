@@ -10,6 +10,9 @@ spec:
           - name: pihole-app
             path: ./apps/pihole/manifests
             namespace: halo
+          - name: ddclient-app
+            path: ./apps/ddclient/manifests
+            namespace: halo
           - name: portainer-app
             path: ./apps/portainer/manifests
             namespace: halo
