@@ -16,7 +16,18 @@ spec:
                 name: bitwarden # Backend service name
                 port:
                   number: 80 # Backend service port
+    - host: bitwarden.fabseit.net # Match the host
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: bitwarden # Backend service name
+                port:
+                  number: 80 # Backend service port
   tls:
     - hosts:
         - bitwarden.halo.fabseit.net # TLS will apply to this host
+        - bitwarden.fabseit.net
       secretName: local-fabseit-net-prod-tls # Reference to the TLS secret

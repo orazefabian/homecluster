@@ -16,8 +16,19 @@ spec:
                 name: homeassistant # Backend service name
                 port:
                   number: 8123 # Backend service port
+    - host: homeassistant.fabseit.net # Match the host
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: homeassistant # Backend service name
+                port:
+                  number: 8123 # Backend service port
   tls:
     - hosts:
         - homeassistant.halo.fabseit.net # TLS will apply to this host
+        - homeassistant.fabseit.net
       secretName: local-fabseit-net-prod-tls # Reference to the TLS secret
  

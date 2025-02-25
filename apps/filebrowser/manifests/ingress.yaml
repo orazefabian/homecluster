@@ -16,7 +16,18 @@ spec:
                 name: filebrowser # Backend service name
                 port:
                   number: 80 # Backend service port
+    - host: data.fabseit.net # Match the host
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: filebrowser # Backend service name
+                port:
+                  number: 80 # Backend service port
   tls:
     - hosts:
         - filebrowser.halo.fabseit.net # TLS will apply to this host
+        - data.fabseit.net
       secretName: local-fabseit-net-prod-tls # Reference to the TLS secret
