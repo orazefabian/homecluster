@@ -26,6 +26,7 @@ Here's how the repo is organized:
 │   ├── portainer/
 │   ├── ddclient/
 │   ├── heimdall/
+│   ├── uptime-kuma/
 │   ├── pihole/
 │   ├── bitwarden/
 │   ├── samba-share/
@@ -46,6 +47,7 @@ Here's how the repo is organized:
     - `portainer`: Manage your Docker containers with ease. 🐳
     - `ddclient`: Dynamically update DNS entries. 🔃
     - `heimdall`: Dashboard for all sorts of services. 📊
+    - `uptime-kuma`: Uptime monitoring tool. ✅
     - `pihole`: DNS sinkhole for ad blocking. 🚫
     - `bitwarden`: Secure password management. 🔐
     - `samba-share`: File sharing made simple. 📁

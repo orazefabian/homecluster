@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: uptime-kuma
+  namespace: halo # Change the namespace if needed
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: uptime-kuma
+  template:
+    metadata:
+      labels:
+        app: uptime-kuma
+    spec:
+      containers:
+      - name: uptime-kuma
+        image: louislam/uptime-kuma:1
+        volumeMounts:
+        - name: data-volume
+          mountPath: /app/data/
+          readOnly: false
+      volumes:
+      - name: data-volume
+        persistentVolumeClaim:
+          claimName: uptime-kuma-data # Links to the ConfigMap defined below
