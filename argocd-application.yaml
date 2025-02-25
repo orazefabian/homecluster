@@ -13,6 +13,9 @@ spec:
           - name: ddclient-app
             path: ./apps/ddclient/manifests
             namespace: halo
+          - name: heimdall-app
+            path: ./apps/heimdall/manifests
+            namespace: halo
           - name: portainer-app
             path: ./apps/portainer/manifests
             namespace: halo

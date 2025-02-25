@@ -1,0 +1,33 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: heimdall
+  namespace: halo
+spec:
+  ingressClassName: nginx # Specify the Traefik ingress class explicitly
+  rules:
+    - host: dashboard.halo.fabseit.net # Match the host
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: heimdall # Backend service name
+                port:
+                  number: 80 # Backend service port
+    - host: dashboard.fabseit.net # Match the host
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: heimdall # Backend service name
+                port:
+                  number: 80 # Backend service port
+  tls:
+    - hosts:
+        - dashboard.halo.fabseit.net # TLS will apply to this host
+        - dashboard.fabseit.net
+      secretName: local-fabseit-net-prod-tls # Reference to the TLS secret

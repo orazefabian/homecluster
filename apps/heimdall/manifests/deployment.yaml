@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: heimdall
+  namespace: halo # Change the namespace if needed
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: heimdall
+  template:
+    metadata:
+      labels:
+        app: heimdall
+    spec:
+      containers:
+      - name: heimdall
+        image: lscr.io/linuxserver/heimdall:latest
+        env:
+        - name: PUID
+          value: "1000" # Replace with your desired user ID
+        - name: PGID
+          value: "1000" # Replace with your desired group ID
+        - name: TZ
+          value: "Europe/London" # Replace with your timezone
+        volumeMounts:
+        - name: config-volume
+          mountPath: /config/
+          readOnly: false
+      volumes:
+      - name: config-volume
+        persistentVolumeClaim:
+          claimName: heimdall-config # Links to the ConfigMap defined below

@@ -25,6 +25,7 @@ Here's how the repo is organized:
 ├── apps/
 │   ├── portainer/
 │   ├── ddclient/
+│   ├── heimdall/
 │   ├── pihole/
 │   ├── bitwarden/
 │   ├── samba-share/
@@ -44,6 +45,7 @@ Here's how the repo is organized:
 1. **Applications** (`apps/`):
     - `portainer`: Manage your Docker containers with ease. 🐳
     - `ddclient`: Dynamically update DNS entries. 🔃
+    - `heimdall`: Dashboard for all sorts of services. 📊
     - `pihole`: DNS sinkhole for ad blocking. 🚫
     - `bitwarden`: Secure password management. 🔐
     - `samba-share`: File sharing made simple. 📁
