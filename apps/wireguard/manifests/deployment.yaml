@@ -35,7 +35,7 @@ spec:
         - name: INERNAL_SUBNET
           value: 10.13.13.0
         - name: PEER_DNS
-          value: auto
+          value: 192.168.8.53
         - name: PERSISTANTKEEPALIVE_PEERS
           value: '25'
         image: linuxserver/wireguard:arm64v8-alpine
