@@ -4,14 +4,17 @@ metadata:
   name: pihole
   namespace: halo
   annotations:
-    #    nginx.ingress.kubernetes.io/rewrite-target: /admin # Rewrite root 
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+        if ($request_uri = "/") {
+          rewrite ^ /admin break;
+        }
 spec:
   ingressClassName: nginx # Specify the Traefik ingress class explicitly
   rules:
     - host: pihole.halo.fabseit.net # Match the host
       http:
         paths:
-          - path: /admin
+          - path: /
             pathType: Prefix
             backend:
               service:
