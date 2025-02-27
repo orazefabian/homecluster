@@ -1,34 +1,10 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: pihole-admin-reroute
-  namespace: halo
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /admin
-spec:
-  ingressClassName: nginx # Specify the Traefik ingress class explicitly
-  rules:
-    - host: pihole.halo.fabseit.net # Match the host
-      http:
-        paths:
-          - path: /
-            pathType: Exact
-            backend:
-              service:
-                name: pihole 
-                port:
-                  number: 80 
-  tls:
-    - hosts:
-        - pihole.halo.fabseit.net # TLS will apply to this host
-      secretName: local-fabseit-net-prod-tls # Reference to the TLS secret
-
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
   name: pihole
   namespace: halo
+  annotations:
+    #    nginx.ingress.kubernetes.io/rewrite-target: /admin # Rewrite root 
 spec:
   ingressClassName: nginx # Specify the Traefik ingress class explicitly
   rules:
@@ -39,9 +15,9 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: pihole 
+                name: pihole # Backend service name
                 port:
-                  number: 80 
+                  number: 80 # Backend service port
   tls:
     - hosts:
         - pihole.halo.fabseit.net # TLS will apply to this host
