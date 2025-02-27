@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd
+  namespace: argocd
+  annotations:
+    cert-manager.io/cluster-issuer: cloudflare-clusterissuer-prod
+    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+    # If you encounter a redirect loop or are getting a 307 response code
+    # then you need to force the nginx ingress to connect to the backend using HTTPS.
+    #
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+spec:
+  ingressClassName: nginx # Specify the Traefik ingress class explicitly
+  rules:
+    - host: argocd.halo.fabseit.net # Match the host
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: argocd-server # Backend service name
+                port:
+                  name: https # Backend service port
+  tls:
+    - hosts:
+        - argocd.halo.fabseit.net # TLS will apply to this host
+      secretName: local-fabseit-net-prod-tls # Reference to the TLS secret
