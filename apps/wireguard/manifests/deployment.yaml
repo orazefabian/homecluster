@@ -57,26 +57,9 @@ spec:
       - command:
         - sh
         - "-c"
-        - |
-          ENI=$(ip route get 8.8.8.8 | grep 8.8.8.8 | awk '{print $5}');
-          sed "s/ENI/$ENI/g" /etc/wireguard-secret/wg0.conf.template > /config/wg0.conf;
-          chmod 400 /config/wg0.conf;
-          sysctl -w net.ipv4.ip_forward=1;
-
-          # Flush existing iptables rules
-          iptables -F;
-          iptables -t nat -F;
-
-          # Masquerade outgoing traffic from WireGuard subnet
-          iptables -t nat -A POSTROUTING -o $ENI -j MASQUERADE;
-
-          # Redirect DNS traffic (port 53) to the specified DNS server (192.168.8.53)
-          iptables -t nat -A PREROUTING -i wg0 -p udp --dport 53 -j DNAT --to-destination 192.168.8.53:53;
-          iptables -t nat -A PREROUTING -i wg0 -p tcp --dport 53 -j DNAT --to-destination 192.168.8.53:53;
-
-          # Ensure forwarding rules are applied
-          iptables -A FORWARD -i wg0 -o $ENI -j ACCEPT;
-          iptables -A FORWARD -i $ENI -o wg0 -j ACCEPT;
+        - ENI=$(ip route get 8.8.8.8 | grep 8.8.8.8 | awk '{print $5}'); sed "s/ENI/$ENI/g"
+          /etc/wireguard-secret/wg0.conf.template > /config/wg0.conf; chmod 400 /config/wg0.conf
+        - sysctl -w net.ipv4.ip_forward=1
         image: busybox
         name: wireguard-template-replacement
         volumeMounts:
