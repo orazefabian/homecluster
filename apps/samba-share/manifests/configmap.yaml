@@ -46,6 +46,7 @@ data:
       - "aio read size = 65536"
       - "vfs objects = catia fruit streams_xattr"
       - "fruit:aapl = yes"
+      - "fruit:copyfile = yes"
       - "fruit:nfs_aces = no"
 
 
@@ -57,6 +58,8 @@ data:
         readonly: no
         guestok: no
         validusers: fabian
+        inherit acls = no
+        inherit permissions = yes
       - name: benjamin
         path: /mnt/data/benjamin
         browsable: yes
@@ -64,6 +67,8 @@ data:
         readonly: no
         guestok: no
         validusers: benjamin
+        inherit acls = no
+        inherit permissions = yes
       - name: damian
         path: /mnt/data/damian
         browsable: yes
@@ -71,6 +76,8 @@ data:
         readonly: no
         guestok: no
         validusers: damian
+        inherit acls = no
+        inherit permissions = yes
       - name: silvia
         path: /mnt/data/sivlia
         browsable: yes
@@ -78,6 +85,8 @@ data:
         readonly: no
         guestok: no
         validusers: silvia
+        inherit acls = no
+        inherit permissions = yes
       - name: home
         path: /mnt/data/home
         browsable: yes
@@ -85,3 +94,5 @@ data:
         readonly: no
         guestok: no
         validusers: fabian,benjamin,damian,sivlia
+        inherit acls = no
+        inherit permissions = yes
