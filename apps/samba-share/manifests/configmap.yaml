@@ -44,6 +44,9 @@ data:
       - "min receivefile size = 16384"
       - "aio write size = 65536"
       - "aio read size = 65536"
+      - "vfs objects = catia fruit streams_xattr"
+      - "fruit:aapl = yes"
+      - "fruit:nfs_aces = no"
 
 
     share:
