@@ -50,30 +50,35 @@ data:
       - name: fabian
         path: /mnt/data/fabian
         browsable: yes
+        writeable: yes
         readonly: no
         guestok: no
         validusers: fabian
       - name: benjamin
         path: /mnt/data/benjamin
         browsable: yes
+        writeable: yes
         readonly: no
         guestok: no
         validusers: benjamin
       - name: damian
         path: /mnt/data/damian
         browsable: yes
+        writeable: yes
         readonly: no
         guestok: no
         validusers: damian
       - name: silvia
         path: /mnt/data/sivlia
         browsable: yes
+        writeable: yes
         readonly: no
         guestok: no
         validusers: silvia
       - name: home
         path: /mnt/data/home
         browsable: yes
+        writeable: yes
         readonly: no
         guestok: no
         validusers: fabian,benjamin,damian,sivlia
