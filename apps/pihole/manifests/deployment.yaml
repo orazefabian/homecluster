@@ -21,7 +21,7 @@ spec:
           imagePullPolicy: IfNotPresent
           resources:
             requests:
-              cpu: "250m" # Request at least a fourth of a CPU core.
+              cpu: "500m" # Request at least a fourth of a CPU core.
               memory: "256Mi"
             limits:
               cpu: "2" # Allow up to 2 full CPU cores.
