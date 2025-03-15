@@ -70,5 +70,6 @@ spec:
           - CreateNamespace=true
         automated:
           selfHeal: true
+          replace: true
           prune: false
 
