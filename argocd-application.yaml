@@ -7,14 +7,9 @@ spec:
   generators:
     - list:
         elements:
-          - name: paperless-postgres
-            path: ./apps/paperless/postgresdb/manifests/
+          - name: paperless
+            path: ./apps/paperless/
             namespace: halo
-          - name: paperless-redis
-            path: ./apps/paperless/redis/manifests/
-            namespace: halo
-          - name: paperless-webservice
-            path: ./apps/paperless/webservice/manifests/
           - name: pihole-app
             path: ./apps/pihole/manifests
             namespace: halo
