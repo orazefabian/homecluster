@@ -7,6 +7,9 @@ spec:
   generators:
     - list:
         elements:
+          - name: paperless
+            path: ./apps/paperless/
+            namespace: halo
           - name: pihole-app
             path: ./apps/pihole/manifests
             namespace: halo
@@ -62,6 +65,8 @@ spec:
         repoURL: https://github.com/orazefabian/homecluster-helm
         targetRevision: HEAD
         path: '{{path}}'
+        directory:
+          recurse: true
       destination:
         server: https://kubernetes.default.svc
         namespace: '{{namespace}}'
