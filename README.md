@@ -34,6 +34,10 @@ Here's how the repo is organized:
 │   ├── pingvin/
 │   ├── wireguard/
 │   ├── homeassistant/
+│   ├── paperless/
+│   │   ├── postgresdb/
+│   │   ├── redis/
+│   │   ├── webservice/
 ├── infrastructure/
 │   ├── longhorn/
 │   ├── cert-manager/
@@ -55,6 +59,7 @@ Here's how the repo is organized:
     - `pingvin`: Collaborative tools for your home network. 🤝
     - `wireguard`: VPN solution for secure connectivity. 🔒
     - `homeassistant`: Automate your smart home devices! 🏡
+    - `paperless`: Store and search your documents effectively. 📝
 
 2. **Infrastructure** (`infrastructure/`):
     - `longhorn`: Distributed block storage for Kubernetes. 📦

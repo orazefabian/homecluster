@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: paperless-ingress
+  namespace: halo
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+spec:
+  ingressClassName: nginx # Specify the Traefik ingress class explicitly
+  rules:
+  - host: paperless.halo.fabseit.net
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: paperless-service
+            port:
+              number: 8000
+  tls:
+    - hosts:
+        - paperless.halo.fabseit.net # TLS will apply to this host
+      secretName: local-fabseit-net-prod-tls # Reference to the TLS secret

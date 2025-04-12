@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: halo
+spec:
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:6-alpine # Lightweight Redis version
+        ports:
+        - containerPort: 6379
+        command:
+        - "redis-server"
+        args:
+        - "--appendonly"
+        - "no" # Disable persistence
+        volumeMounts:
+        - name: redis-data
+          mountPath: /data
+      volumes:
+      - name: redis-data
+        emptyDir: {} # Temporary storage, cleared upon pod restart
