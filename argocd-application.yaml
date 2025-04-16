@@ -4,6 +4,9 @@ metadata:
   name: multi-source-applicationset
   namespace: argocd
 spec:
+  ignoreApplicationDifferences:
+    - jsonPointers:
+      - /spec/syncPolicy
   generators:
     - list:
         elements:
