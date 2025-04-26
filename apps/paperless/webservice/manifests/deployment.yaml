@@ -59,6 +59,10 @@ spec:
         volumeMounts:
         - name: paperless-storage
           mountPath: /usr/src/paperless/data
+          subPath: data
+        - name: paperless-storage
+          mountPath: /usr/src/paperless/media
+          subPath: media
       volumes:
       - name: paperless-storage
         persistentVolumeClaim:
