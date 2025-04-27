@@ -23,7 +23,6 @@ Here's how the repo is organized:
 ```
 .
 ├── apps/
-│   ├── portainer/
 │   ├── ddclient/
 │   ├── heimdall/
 │   ├── uptime-kuma/
@@ -48,7 +47,6 @@ Here's how the repo is organized:
 
 ### 🔑 Key Components:
 1. **Applications** (`apps/`):
-    - `portainer`: Manage your Docker containers with ease. 🐳
     - `ddclient`: Dynamically update DNS entries. 🔃
     - `heimdall`: Dashboard for all sorts of services. 📊
     - `uptime-kuma`: Uptime monitoring tool. ✅

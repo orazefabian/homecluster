@@ -25,9 +25,6 @@ spec:
           - name: uptime-kuma-app
             path: ./apps/uptime-kuma/manifests
             namespace: halo
-          - name: portainer-app
-            path: ./apps/portainer/manifests
-            namespace: halo
           - name: bitwarden-app
             path: ./apps/bitwarden/manifests
             namespace: halo
