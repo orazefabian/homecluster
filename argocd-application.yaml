@@ -55,10 +55,6 @@ spec:
           - name: ingress-nginx
             path: ./infrastructure/ingress-nginx
             namespace: ingress-nginx
-            helm:
-              valueFiles:
-              - values.yaml
-              releaseName: ingress-nginx
 
   template:
     metadata:
@@ -71,17 +67,12 @@ spec:
         path: '{{path}}'
         directory:
           recurse: true
-        helm:
-          valueFiles: []
-          parameters: []
-          releaseName: ""
       destination:
         server: https://kubernetes.default.svc
         namespace: '{{namespace}}'
       syncPolicy:
         syncOptions:
           - CreateNamespace=true
-          - RespectIgnoreDifferences=true
         automated:
           selfHeal: true
           prune: false
