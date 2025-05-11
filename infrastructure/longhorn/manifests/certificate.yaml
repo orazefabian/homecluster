@@ -9,8 +9,7 @@ spec:
   issuerRef:
     name: cloudflare-clusterissuer-prod
     kind: ClusterIssuer
-  commonName: "*.halo.fabseit.net"
+  commonName: "longhorn.halo.fabseit.net"
   dnsNames:
-    - "halo.fabseit.net"
-    - "*.halo.fabseit.net"
+    - "longhorn.halo.fabseit.net"
 
