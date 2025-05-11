@@ -10,5 +10,4 @@ spec:
     kind: ClusterIssuer
   commonName: "*.halo.fabseit.net"
   dnsNames:
-    - "halo.fabseit.net"
     - "*.halo.fabseit.net"

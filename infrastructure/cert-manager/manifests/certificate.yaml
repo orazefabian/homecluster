@@ -10,8 +10,9 @@ spec:
     kind: ClusterIssuer
   commonName: "*.halo.fabseit.net"
   dnsNames:
-    - "halo.fabseit.net"
     - "*.halo.fabseit.net"
+    - "*.fabseit.net"
+
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -25,5 +26,22 @@ spec:
     kind: ClusterIssuer
   commonName: "*.halo.fabseit.net"
   dnsNames:
-    - "halo.fabseit.net"
     - "*.halo.fabseit.net"
+    - "*.fabseit.net"
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: local-fabseit-net-prod
+  namespace: argocd
+spec:
+  secretName: local-fabseit-net-prod-tls
+  issuerRef:
+    name: cloudflare-clusterissuer-prod
+    kind: ClusterIssuer
+  commonName: "argocd.halo.fabseit.net"
+  dnsNames:
+    - "argocd.halo.fabseit.net"
+
+
