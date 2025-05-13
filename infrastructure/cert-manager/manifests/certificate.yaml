@@ -36,7 +36,7 @@ metadata:
   name: local-fabseit-net-prod
   namespace: argocd
 spec:
-  secretName: local-fabseit-net-prod-tls
+  secretName: local-fabseit-net-argocd-prod-tls
   issuerRef:
     name: cloudflare-clusterissuer-prod
     kind: ClusterIssuer

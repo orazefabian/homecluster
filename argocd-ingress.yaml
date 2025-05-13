@@ -26,4 +26,4 @@ spec:
   tls:
     - hosts:
         - argocd.halo.fabseit.net # TLS will apply to this host
-      secretName: local-fabseit-net-prod-tls # Reference to the TLS secret
+      secretName: local-fabseit-net-argocd-prod-tls # Reference to the TLS secret
