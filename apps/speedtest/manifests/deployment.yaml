@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: speedtest
+  labels:
+    app: speedtest
+  namespace: halo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: speedtest
+  template:
+    metadata:
+      labels:
+        app: speedtest
+    spec:
+      containers:
+      - name: speedtest
+        image: henrywhitaker3/speedtest-tracker:latest-arm
+        env:
+        - name: "OOKLA_EULA_GDPR" 
+          value: "true"
+        ports:
+        - containerPort: 80  
+          protocol: TCP
+        volumeMounts:
+        - name: speedtest-data-claim
+          mountPath: /config
+      volumes:
+      - name: speedtest-data-claim
+        persistentVolumeClaim:
+          claimName: speedtest-pvc

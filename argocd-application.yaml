@@ -10,6 +10,9 @@ spec:
   generators:
     - list:
         elements:
+          - name: speedtest
+            path: ./apps/speedtest/
+            namespace: halo
           - name: paperless
             path: ./apps/paperless/
             namespace: halo

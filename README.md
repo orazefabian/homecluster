@@ -37,6 +37,7 @@ Here's how the repo is organized:
 │   │   ├── postgresdb/
 │   │   ├── redis/
 │   │   ├── webservice/
+│   ├── speedtest/
 ├── infrastructure/
 │   ├── longhorn/
 │   ├── cert-manager/
@@ -58,6 +59,7 @@ Here's how the repo is organized:
     - `wireguard`: VPN solution for secure connectivity. 🔒
     - `homeassistant`: Automate your smart home devices! 🏡
     - `paperless`: Store and search your documents effectively. 📝
+    - `speedtest`: Test your internet speed. 🚀
 
 2. **Infrastructure** (`infrastructure/`):
     - `longhorn`: Distributed block storage for Kubernetes. 📦
