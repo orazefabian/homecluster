@@ -51,8 +51,6 @@ spec:
         volumeMounts:
         - mountPath: "/config/"
           name: wireguard-config
-      imagePullSecrets:
-      - name: docker-registry
       initContainers:
       - command:
         - sh
