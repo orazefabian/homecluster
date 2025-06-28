@@ -33,7 +33,7 @@ spec:
           name: data-storage
           subPath: ha
       - name: homeassistant
-        image: ghcr.io/home-assistant/home-assistant:2024.9.1 # Use latest stable version
+        image: ghcr.io/home-assistant/home-assistant:2025.6.3 # Use latest stable version
         ports:
         - containerPort: 8123
           protocol: TCP
