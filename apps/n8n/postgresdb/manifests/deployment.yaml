@@ -7,31 +7,18 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: postgres
+      app: postgres-n8n
   template:
     metadata:
       labels:
-        app: postgres
+        app: postgres-n8n
     spec:
       containers:
-        - name: postgres
-          image: postgres:15
-          env:
-          - name: POSTGRES_DB
-            valueFrom:
-              secretKeyRef:
-                name: n8n-db-secret
-                key: DB_POSTGRESDB_DATABASE
-          - name: POSTGRES_USER
-            valueFrom:
-              secretKeyRef:
-                name: n8n-db-secret
-                key: DB_POSTGRESDB_USER
-          - name: POSTGRES_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: n8n-db-secret
-                key: DB_POSTGRESDB_PASSWORD
+        - name: postgres-n8n
+          image: postgres:15-alpine
+          envFrom:
+          - secretRef:
+              name: n8n-db-secret
           volumeMounts:
             - name: pg-data
               mountPath: /var/lib/postgresql/data

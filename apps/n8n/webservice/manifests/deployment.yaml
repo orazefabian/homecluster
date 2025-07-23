@@ -19,36 +19,23 @@ spec:
           ports:
             - containerPort: 5678
           env:
-            - name: DB_TYPE
-              valueFrom:
-                secretKeyRef:
-                  name: n8n-db-secret
-                  key: DB_TYPE
-            - name: DB_POSTGRESDB_HOST
-              valueFrom:
-                secretKeyRef:
-                  name: n8n-db-secret
-                  key: DB_POSTGRESDB_HOST
-            - name: DB_POSTGRESDB_PORT
-              valueFrom:
-                secretKeyRef:
-                  name: n8n-db-secret
-                  key: DB_POSTGRESDB_PORT
+            - name : DB_TYPE
+              value: postgresdb
             - name: DB_POSTGRESDB_DATABASE
               valueFrom:
                 secretKeyRef:
                   name: n8n-db-secret
-                  key: DB_POSTGRESDB_DATABASE
+                  key: POSTGRES_DB
             - name: DB_POSTGRESDB_USER
               valueFrom:
                 secretKeyRef:
                   name: n8n-db-secret
-                  key: DB_POSTGRESDB_USER
+                  key: POSTGRES_USER
             - name: DB_POSTGRESDB_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: n8n-db-secret
-                  key: DB_POSTGRESDB_PASSWORD
+                  key: POSTGRES_PASSWORD
             - name: GENERIC_TIMEZONE
               value: "Europe/Berlin"
           volumeMounts:
