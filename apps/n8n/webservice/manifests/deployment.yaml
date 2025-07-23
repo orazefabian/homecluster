@@ -21,6 +21,8 @@ spec:
           env:
             - name : DB_TYPE
               value: postgresdb
+            - name: DB_POSTGRESDB_HOST
+              value: postgres-n8n
             - name: DB_POSTGRESDB_DATABASE
               valueFrom:
                 secretKeyRef:

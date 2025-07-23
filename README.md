@@ -38,6 +38,9 @@ Here's how the repo is organized:
 │   │   ├── redis/
 │   │   ├── webservice/
 │   ├── speedtest/
+│   ├── n8n/
+│   │   ├── postgresdb/
+│   │   ├── webservice/
 ├── infrastructure/
 │   ├── longhorn/
 │   ├── cert-manager/
@@ -60,6 +63,7 @@ Here's how the repo is organized:
     - `homeassistant`: Automate your smart home devices! 🏡
     - `paperless`: Store and search your documents effectively. 📝
     - `speedtest`: Test your internet speed. 🚀
+    - `n8n`: Workflow automations for days!. 🛠️
 
 2. **Infrastructure** (`infrastructure/`):
     - `longhorn`: Distributed block storage for Kubernetes. 📦
