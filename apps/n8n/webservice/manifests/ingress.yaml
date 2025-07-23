@@ -1,0 +1,33 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: n8n
+  namespace: halo
+spec:
+  ingressClassName: nginx # Specify the Traefik ingress class explicitly
+  rules:
+    - host: n8n.halo.fabseit.net # Match the host
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: n8n # Backend service name
+                port:
+                  number: 5678 # Backend service port
+    - host: n8n.fabseit.net # Match the host
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: n8n # Backend service name
+                port:
+                  number: 5678 # Backend service port
+  tls:
+    - hosts:
+        - n8n.halo.fabseit.net # TLS will apply to this host
+        - n8n.fabseit.net
+      secretName: local-fabseit-net-prod-tls # Reference to the TLS secret

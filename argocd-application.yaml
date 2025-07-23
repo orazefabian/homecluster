@@ -46,6 +46,9 @@ spec:
           - name: homeassistant-app
             path: ./apps/homeassistant/manifests
             namespace: halo
+          - name: n8n-app
+            path: ./apps/n8n
+            namespace: halo
           - name: longhorn
             path: ./infrastructure/longhorn/manifests
             namespace: longhorn-system

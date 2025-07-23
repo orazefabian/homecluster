@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-n8n
+  namespace: halo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15
+          env:
+          - name: POSTGRES_DB
+            valueFrom:
+              secretKeyRef:
+                name: n8n-db-secret
+                key: DB_POSTGRESDB_DATABASE
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                name: n8n-db-secret
+                key: DB_POSTGRESDB_USER
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: n8n-db-secret
+                key: DB_POSTGRESDB_PASSWORD
+          volumeMounts:
+            - name: pg-data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: pg-data
+          persistentVolumeClaim:
+            claimName: pg-n8n-data
+
