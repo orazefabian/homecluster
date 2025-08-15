@@ -46,6 +46,7 @@ Here's how the repo is organized:
 │   ├── cert-manager/
 │   ├── metallb/
 │   ├── ingress-nginx/
+│   ├── secets-backup/
 └── argocd.yaml
 ```
 
@@ -70,6 +71,7 @@ Here's how the repo is organized:
     - `cert-manager`: Automated TLS certificate management. 🔑
     - `metallb`: Load balancer for bare-metal clusters. ⚖️
     - `ingress-nginx`: HTTP and HTTPS routing for services. 🌍
+    - `secrets-backup`: Custom backup solution for k8s secrets. 
 
 3. **ArgoCD Configuration** (`argocd.yaml`):
     This file defines an ApplicationSet for syncing all resources to the cluster via ArgoCD.

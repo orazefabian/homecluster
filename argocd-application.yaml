@@ -61,6 +61,9 @@ spec:
           - name: ingress-nginx
             path: ./infrastructure/ingress-nginx
             namespace: ingress-nginx
+          - name: secrets-backup
+            path: ./infrastructure/secrets-backup/manifests
+            namespace: secrets-backup
 
   template:
     metadata:
