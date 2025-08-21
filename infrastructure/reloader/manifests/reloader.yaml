@@ -1,0 +1,78 @@
+# Reloader manifest for Kubernetes
+# Source: https://github.com/stakater/Reloader/tree/master/deployments/kubernetes
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: reloader
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reloader-reloader
+  namespace: reloader
+  labels:
+    app: reloader
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reloader
+  template:
+    metadata:
+      labels:
+        app: reloader
+    spec:
+      serviceAccountName: reloader-reloader
+      containers:
+        - name: reloader-reloader
+          image: stakater/reloader:v1.0.51 # Use latest stable version
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: WATCH_NAMESPACE
+              value: ""
+            - name: RELOADER_LOG_LEVEL
+              value: "info"
+            - name: RELOADER_RELOAD_ON_CREATE
+              value: "true"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: reloader-reloader
+  namespace: reloader
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: reloader-reloader
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "daemonsets", "statefulsets"]
+    verbs: ["get", "list", "patch"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: reloader-reloader
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: reloader-reloader
+subjects:
+  - kind: ServiceAccount
+    name: reloader-reloader
+    namespace: reloader

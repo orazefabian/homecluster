@@ -64,6 +64,9 @@ spec:
           - name: secrets-backup
             path: ./infrastructure/secrets-backup/manifests
             namespace: secrets-backup
+          - name: reloader
+            path: ./infrastructure/reloader/manifests
+            namespace: reloader
 
   template:
     metadata:
