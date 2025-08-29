@@ -48,6 +48,7 @@ Here's how the repo is organized:
 │   ├── ingress-nginx/
 │   ├── secets-backup/
 │   ├── reloader/
+│   ├── velero-backup/
 └── argocd.yaml
 ```
 
@@ -74,6 +75,7 @@ Here's how the repo is organized:
     - `ingress-nginx`: HTTP and HTTPS routing for services. 🌍
     - `secrets-backup`: Custom backup solution for k8s secrets. 📥
     - `reloader`: Make your pods reload on secrets or configmap changes. ⟳
+    - `velero-backup`: Automated encrypted backups of Longhorn volumes to Hetzner Storage Box. 🔄
 
 3. **ArgoCD Configuration** (`argocd.yaml`):
     This file defines an ApplicationSet for syncing all resources to the cluster via ArgoCD.

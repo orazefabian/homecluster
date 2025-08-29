@@ -67,6 +67,10 @@ spec:
           - name: reloader
             path: ./infrastructure/reloader/manifests
             namespace: reloader
+          - name: velero-backup
+            path: ./infrastructure/velero-backup/manifests
+            namespace: velero
+
 
   template:
     metadata:

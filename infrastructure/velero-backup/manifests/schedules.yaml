@@ -1,0 +1,21 @@
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: monthly-backup
+  namespace: velero
+spec:
+  schedule: "0 1 1 * *"  # Monthly on the first day at 1 AM
+  template:
+    includedNamespaces:
+    - halo  
+    ttl: 1440h  
+    includeClusterResources: true
+    storageLocation: default
+    labelSelector:
+      matchExpressions:
+      - key: app.kubernetes.io/managed-by
+        operator: NotIn
+        values:
+        - velero
+    snapshotVolumes: false  # We use restic for PV backups
+    hooks: {}
