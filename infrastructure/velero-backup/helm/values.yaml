@@ -1,0 +1,122 @@
+velero:
+  # No need for setup init container anymore since we have the repo URL directly
+  initContainers: []
+
+  # Default backup storage location - using filesystem for standard operations
+  backupsEnabled: true
+  snapshotsEnabled: false
+  
+  # Deploy node agent (formerly restic) - this will handle SFTP backups
+  deployNodeAgent: true
+  nodeAgent:
+    privileged: false
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 1024Mi
+    podVolumePath: /var/lib/kubelet/pods
+    namespaces:
+      - halo
+    # Simplified volume mounts for the node agent pods
+    extraVolumeMounts:
+      - name: credentials
+        mountPath: /credentials
+    # No need for init containers in node agent pods
+    initContainers: []
+
+  # Configure backup storage location - using default local filesystem
+  # This is just used for Velero's metadata, actual volume data goes through restic to SFTP
+  configuration:
+    backupStorageLocation:
+      - name: default
+        provider: filesystem
+        bucket: /data
+        prefix: ""
+    volumeSnapshotLocation:
+      - name: default
+        provider: filesystem
+        config: {}
+  
+  # Environment variables for restic/nodeAgent to connect to SFTP
+  extraEnvVars:
+    - name: TZ
+      value: "Europe/Berlin"
+    - name: RESTIC_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: velero-encryption
+          key: encryption-key
+    # Use the direct repository URL from the secret
+    - name: RESTIC_REPOSITORY
+      valueFrom:
+        secretKeyRef:
+          name: sftp-credentials
+          key: restic-repository
+    # Path to the SSH key
+    - name: SSH_KEY_PATH
+      value: "/credentials/id_rsa"
+
+  # Simplified extra volumes - just need credentials
+  extraVolumes:
+    - name: credentials
+      secret:
+        secretName: sftp-credentials
+  
+  # Simplified volume mounts - just need credentials
+  extraVolumeMounts:
+    - name: credentials
+      mountPath: /credentials
+
+  # Configure backup schedules
+  schedules:
+    monthly-backup:
+      disabled: false
+      schedule: "0 1 1 * *"  # Monthly on the first day at 1 AM
+      useOwnerReferencesInBackup: false
+      template:
+        includedNamespaces:
+          - halo  
+        ttl: 1440h  # 60 days retention
+        includeClusterResources: true
+        storageLocation: default
+        labelSelector:
+          matchExpressions:
+            - key: app.kubernetes.io/managed-by
+              operator: NotIn
+              values:
+                - velero
+        snapshotVolumes: false  # Use restic for PV backups
+
+  # Resource limits and requests
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1024Mi
+  
+  # Use existing service account
+  serviceAccount:
+    server:
+      create: true
+      name: velero
+
+  # Configure dashboard ingress
+  dashboardEnabled: true
+  ingress:
+    enabled: true
+    hosts:
+      - host: velero.halo.fabseit.net
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: local-fabseit-net-velero-prod-tls
+        hosts:
+          - velero.halo.fabseit.net
+    annotations:
+      kubernetes.io/ingress.class: nginx
