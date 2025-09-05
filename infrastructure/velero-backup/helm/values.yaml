@@ -1,15 +1,21 @@
 velero:
-  # No need for setup init container anymore since we have the repo URL directly
-  initContainers: []
+  # Add the AWS plugin for S3 compatibility
+  initContainers:
+    - name: velero-plugin-for-aws
+      image: velero/velero-plugin-for-aws:v1.8.0
+      imagePullPolicy: IfNotPresent
+      volumeMounts:
+        - mountPath: /target
+          name: plugins
 
-  # Default backup storage location - using filesystem for standard operations
+  # Default backup storage location settings
   backupsEnabled: true
-  snapshotsEnabled: false
+  snapshotsEnabled: true
   
-  # Deploy node agent (formerly restic) - this will handle SFTP backups
+  # Deploy node agent for volume backups
   deployNodeAgent: true
   nodeAgent:
-    privileged: false
+    privileged: true  # Need privileged mode for accessing volumes
     resources:
       requests:
         cpu: 500m
@@ -20,56 +26,34 @@ velero:
     podVolumePath: /var/lib/kubelet/pods
     namespaces:
       - halo
-    # Simplified volume mounts for the node agent pods
-    extraVolumeMounts:
-      - name: credentials
-        mountPath: /credentials
-    # No need for init containers in node agent pods
-    initContainers: []
 
-  # Configure backup storage location - using default local filesystem
-  # This is just used for Velero's metadata, actual volume data goes through restic to SFTP
+  # Configure backup storage location using Hetzner's S3-compatible storage
   configuration:
+    defaultVolumesToFsBackup: true
     backupStorageLocation:
       - name: default
-        provider: filesystem
-        bucket: /data
+        provider: aws
+        bucket: backup-halo-store  # Replace with your actual bucket name
         prefix: ""
+        config:
+          region: eu-central
+          s3ForcePathStyle: true
+          s3Url: https://fsn1.your-objectstorage.com  # Hetzner S3 endpoint
     volumeSnapshotLocation:
       - name: default
-        provider: filesystem
+        provider: aws
         config: {}
   
-  # Environment variables for restic/nodeAgent to connect to SFTP
+  # Environment variables
   extraEnvVars:
     - name: TZ
       value: "Europe/Berlin"
-    - name: RESTIC_PASSWORD
-      valueFrom:
-        secretKeyRef:
-          name: velero-encryption
-          key: encryption-key
-    # Use the direct repository URL from the secret
-    - name: RESTIC_REPOSITORY
-      valueFrom:
-        secretKeyRef:
-          name: sftp-credentials
-          key: restic-repository
-    # Path to the SSH key
-    - name: SSH_KEY_PATH
-      value: "/credentials/id_rsa"
-
-  # Simplified extra volumes - just need credentials
-  extraVolumes:
-    - name: credentials
-      secret:
-        secretName: sftp-credentials
   
-  # Simplified volume mounts - just need credentials
-  extraVolumeMounts:
-    - name: credentials
-      mountPath: /credentials
-
+  # Use existing credentials secret
+  credentials:
+    useSecret: true
+    existingSecret: velero-s3-credentials
+    
   # Configure backup schedules
   schedules:
     monthly-backup:
@@ -82,13 +66,17 @@ velero:
         ttl: 1440h  # 60 days retention
         includeClusterResources: true
         storageLocation: default
-        labelSelector:
-          matchExpressions:
-            - key: app.kubernetes.io/managed-by
-              operator: NotIn
-              values:
-                - velero
-        snapshotVolumes: false  # Use restic for PV backups
+        includedResources:
+          - '*'
+        excludedResources:
+          - nodes
+          - events
+          - events.events.k8s.io
+          - backups.velero.io
+          - restores.velero.io
+        snapshotVolumes: false  # Changed to false to use restic for volume backups
+        defaultVolumesToFsBackup: true  # Use filesystem backup for volumes
+        labelSelector: {}  # Remove label selector to include all resources
 
   # Resource limits and requests
   resources:
