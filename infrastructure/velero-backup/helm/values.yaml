@@ -93,18 +93,3 @@ velero:
       create: true
       name: velero
 
-  # Configure dashboard ingress
-  dashboardEnabled: true
-  ingress:
-    enabled: true
-    hosts:
-      - host: velero.halo.fabseit.net
-        paths:
-          - path: /
-            pathType: Prefix
-    tls:
-      - secretName: local-fabseit-net-velero-prod-tls
-        hosts:
-          - velero.halo.fabseit.net
-    annotations:
-      kubernetes.io/ingress.class: nginx
