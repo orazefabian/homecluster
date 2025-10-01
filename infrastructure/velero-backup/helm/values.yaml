@@ -58,7 +58,7 @@ velero:
   schedules:
     monthly-backup:
       disabled: false
-      schedule: "0 1 1 * *"  # Monthly on the first day at 1 AM
+      schedule: "0 1 2 * *"  # Monthly on the first day at 1 AM
       useOwnerReferencesInBackup: false
       template:
         includedNamespaces:
@@ -74,8 +74,8 @@ velero:
           - events.events.k8s.io
           - backups.velero.io
           - restores.velero.io
-        snapshotVolumes: false  # Changed to false to use restic for volume backups
-        defaultVolumesToFsBackup: true  # Use filesystem backup for volumes
+        snapshotVolumes: true  # Changed to false to use restic for volume backups
+        defaultVolumesToFsBackup: false  # Use filesystem backup for volumes
         labelSelector: {}  # Remove label selector to include all resources
 
   # Resource limits and requests
