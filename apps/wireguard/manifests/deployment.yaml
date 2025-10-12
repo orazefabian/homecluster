@@ -21,7 +21,7 @@ spec:
         - name: TZ
           value: Europe/Vienna
         - name: PEERS
-          value: fabseMobile,benni,volte,damian,christina,dyna,chrissiPc 
+          value: fabseMobile,benni,volte,damian,christina,dyna 
         - name: PUID
           value: '1000'
         - name: PGID
@@ -51,7 +51,24 @@ spec:
         volumeMounts:
         - mountPath: "/config/"
           name: wireguard-config
+      initContainers:
+      - command:
+        - sh
+        - "-c"
+        - ENI=$(ip route get 8.8.8.8 | grep 8.8.8.8 | awk '{print $5}'); sed "s/ENI/$ENI/g"
+          /etc/wireguard-secret/wg0.conf.template > /config/wg0.conf; chmod 400 /config/wg0.conf
+        - sysctl -w net.ipv4.ip_forward=1
+        image: busybox
+        name: wireguard-template-replacement
+        volumeMounts:
+        - mountPath: "/config/"
+          name: wireguard-config
+        - mountPath: "/etc/wireguard-secret/"
+          name: wireguard-secret
       volumes:
+      - name: wireguard-secret
+        secret:
+          secretName: wireguard
       - name: wireguard-config
         persistentVolumeClaim:
           claimName: wireguard-data
