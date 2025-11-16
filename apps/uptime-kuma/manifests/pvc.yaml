@@ -8,7 +8,7 @@ spec:
     - ReadWriteMany
   resources:
     requests:
-      storage: 200Mi
+      storage: 800Mi
   storageClassName: longhorn # Use Longhorn storage class
 
 
