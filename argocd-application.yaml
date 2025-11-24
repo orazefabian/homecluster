@@ -67,6 +67,8 @@ spec:
           - name: reloader
             path: ./infrastructure/reloader/manifests
             namespace: reloader
+          - name: kite
+            path: ./infrastructure/kite/manifests
 
   template:
     metadata:
