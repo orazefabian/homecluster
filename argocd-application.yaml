@@ -69,6 +69,7 @@ spec:
             namespace: reloader
           - name: kite
             path: ./infrastructure/kite/manifests
+            namespacke: kube-system
 
   template:
     metadata:
