@@ -3,6 +3,8 @@ kind: Certificate
 metadata:
   name: kite-fabseit-net-dev
   namespace: kube-system
+  labels:
+    app.kubernetes.io/instance: kite
 spec:
   secretName: kite-fabseit-net-dev-tls
   issuerRef:

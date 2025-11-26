@@ -4,6 +4,8 @@ kind: Ingress
 metadata:
   name: kite
   namespace: kube-system
+  labels:
+    app.kubernetes.io/instance: kite
 
 spec:
   ingressClassName: nginx # Specify the Traefik ingress class explicitly

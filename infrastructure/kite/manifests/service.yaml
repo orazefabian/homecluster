@@ -3,6 +3,7 @@ kind: Service
 metadata:
   labels:
     app: kite
+    app.kubernetes.io/instance: kite
   name: kite
   namespace: kube-system
 spec:
