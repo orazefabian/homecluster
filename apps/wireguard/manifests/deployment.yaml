@@ -68,13 +68,13 @@ spec:
           PostUp = iptables -A FORWARD -i %i -j ACCEPT
           PostUp = iptables -A FORWARD -o %i -j ACCEPT  
           PostUp = iptables -t nat -A POSTROUTING -o $ENI -j MASQUERADE
-          PostUp = iptables -t nat -A PREROUTING -i $ENI -p udp --dport 53 -j DNAT --to-destination 192.168.8.53:53
-          PostUp = iptables -t nat -A PREROUTING -i $ENI -p tcp --dport 53 -j DNAT --to-destination 192.168.8.53:53
+          PostUp = iptables -t nat -A PREROUTING -i $i -p udp --dport 53 -j DNAT --to-destination 192.168.8.53:53
+          PostUp = iptables -t nat -A PREROUTING -i $i -p tcp --dport 53 -j DNAT --to-destination 192.168.8.53:53
           PostDown = iptables -D FORWARD -i %i -j ACCEPT
           PostDown = iptables -D FORWARD -o %i -j ACCEPT
           PostDown = iptables -t nat -D POSTROUTING -o $ENI -j MASQUERADE  
-          PostDown = iptables -t nat -D PREROUTING -i $ENI -p udp --dport 53 -j DNAT --to-destination 192.168.8.53:53
-          PostDown = iptables -t nat -D PREROUTING -i $ENI -p tcp --dport 53 -j DNAT --to-destination 192.168.8.53:53
+          PostDown = iptables -t nat -D PREROUTING -i $i -p udp --dport 53 -j DNAT --to-destination 192.168.8.53:53
+          PostDown = iptables -t nat -D PREROUTING -i $i -p tcp --dport 53 -j DNAT --to-destination 192.168.8.53:53
 
           EOF
             # Insert new rules after [Interface] section
