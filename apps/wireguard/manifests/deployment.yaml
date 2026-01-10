@@ -21,7 +21,7 @@ spec:
         - name: TZ
           value: Europe/Vienna
         - name: PEERS
-          value: fabseMobile,benni,volte,damian,christina,dyna,chrissiPc,silvia
+          value: fabseMobile,benni,volte,damian,christina,dyna,chrissiPc,silvia,fabianPC
         - name: PUID
           value: '1000'
         - name: PGID
