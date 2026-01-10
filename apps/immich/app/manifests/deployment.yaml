@@ -68,6 +68,13 @@ spec:
           image: ghcr.io/immich-app/immich-machine-learning:release
           ports:
             - containerPort: 3003
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1500m"
           volumeMounts:
             - mountPath: /cache
               name: cache-volume
