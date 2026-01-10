@@ -24,6 +24,13 @@ spec:
         ports:
         - containerPort: 80  
           protocol: TCP
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "212Mi"
+            cpu: "200m"
         volumeMounts:
         - name: speedtest-data-claim
           mountPath: /config

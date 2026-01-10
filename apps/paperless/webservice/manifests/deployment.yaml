@@ -17,6 +17,13 @@ spec:
         image: ghcr.io/paperless-ngx/paperless-ngx:2.16.3
         ports:
         - containerPort: 8000
+        resources:
+          requests:
+            memory: "1000Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
         env:
         # PostgreSQL Configuration
         - name: PAPERLESS_DB_HOST

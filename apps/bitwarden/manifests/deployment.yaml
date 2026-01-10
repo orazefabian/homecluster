@@ -20,6 +20,13 @@ spec:
           image: vaultwarden/server:1.33.1
           ports:
             - containerPort: 80
+          resources:
+            requests:
+              memory: "200Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
           volumeMounts:
             - mountPath: /data
               name: data-volume

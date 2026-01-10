@@ -17,6 +17,13 @@ spec:
         image: redis:6-alpine # Lightweight Redis version
         ports:
         - containerPort: 6379
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
         command:
         - "redis-server"
         args:

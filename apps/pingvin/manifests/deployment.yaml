@@ -21,6 +21,13 @@ spec:
         ports:
         - containerPort: 3000  # SMB port
           protocol: TCP
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "260Mi"
+            cpu: "200m"
         volumeMounts:
         - name: pingvin-data-claim
           mountPath: /data

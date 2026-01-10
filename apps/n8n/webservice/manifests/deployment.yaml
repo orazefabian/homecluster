@@ -18,6 +18,13 @@ spec:
           image: n8nio/n8n:1.104.1
           ports:
             - containerPort: 5678
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "500m"
+            limits:
+              memory: "1500Mi"
+              cpu: "1500m"
           env:
             - name : DB_TYPE
               value: postgresdb

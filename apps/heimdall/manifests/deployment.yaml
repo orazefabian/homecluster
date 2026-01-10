@@ -16,6 +16,13 @@ spec:
       containers:
       - name: heimdall
         image: lscr.io/linuxserver/heimdall:latest
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "300m"
         env:
         - name: PUID
           value: "1000" # Replace with your desired user ID

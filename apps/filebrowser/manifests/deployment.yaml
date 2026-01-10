@@ -20,6 +20,13 @@ spec:
         image: filebrowser/filebrowser:s6
         securityContext:
           privileged: true # Required for NFS server to export shares
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
         env:
           - name: PUID
             value: "1000"

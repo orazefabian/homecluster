@@ -8,20 +8,20 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
 spec:
-  ingressClassName: nginx
+  ingressClassName: nginx # Specify the Traefik ingress class explicitly
   rules:
-    - host: immich.halo.fabseit.net
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: immich-server
-                port:
-                  number: 2283
+  - host: immich.halo.fabseit.net
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: immich-server
+            port:
+              number: 2283
   tls:
     - hosts:
-        - immich.halo.fabseit.net
-      secretName: local-fabseit-net-prod-tls
+        - immich.halo.fabseit.net # TLS will apply to this host
+      secretName: local-fabseit-net-prod-tls # Reference to the TLS secret
 

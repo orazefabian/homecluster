@@ -20,6 +20,13 @@ spec:
           image: ghcr.io/immich-app/immich-server:release
           ports:
             - containerPort: 2283
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "550m"
+            limits:
+              memory: "2Gi"
+              cpu: "2000m"
           env:
             - name: DB_HOSTNAME
               value: immich-postgres
@@ -74,7 +81,7 @@ spec:
               cpu: "500m"
             limits:
               memory: "1536Mi"
-              cpu: "2000m"
+              cpu: "1750m"
           volumeMounts:
             - mountPath: /cache
               name: cache-volume
