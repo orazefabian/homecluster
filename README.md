@@ -30,7 +30,6 @@ Here's how the repo is organized:
 │   ├── bitwarden/
 │   ├── samba-share/
 │   ├── filebrowser/
-│   ├── pingvin/
 │   ├── wireguard/
 │   ├── homeassistant/
 │   ├── paperless/
@@ -65,7 +64,6 @@ Here's how the repo is organized:
     - `bitwarden`: Secure password management. 🔐
     - `samba-share`: File sharing made simple. 📁
     - `filebrowser`: Web-based file manager. 🌐
-    - `pingvin`: Collaborative tools for your home network. 🤝
     - `wireguard`: VPN solution for secure connectivity. 🔒
     - `homeassistant`: Automate your smart home devices! 🏡
     - `paperless`: Store and search your documents effectively. 📝

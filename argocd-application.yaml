@@ -37,9 +37,6 @@ spec:
           - name: filebrowser-app
             path: ./apps/filebrowser/manifests
             namespace: halo
-          - name: pingvin-app
-            path: ./apps/pingvin/manifests
-            namespace: halo
           - name: wireguard-app
             path: ./apps/wireguard/manifests
             namespace: halo
