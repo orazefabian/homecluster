@@ -41,6 +41,10 @@ Here's how the repo is organized:
 │   ├── n8n/
 │   │   ├── postgresdb/
 │   │   ├── webservice/
+│   ├── immich/
+│   │   ├── app/
+│   │   ├── postgres/
+│   │   ├── redis/
 ├── infrastructure/
 │   ├── longhorn/
 │   ├── cert-manager/
@@ -67,6 +71,7 @@ Here's how the repo is organized:
     - `paperless`: Store and search your documents effectively. 📝
     - `speedtest`: Test your internet speed. 🚀
     - `n8n`: Workflow automations for days!. 🛠️
+    - `immich`: Self hosted images solution. 📸
 
 2. **Infrastructure** (`infrastructure/`):
     - `longhorn`: Distributed block storage for Kubernetes. 📦

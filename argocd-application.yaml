@@ -70,6 +70,9 @@ spec:
           - name: kite
             path: ./infrastructure/kite/manifests
             namespace: kube-system
+          - name: immich-app          
+            path: ./apps/immich
+            namespace: halo
 
   template:
     metadata:
