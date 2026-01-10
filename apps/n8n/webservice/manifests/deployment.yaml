@@ -20,11 +20,11 @@ spec:
             - containerPort: 5678
           resources:
             requests:
-              memory: "256Mi"
+              memory: "512Mi"
               cpu: "500m"
             limits:
-              memory: "1500Mi"
-              cpu: "1500m"
+              memory: "2Gi"
+              cpu: "1000m"
           env:
             - name : DB_TYPE
               value: postgresdb

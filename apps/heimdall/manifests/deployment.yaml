@@ -22,7 +22,7 @@ spec:
             cpu: "100m"
           limits:
             memory: "256Mi"
-            cpu: "300m"
+            cpu: "200m"
         env:
         - name: PUID
           value: "1000" # Replace with your desired user ID

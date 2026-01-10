@@ -18,11 +18,11 @@ spec:
           image: postgres:15-alpine
           resources:
             requests:
-              memory: "156Mi"
-              cpu: "150m"
+              memory: "256Mi"
+              cpu: "250m"
             limits:
               memory: "1Gi"
-              cpu: "1000m"
+              cpu: "500m"
           envFrom:
           - secretRef:
               name: n8n-db-secret
