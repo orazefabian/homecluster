@@ -6,9 +6,9 @@ metadata:
   namespace: halo
 spec:
   accessModes:
-    - ReadWriteMany # Allows multiple pods to access the volume
+    - ReadWriteOnce # Allows multiple pods to access the volume
   resources:
     requests:
-      storage: 500Gi # Adjust size as needed
+      storage: 200Gi # Adjust size as needed
   storageClassName: longhorn # Use Longhorn storage class
 
