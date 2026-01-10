@@ -29,7 +29,6 @@ Here's how the repo is organized:
 │   ├── pihole/
 │   ├── bitwarden/
 │   ├── samba-share/
-│   ├── filebrowser/
 │   ├── wireguard/
 │   ├── homeassistant/
 │   ├── paperless/
@@ -63,7 +62,6 @@ Here's how the repo is organized:
     - `pihole`: DNS sinkhole for ad blocking. 🚫
     - `bitwarden`: Secure password management. 🔐
     - `samba-share`: File sharing made simple. 📁
-    - `filebrowser`: Web-based file manager. 🌐
     - `wireguard`: VPN solution for secure connectivity. 🔒
     - `homeassistant`: Automate your smart home devices! 🏡
     - `paperless`: Store and search your documents effectively. 📝

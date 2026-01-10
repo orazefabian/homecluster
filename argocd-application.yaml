@@ -34,9 +34,6 @@ spec:
           - name: samba-app
             path: ./apps/samba-share/manifests
             namespace: halo
-          - name: filebrowser-app
-            path: ./apps/filebrowser/manifests
-            namespace: halo
           - name: wireguard-app
             path: ./apps/wireguard/manifests
             namespace: halo
