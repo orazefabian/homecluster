@@ -30,6 +30,7 @@ Here's how the repo is organized:
 │   ├── bitwarden/
 │   ├── samba-share/
 │   ├── wireguard/
+│   ├── headscale/
 │   ├── homeassistant/
 │   ├── paperless/
 │   │   ├── postgresdb/
@@ -63,6 +64,7 @@ Here's how the repo is organized:
     - `bitwarden`: Secure password management. 🔐
     - `samba-share`: File sharing made simple. 📁
     - `wireguard`: VPN solution for secure connectivity. 🔒
+    - `headscale`: Open-source Tailscale control server for split-tunnel VPN access. 🌐
     - `homeassistant`: Automate your smart home devices! 🏡
     - `paperless`: Store and search your documents effectively. 📝
     - `speedtest`: Test your internet speed. 🚀

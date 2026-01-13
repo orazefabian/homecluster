@@ -40,6 +40,9 @@ spec:
           - name: homeassistant-app
             path: ./apps/homeassistant/manifests
             namespace: halo
+          - name: headscale-app
+            path: ./apps/headscale/manifests
+            namespace: halo
           - name: n8n-app
             path: ./apps/n8n
             namespace: halo
