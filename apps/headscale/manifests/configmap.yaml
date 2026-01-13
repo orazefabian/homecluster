@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: headscale-config
+  namespace: halo
+data:
+  config.yaml: |
+    server_url: https://headscale.fabseit.net
+    listen_addr: 0.0.0.0:8080
+    grpc_listen_addr: 0.0.0.0:50443
+    metrics_listen_addr: 0.0.0.0:9090
+
+    noise:
+      private_key_path: /var/lib/headscale/noise_private.key
+
+    prefixes:
+      v4: 100.64.0.0/10
+      v6: fd7a:115c:a1e0::/48
+
+    derp:
+      urls: ["https://controlplane.tailscale.com/derpmap/default"]
+      auto_update_enabled: true
+
+    ephemeral_node_inactivity_timeout: 30m
+
+    database:
+      type: sqlite3
+      sqlite:
+        path: /var/lib/headscale/db.sqlite
+        write_ahead_log: true
+
+    # TLS (Let's Encrypt)
+    tls_letsencrypt_hostname: headscale.fabseit.net
+    tls_letsencrypt_cache_dir: /var/lib/headscale/cache
+    tls_letsencrypt_challenge_type: HTTP-01
+    tls_letsencrypt_listen: ":http"
+
+    log:
+      level: info
+
+    dns:
+      magic_dns: true
+      base_domain: halo.fabseit.net
+      override_local_dns: false
+      nameservers:
+        split:
+          fabseit.net:
+            - 192.168.8.53
+
+    unix_socket: /var/run/headscale/headscale.sock
+    unix_socket_permission: "0770"
