@@ -45,7 +45,7 @@ spec:
         - -c
         - |
           # Wait for headscale to be ready
-          until wget -q --spider http://headscale.halo.svc.cluster.local:8080 2>/dev/null; do
+          until wget -q --spider ${HEADSCALE_URL} 2>/dev/null; do
             echo "Waiting for headscale..."
             sleep 5
           done
@@ -62,9 +62,9 @@ spec:
           if ! tailscale status --json 2>/dev/null | grep -q '"BackendState":"Running"'; then
             # Login to headscale with authkey
             tailscale up \
-              --login-server=http://headscale.halo.svc.cluster.local:8080 \
+              --login-server=${HEADSCALE_URL} \
               --authkey=${TS_AUTHKEY} \
-              --advertise-routes=192.168.8.0/24 \
+              --advertise-routes=${SUBNET_ROUTES} \
               --accept-dns=false \
               --hostname=k8s-subnet-router \
               --accept-routes
@@ -78,6 +78,10 @@ spec:
             secretKeyRef:
               name: headscale-subnet-router-auth
               key: authkey
+        - name: HEADSCALE_URL
+          value: "http://headscale.halo.svc.cluster.local:8080"
+        - name: SUBNET_ROUTES
+          value: "192.168.8.0/24"
         resources:
           requests:
             memory: "64Mi"
