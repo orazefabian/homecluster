@@ -2,6 +2,9 @@
 # This deployment creates a Tailscale client that acts as a subnet router,
 # advertising the local network (192.168.8.0/24) to connected Headscale clients.
 #
+# Note: The HEADSCALE_URL uses HTTP for internal cluster communication.
+# External HTTPS is handled by the ingress/load balancer.
+#
 # Prerequisites:
 # 1. Create a Headscale authentication key (pre-auth key):
 #    kubectl exec -it deployment/headscale -n halo -- headscale preauthkeys create --user default --reusable --expiration 24h
@@ -61,8 +64,23 @@ spec:
           # Wait for tailscaled to start
           sleep 5
 
-          # Check if already authenticated
+          # Check if already authenticated (with retry)
           # Exit code 0 means logged in and running
+          MAX_RETRIES=3
+          RETRY_COUNT=0
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            if tailscale status >/dev/null 2>&1; then
+              echo "Already authenticated to headscale"
+              break
+            fi
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+              echo "Tailscale not ready, waiting... (attempt $RETRY_COUNT/$MAX_RETRIES)"
+              sleep 2
+            fi
+          done
+
+          # If not authenticated after retries, login
           if ! tailscale status >/dev/null 2>&1; then
             echo "Not authenticated, logging in to headscale..."
             # Login to headscale with authkey
@@ -74,8 +92,6 @@ spec:
               --hostname=k8s-subnet-router \
               --accept-routes
             echo "Successfully authenticated to headscale!"
-          else
-            echo "Already authenticated to headscale"
           fi
 
           # Keep the container running
