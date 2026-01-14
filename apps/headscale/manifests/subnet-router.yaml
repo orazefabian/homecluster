@@ -1,0 +1,109 @@
+# Headscale Subnet Router
+# This deployment creates a Tailscale client that acts as a subnet router,
+# advertising the local network (192.168.8.0/24) to connected Headscale clients.
+#
+# Prerequisites:
+# 1. Create a Headscale authentication key (pre-auth key):
+#    kubectl exec -it deployment/headscale -n halo -- headscale preauthkeys create --user default --reusable --expiration 24h
+#
+# 2. Create a Kubernetes secret with the auth key:
+#    kubectl create secret generic headscale-subnet-router-auth -n halo --from-literal=authkey=YOUR_AUTH_KEY
+#
+# 3. After deployment, enable the routes in Headscale:
+#    kubectl exec -it deployment/headscale -n halo -- headscale nodes list
+#    kubectl exec -it deployment/headscale -n halo -- headscale routes list
+#    kubectl exec -it deployment/headscale -n halo -- headscale routes enable -r <route-id>
+#
+# This allows connected clients to:
+# - Reach internal IP addresses (e.g., 192.168.8.30)
+# - Resolve local domains (e.g., pihole.halo.fabseit.net)
+#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: headscale-subnet-router
+  namespace: halo
+  labels:
+    app: headscale-subnet-router
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: headscale-subnet-router
+  template:
+    metadata:
+      labels:
+        app: headscale-subnet-router
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+      - name: tailscale
+        image: tailscale/tailscale:v1.58.2
+        command:
+        - sh
+        - -c
+        - |
+          # Wait for headscale to be ready
+          until nc -z headscale.halo.svc.cluster.local 8080; do
+            echo "Waiting for headscale..."
+            sleep 5
+          done
+
+          # Start tailscaled
+          tailscaled --state=/var/lib/tailscale/tailscaled.state \
+            --socket=/var/run/tailscale/tailscaled.sock &
+          TAILSCALED_PID=$!
+
+          # Wait for tailscaled to start
+          sleep 5
+
+          # Check if already authenticated
+          if ! tailscale status 2>/dev/null | grep -q "logged in"; then
+            # Login to headscale with authkey
+            tailscale up \
+              --login-server=http://headscale.halo.svc.cluster.local:8080 \
+              --authkey=${TS_AUTHKEY} \
+              --advertise-routes=192.168.8.0/24 \
+              --accept-dns=false \
+              --hostname=k8s-subnet-router \
+              --accept-routes
+          fi
+
+          # Keep the container running
+          wait $TAILSCALED_PID
+        env:
+        - name: TS_AUTHKEY
+          valueFrom:
+            secretKeyRef:
+              name: headscale-subnet-router-auth
+              key: authkey
+              optional: true
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN
+            - NET_RAW
+        volumeMounts:
+        - name: tailscale-state
+          mountPath: /var/lib/tailscale
+        - name: tailscale-run
+          mountPath: /var/run/tailscale
+        - name: dev-net-tun
+          mountPath: /dev/net/tun
+      volumes:
+      - name: tailscale-state
+        emptyDir: {}
+      - name: tailscale-run
+        emptyDir: {}
+      - name: dev-net-tun
+        hostPath:
+          path: /dev/net/tun
+          type: CharDevice
