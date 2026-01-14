@@ -3,6 +3,8 @@ kind: Service
 metadata:
   name: headscale
   namespace: halo
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: "192.168.8.35"
   labels:
     app: headscale
 spec:
@@ -10,7 +12,11 @@ spec:
     app: headscale
   ports:
   - name: http
-    port: 8080
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  - name: https
+    port: 443
     protocol: TCP
     targetPort: 8080
   - name: grpc
@@ -21,4 +27,4 @@ spec:
     port: 9090
     protocol: TCP
     targetPort: 9090
-  type: ClusterIP
+  type: LoadBalancer

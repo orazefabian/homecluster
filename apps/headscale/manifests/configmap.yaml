@@ -5,9 +5,10 @@ metadata:
   namespace: halo
 data:
   config.yaml: |
-    server_url: https://headscale.fabseit.net
+    server_url: https://vpn.fabseit.net
     listen_addr: 0.0.0.0:8080
     grpc_listen_addr: 0.0.0.0:50443
+    grpc_allow_insecure: false
     metrics_listen_addr: 0.0.0.0:9090
 
     noise:
@@ -16,36 +17,62 @@ data:
     prefixes:
       v4: 100.64.0.0/10
       v6: fd7a:115c:a1e0::/48
+      allocation: sequential
 
     derp:
-      urls: ["https://controlplane.tailscale.com/derpmap/default"]
+      urls:
+        - https://controlplane.tailscale.com/derpmap/default
+      paths: []
       auto_update_enabled: true
+      update_frequency: 3h
+
+    disable_check_updates: false
 
     ephemeral_node_inactivity_timeout: 30m
 
     database:
-      type: sqlite3
+      type: sqlite
+      debug: false
       sqlite:
         path: /var/lib/headscale/db.sqlite
         write_ahead_log: true
 
-    # TLS (Let's Encrypt)
-    tls_letsencrypt_hostname: headscale.fabseit.net
+    # TLS configuration - Let's Encrypt
+    acme_url: https://acme-v02.api.letsencrypt.org/directory
+    acme_email: ""
+    tls_letsencrypt_hostname: vpn.fabseit.net
     tls_letsencrypt_cache_dir: /var/lib/headscale/cache
     tls_letsencrypt_challenge_type: HTTP-01
     tls_letsencrypt_listen: ":http"
+    tls_cert_path: ""
+    tls_key_path: ""
 
     log:
       level: info
+      format: text
+
+    policy:
+      mode: file
+      path: ""
 
     dns:
       magic_dns: true
       base_domain: halo.fabseit.net
       override_local_dns: false
       nameservers:
+        global:
+          - 1.1.1.1
+          - 1.0.0.1
         split:
           fabseit.net:
             - 192.168.8.53
+      search_domains: []
+      extra_records: []
 
     unix_socket: /var/run/headscale/headscale.sock
     unix_socket_permission: "0770"
+
+    logtail:
+      enabled: false
+
+    randomize_client_port: false
