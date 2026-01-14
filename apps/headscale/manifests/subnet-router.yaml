@@ -45,7 +45,7 @@ spec:
         - -c
         - |
           # Wait for headscale to be ready
-          until nc -z headscale.halo.svc.cluster.local 8080; do
+          until wget -q --spider http://headscale.halo.svc.cluster.local:8080 2>/dev/null; do
             echo "Waiting for headscale..."
             sleep 5
           done
@@ -58,8 +58,8 @@ spec:
           # Wait for tailscaled to start
           sleep 5
 
-          # Check if already authenticated
-          if ! tailscale status 2>/dev/null | grep -q "logged in"; then
+          # Check if already authenticated using JSON output
+          if ! tailscale status --json 2>/dev/null | grep -q '"BackendState":"Running"'; then
             # Login to headscale with authkey
             tailscale up \
               --login-server=http://headscale.halo.svc.cluster.local:8080 \
