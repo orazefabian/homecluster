@@ -78,7 +78,6 @@ spec:
             secretKeyRef:
               name: headscale-subnet-router-auth
               key: authkey
-              optional: true
         resources:
           requests:
             memory: "64Mi"
