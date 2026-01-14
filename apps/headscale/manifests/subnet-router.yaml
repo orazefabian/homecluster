@@ -45,10 +45,13 @@ spec:
         - -c
         - |
           # Wait for headscale to be ready
-          until wget -q --spider ${HEADSCALE_URL} 2>/dev/null; do
-            echo "Waiting for headscale..."
+          echo "Waiting for headscale to be ready..."
+          until wget -q --spider ${HEADSCALE_URL} 2>/dev/null || \
+                curl -sf ${HEADSCALE_URL} >/dev/null 2>&1; do
+            echo "Headscale not ready yet, retrying..."
             sleep 5
           done
+          echo "Headscale is ready!"
 
           # Start tailscaled
           tailscaled --state=/var/lib/tailscale/tailscaled.state \
@@ -58,8 +61,10 @@ spec:
           # Wait for tailscaled to start
           sleep 5
 
-          # Check if already authenticated using JSON output
-          if ! tailscale status --json 2>/dev/null | grep -q '"BackendState":"Running"'; then
+          # Check if already authenticated
+          # Exit code 0 means logged in and running
+          if ! tailscale status >/dev/null 2>&1; then
+            echo "Not authenticated, logging in to headscale..."
             # Login to headscale with authkey
             tailscale up \
               --login-server=${HEADSCALE_URL} \
@@ -68,6 +73,9 @@ spec:
               --accept-dns=false \
               --hostname=k8s-subnet-router \
               --accept-routes
+            echo "Successfully authenticated to headscale!"
+          else
+            echo "Already authenticated to headscale"
           fi
 
           # Keep the container running
