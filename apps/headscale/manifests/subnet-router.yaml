@@ -49,11 +49,15 @@ spec:
         - |
           # Wait for headscale to be ready
           echo "Waiting for headscale to be ready..."
-          until wget -q --spider ${HEADSCALE_URL} 2>/dev/null || \
-                curl -sf ${HEADSCALE_URL} >/dev/null 2>&1; do
-            echo "Headscale not ready yet, retrying..."
-            sleep 5
-          done
+          # Wait for headscale to be ready (if wget is available)
+          if command -v wget >/dev/null 2>&1; then
+            until wget -q --spider http://headscale.halo.svc.cluster.local:8080 2>/dev/null; do
+              echo "Waiting for headscale..."
+              sleep 5
+            done
+          else
+            echo "wget not found; skipping headscale readiness check and continuing startup"
+          fi
           echo "Headscale is ready!"
 
           # Start tailscaled
