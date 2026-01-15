@@ -15,9 +15,11 @@ spec:
       labels:
         app: headscale-ui
     spec:
+      securityContext:
+        fsGroup: 1000
       containers:
       - name: headscale-ui
-        image: ghcr.io/gurucomputing/headscale-ui:latest
+        image: ghcr.io/gurucomputing/headscale-ui:2025.01.20
         ports:
         - containerPort: 8080
           name: http
@@ -29,6 +31,10 @@ spec:
           limits:
             memory: "128Mi"
             cpu: "100m"
+        securityContext:
+          runAsUser: 1000
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
 ---
 apiVersion: v1
 kind: Service

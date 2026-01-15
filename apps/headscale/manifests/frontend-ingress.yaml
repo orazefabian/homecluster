@@ -4,7 +4,7 @@ metadata:
   name: headscale-ui
   namespace: halo
 spec:
-  ingressClassName: nginx
+  ingressClassName: nginx # Specify the nginx ingress class explicitly
   rules:
   - host: headscale.halo.fabseit.net
     http:
