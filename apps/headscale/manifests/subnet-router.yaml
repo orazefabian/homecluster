@@ -1,26 +1,3 @@
-# Headscale Subnet Router
-# This deployment creates a Tailscale client that acts as a subnet router,
-# advertising the local network (192.168.8.0/24) to connected Headscale clients.
-#
-# Note: The HEADSCALE_URL uses HTTP for internal cluster communication.
-# External HTTPS is handled by the ingress/load balancer.
-#
-# Prerequisites:
-# 1. Create a Headscale authentication key (pre-auth key):
-#    kubectl exec -it deployment/headscale -n halo -- headscale preauthkeys create --user default --reusable --expiration 24h
-#
-# 2. Create a Kubernetes secret with the auth key:
-#    kubectl create secret generic headscale-subnet-router-auth -n halo --from-literal=authkey=YOUR_AUTH_KEY
-#
-# 3. After deployment, enable the routes in Headscale:
-#    kubectl exec -it deployment/headscale -n halo -- headscale nodes list
-#    kubectl exec -it deployment/headscale -n halo -- headscale routes list
-#    kubectl exec -it deployment/headscale -n halo -- headscale routes enable -r <route-id>
-#
-# This allows connected clients to:
-# - Reach internal IP addresses (e.g., 192.168.8.30)
-# - Resolve local domains (e.g., pihole.halo.fabseit.net)
-#
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -38,78 +15,35 @@ spec:
       labels:
         app: headscale-subnet-router
     spec:
+      serviceAccountName: tailscale
       hostNetwork: true
       dnsPolicy: ClusterFirstWithHostNet
       containers:
       - name: tailscale
         image: tailscale/tailscale:v1.58.2
-        command:
-        - sh
-        - -c
-        - |
-          # Wait for headscale to be ready
-          echo "Waiting for headscale to be ready..."
-          # Wait for headscale to be ready (if wget is available)
-          if command -v wget >/dev/null 2>&1; then
-            until wget -q --spider http://headscale.halo.svc.cluster.local:8080 2>/dev/null; do
-              echo "Waiting for headscale..."
-              sleep 5
-            done
-          else
-            echo "wget not found; skipping headscale readiness check and continuing startup"
-          fi
-          echo "Headscale is ready!"
-
-          # Start tailscaled
-          tailscaled --state=/var/lib/tailscale/tailscaled.state \
-            --socket=/var/run/tailscale/tailscaled.sock &
-          TAILSCALED_PID=$!
-
-          # Wait for tailscaled to start
-          sleep 5
-
-          # Check if already authenticated (with retry)
-          # Exit code 0 means logged in and running
-          MAX_RETRIES=3
-          RETRY_COUNT=0
-          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-            if tailscale status >/dev/null 2>&1; then
-              echo "Already authenticated to headscale"
-              break
-            fi
-            RETRY_COUNT=$((RETRY_COUNT + 1))
-            if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
-              echo "Tailscale not ready, waiting... (attempt $RETRY_COUNT/$MAX_RETRIES)"
-              sleep 2
-            fi
-          done
-
-          # If not authenticated after retries, login
-          if ! tailscale status >/dev/null 2>&1; then
-            echo "Not authenticated, logging in to headscale..."
-            # Login to headscale with authkey
-            tailscale up \
-              --login-server=${HEADSCALE_URL} \
-              --authkey=${TS_AUTHKEY} \
-              --advertise-routes=${SUBNET_ROUTES} \
-              --accept-dns=false \
-              --hostname=k8s-subnet-router \
-              --accept-routes
-            echo "Successfully authenticated to headscale!"
-          fi
-
-          # Keep the container running
-          wait $TAILSCALED_PID
         env:
+        - name: TS_KUBE_SECRET
+          value: "tailscale-auth" 
         - name: TS_AUTHKEY
           valueFrom:
             secretKeyRef:
-              name: headscale-subnet-router-auth
-              key: authkey
-        - name: HEADSCALE_URL
-          value: "http://headscale.halo.svc.cluster.local:8080"
-        - name: SUBNET_ROUTES
+              name: tailscale-auth
+              key: TS_AUTHKEY
+        - name: TS_HOSTNAME
+          value: "k8s-subnet-router"
+        - name: TS_ROUTES
           value: "192.168.8.0/24"
+        - name: TS_STATE_DIR
+          value: "/var/lib/tailscale"
+        - name: TS_SOCKET
+          value: "/var/run/tailscale/tailscaled.sock"
+        - name: TS_USERSPACE
+          value: "false"  # Kernel networking (requires hostNetwork + /dev/net/tun)
+        - name: TS_ACCEPT_DNS
+          value: "false"
+        # Use TS_EXTRA_ARGS for --accept-routes (not covered by env vars)
+        - name: TS_EXTRA_ARGS
+          value: "--login-server=https://vpn.fabseit.net --accept-routes"
         resources:
           requests:
             memory: "64Mi"
@@ -138,3 +72,4 @@ spec:
         hostPath:
           path: /dev/net/tun
           type: CharDevice
+
