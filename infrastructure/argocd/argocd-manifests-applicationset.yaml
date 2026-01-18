@@ -11,10 +11,10 @@ spec:
     - list:
         elements:
           - name: speedtest
-            path: ./apps/speedtest/
+            path: ./apps/speedtest
             namespace: halo
           - name: paperless
-            path: ./apps/paperless/
+            path: ./apps/paperless
             namespace: halo
           - name: pihole-app
             path: ./apps/pihole/manifests
