@@ -45,6 +45,7 @@ Here's how the repo is organized:
 │   │   ├── postgres/
 │   │   ├── redis/
 ├── infrastructure/
+│   ├── argocd/
 │   ├── longhorn/
 │   ├── cert-manager/
 │   ├── metallb/
@@ -52,7 +53,7 @@ Here's how the repo is organized:
 │   ├── secets-backup/
 │   ├── reloader/
 │   ├── kite/
-└── argocd.yaml
+└── argocd-bootstrap.yaml
 ```
 
 ### 🔑 Key Components:
@@ -72,6 +73,7 @@ Here's how the repo is organized:
     - `immich`: Self hosted images solution. 📸
 
 2. **Infrastructure** (`infrastructure/`):
+    - `argocd`: ArgoCD configuration including ApplicationSet and Ingress. 🔄
     - `longhorn`: Distributed block storage for Kubernetes. 📦
     - `cert-manager`: Automated TLS certificate management. 🔑
     - `metallb`: Load balancer for bare-metal clusters. ⚖️
@@ -80,8 +82,8 @@ Here's how the repo is organized:
     - `reloader`: Make your pods reload on secrets or configmap changes. ⟳
     - `kite`: Modern k8s dashboard.
 
-3. **ArgoCD Configuration** (`argocd.yaml`):
-    This file defines an ApplicationSet for syncing all resources to the cluster via ArgoCD.
+3. **ArgoCD Bootstrap Configuration** (`argocd-bootstrap.yaml`):
+    This file defines a bootstrap Application that monitors the `infrastructure/argocd` directory, enabling ArgoCD to manage its own configuration updates automatically.
 
 ---
 
@@ -96,10 +98,11 @@ cd homecluster
 ### 2️⃣ Install ArgoCD:
 Follow the [official ArgoCD installation guide](https://argo-cd.readthedocs.io/en/stable/getting_started/).
 
-### 3️⃣ Apply the ArgoCD ApplicationSet:
+### 3️⃣ Apply the ArgoCD Bootstrap Application:
 ```bash
-kubectl apply -f argocd.yaml
+kubectl apply -f argocd-bootstrap.yaml
 ```
+This will set up ArgoCD to monitor and sync all applications and infrastructure, including its own configuration.
 
 ### 4️⃣ Watch the Magic! ✨
 ArgoCD will automatically sync the resources defined in this repository to your cluster.
