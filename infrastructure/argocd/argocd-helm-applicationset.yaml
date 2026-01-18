@@ -1,0 +1,46 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: helm-applicationset
+  namespace: argocd
+spec:
+  ignoreApplicationDifferences:
+    - jsonPointers:
+      - /spec/syncPolicy
+  generators:
+    - list:
+        elements:
+          - name: cert-manager-helm
+            chartPath: ./infrastructure/cert-manager
+            namespace: cert-manager
+            valuesFile: values.yaml
+          - name: ingress-nginx-helm
+            chartPath: ./infrastructure/ingress-nginx
+            namespace: ingress-nginx
+            valuesFile: values.yaml
+          - name: longhorn-helm
+            chartPath: ./infrastructure/longhorn
+            namespace: longhorn-system
+            valuesFile: values.yaml
+
+  template:
+    metadata:
+      name: '{{name}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/orazefabian/homecluster-helm
+        targetRevision: HEAD
+        path: '{{chartPath}}'
+        helm:
+          valueFiles:
+            - '{{valuesFile}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{namespace}}'
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true
+        automated:
+          selfHeal: true
+          prune: false
