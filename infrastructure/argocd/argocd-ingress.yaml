@@ -11,7 +11,7 @@ metadata:
     #
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
 spec:
-  ingressClassName: nginx # Specify the Traefik ingress class explicitly
+  ingressClassName: nginx # Specify the nginx ingress class explicitly
   rules:
     - host: argocd.halo.fabseit.net # Match the host
       http:
