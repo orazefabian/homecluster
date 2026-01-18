@@ -68,6 +68,8 @@ data:
             - 192.168.8.53
           halo.fabseit.net:
             - 192.168.8.53
+          data.home:
+            - 192.168.8.53
       search_domains: []
       extra_records: []
 
