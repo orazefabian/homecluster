@@ -12,6 +12,8 @@ spec:
   dnsNames:
     - "*.halo.fabseit.net"
     - "*.fabseit.net"
+  ipAddresses:
+    - "192.168.8.33"
 
 ---
 apiVersion: cert-manager.io/v1
