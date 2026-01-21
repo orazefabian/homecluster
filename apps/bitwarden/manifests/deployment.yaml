@@ -20,6 +20,10 @@ spec:
           image: vaultwarden/server:1.33.1
           ports:
             - containerPort: 80
+            - containerPort: 443
+          env:
+            - name: ROCKET_TLS
+              value: '{certs="/ssl/tls.crt",key="/ssl/tls.key"}'
           resources:
             requests:
               memory: "200Mi"
@@ -30,8 +34,14 @@ spec:
           volumeMounts:
             - mountPath: /data
               name: data-volume
+            - mountPath: /ssl
+              name: tls-secret
+              readOnly: true
       volumes:
         - name: data-volume
           persistentVolumeClaim:
             claimName: bitwarden-pvc
+        - name: tls-secret
+          secret:
+            secretName: local-fabseit-net-prod-tls
 
