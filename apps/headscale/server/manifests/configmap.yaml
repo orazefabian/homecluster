@@ -56,12 +56,20 @@ data:
       path: ""
 
     dns:
-      magic_dns: false
+      magic_dns: true
       base_domain: halo.fabseit.net
       override_local_dns: false
       nameservers:
-        global: []
-        split: {}
+        global:
+          - 1.1.1.1
+          - 1.0.0.1
+        split:
+          fabseit.net:
+            - 192.168.8.53
+          halo.fabseit.net:
+            - 192.168.8.53
+          data.home:
+            - 192.168.8.53
       search_domains: []
       extra_records: []
 
