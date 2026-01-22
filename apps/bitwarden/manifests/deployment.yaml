@@ -30,27 +30,8 @@ spec:
           volumeMounts:
             - mountPath: /data
               name: data-volume
-        - name: nginx-tls
-          image: nginx:1.25-alpine
-          ports:
-            - containerPort: 443
-          volumeMounts:
-            - mountPath: /etc/nginx/nginx.conf
-              name: nginx-config
-              subPath: nginx.conf
-              readOnly: true
-            - mountPath: /etc/nginx/ssl
-              name: tls-certs
-              readOnly: true
       volumes:
         - name: data-volume
           persistentVolumeClaim:
             claimName: bitwarden-pvc
-        - name: tls-certs
-          secret:
-            secretName: local-fabseit-net-prod-tls
-            defaultMode: 0400
-        - name: nginx-config
-          configMap:
-            name: bitwarden-nginx-config
 
