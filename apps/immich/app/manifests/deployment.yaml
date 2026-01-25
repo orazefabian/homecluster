@@ -22,10 +22,10 @@ spec:
             - containerPort: 2283
           resources:
             requests:
-              memory: "1Gi"
+              memory: "1500Mi"
               cpu: "550m"
             limits:
-              memory: "2Gi"
+              memory: "2500Mi"
               cpu: "1600m"
           env:
             - name: DB_HOSTNAME
@@ -77,8 +77,8 @@ spec:
             - containerPort: 3003
           resources:
             requests:
-              memory: "512Mi"
-              cpu: "500m"
+              memory: "412Mi"
+              cpu: "300m"
             limits:
               memory: "1536Mi"
               cpu: "1750m"
