@@ -73,11 +73,11 @@ Here's how the repo is organized:
     - `immich`: Self hosted images solution. 📸
 
 2. **Infrastructure** (`infrastructure/`):
-    - `argocd`: ArgoCD configuration including ApplicationSet and Ingress. 🔄
-    - `longhorn`: Distributed block storage for Kubernetes. 📦
-    - `cert-manager`: Automated TLS certificate management. 🔑
+    - `argocd`: ArgoCD configuration with separate ApplicationSets for Helm charts and manifests. 🔄
+    - `longhorn`: Distributed block storage for Kubernetes (deployed via Helm). 📦
+    - `cert-manager`: Automated TLS certificate management (deployed via Helm). 🔑
     - `metallb`: Load balancer for bare-metal clusters. ⚖️
-    - `ingress-nginx`: HTTP and HTTPS routing for services. 🌍
+    - `ingress-nginx`: HTTP and HTTPS routing for services (deployed via Helm). 🌍
     - `secrets-backup`: Custom backup solution for k8s secrets. 📥
     - `reloader`: Make your pods reload on secrets or configmap changes. ⟳
     - `kite`: Modern k8s dashboard.

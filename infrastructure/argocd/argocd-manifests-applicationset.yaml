@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: multi-source-applicationset
+  name: manifests-applicationset
   namespace: argocd
 spec:
   ignoreApplicationDifferences:
@@ -11,10 +11,10 @@ spec:
     - list:
         elements:
           - name: speedtest
-            path: ./apps/speedtest/
+            path: ./apps/speedtest
             namespace: halo
           - name: paperless
-            path: ./apps/paperless/
+            path: ./apps/paperless
             namespace: halo
           - name: pihole-app
             path: ./apps/pihole/manifests
@@ -46,18 +46,12 @@ spec:
           - name: n8n-app
             path: ./apps/n8n
             namespace: halo
-          - name: longhorn
-            path: ./infrastructure/longhorn/manifests
-            namespace: longhorn-system
-          - name: cert-manager
-            path: ./infrastructure/cert-manager
-            namespace: cert-manager
+          - name: immich-app          
+            path: ./apps/immich
+            namespace: halo
           - name: metallb
             path: ./infrastructure/metallb/manifests
             namespace: metallb-system
-          - name: ingress-nginx
-            path: ./infrastructure/ingress-nginx
-            namespace: ingress-nginx
           - name: secrets-backup
             path: ./infrastructure/secrets-backup/manifests
             namespace: secrets-backup
@@ -67,9 +61,6 @@ spec:
           - name: kite
             path: ./infrastructure/kite/manifests
             namespace: kube-system
-          - name: immich-app          
-            path: ./apps/immich
-            namespace: halo
 
   template:
     metadata:
@@ -91,4 +82,3 @@ spec:
         automated:
           selfHeal: true
           prune: false
-
