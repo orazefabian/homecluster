@@ -60,7 +60,7 @@ spec:
           name: wireguard-config
       initContainers:
       - name: wireguard-init
-        image: busybox
+        image: busybox:1.36-musl
         command:
         - sh
         - -c
