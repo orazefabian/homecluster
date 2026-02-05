@@ -13,9 +13,20 @@ spec:
       app: wireguard
   template:
     metadata:
+      annotations:
+        container.apparmor.security.beta.kubernetes.io/wireguard: unconfined
       labels:
         app: wireguard
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - halo-8
       containers:
       - env:
         - name: TZ
@@ -55,6 +66,8 @@ spec:
             - NET_ADMIN
             - SYS_MODULE
           privileged: true
+          seccompProfile:
+            type: Unconfined
         volumeMounts:
         - mountPath: "/config/"
           name: wireguard-config
