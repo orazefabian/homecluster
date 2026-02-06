@@ -6,10 +6,10 @@ metadata:
   namespace: halo
 spec:
   accessModes:
-  - ReadWriteMany
+    - ReadWriteOnce
   resources:
     requests:
-      storage: 5Gi 
+      storage: 5Gi
   storageClassName: longhorn
 
 ---
@@ -20,8 +20,8 @@ metadata:
   namespace: halo
 spec:
   accessModes:
-  - ReadWriteMany
+    - ReadWriteOnce
   resources:
     requests:
-      storage: 60Gi 
+      storage: 60Gi
   storageClassName: longhorn
