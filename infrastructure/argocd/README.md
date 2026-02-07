@@ -83,3 +83,15 @@ All applications use the following sync policy:
 - **Self-Healing**: Any drift from the desired state is corrected
 - **CreateNamespace**: Namespaces are created automatically if they don't exist
 - **Prune**: Disabled (set to `false`) to prevent accidental deletions
+- **ServerSideApply**: Enabled to handle large CRDs (fixes annotation size limit errors for kube-prometheus-stack)
+
+### Why ServerSideApply?
+
+The `ServerSideApply=true` sync option is crucial for Helm charts that include large Custom Resource Definitions (CRDs), such as the kube-prometheus-stack used in the monitoring stack. Without this option, Helm stores the entire manifest in Kubernetes annotations, which have a 262144 byte limit. Large CRDs exceed this limit, causing sync failures with errors like:
+
+```
+CustomResourceDefinition.apiextensions.k8s.io "prometheuses.monitoring.coreos.com" is invalid: 
+metadata.annotations: Too long: must have at most 262144 bytes
+```
+
+Server-Side Apply uses a different mechanism that doesn't rely on annotations for storing manifests, allowing ArgoCD to successfully sync applications with large CRDs.
