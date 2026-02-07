@@ -40,7 +40,10 @@ kubectl port-forward -n monitoring svc/monitoring-kube-prometheus-grafana 3000:8
 
 Default credentials:
 - Username: `admin`
-- Password: `admin` (should be changed after first login)
+- Password: Retrieve the auto-generated password with:
+  ```bash
+  kubectl get secret -n monitoring monitoring-kube-prometheus-grafana -o jsonpath="{.data.admin-password}" | base64 --decode
+  ```
 
 ## Metrics Collection
 
