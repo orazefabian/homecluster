@@ -1,0 +1,140 @@
+# Lightweight configuration for kube-prometheus-stack
+# Focused on minimal resource usage while maintaining essential monitoring capabilities
+
+# Prometheus configuration
+prometheus:
+  prometheusSpec:
+    # Resource limits for lightweight operation
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 2Gi
+    
+    # Persistent storage using Longhorn
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: longhorn
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi
+    
+    # Data retention settings
+    retention: 15d
+    retentionSize: "9GB"
+    
+    # Reduce scrape intervals for lower resource usage
+    scrapeInterval: 60s
+    evaluationInterval: 60s
+    
+    # Disable remote write (not needed for basic monitoring)
+    remoteWrite: []
+
+# Grafana configuration
+grafana:
+  enabled: true
+  
+  # Resource limits
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  
+  # Persistent storage for dashboards and settings
+  persistence:
+    enabled: true
+    type: pvc
+    storageClassName: longhorn
+    accessModes:
+      - ReadWriteOnce
+    size: 2Gi
+  
+  # Admin credentials are managed via the chart's default auto-generated password.
+  # The password is stored in a Kubernetes Secret created by the Grafana subchart.
+  # Retrieve it with:
+  # kubectl get secret -n monitoring monitoring-helm-grafana -o jsonpath="{.data.admin-password}" | base64 --decode
+  #
+  # To set a custom password, uncomment and set adminPassword below:
+  # adminPassword: "change-me"
+  #
+  # For production use, create a Secret with keys "admin-user" and "admin-password"
+  # and reference it (preferred method):
+  # admin:
+  #   existingSecret: monitoring-grafana-admin
+  
+  # Default dashboards
+  defaultDashboardsEnabled: true
+  defaultDashboardsTimezone: UTC
+
+# AlertManager configuration - minimal setup
+alertmanager:
+  enabled: true
+  alertmanagerSpec:
+    resources:
+      requests:
+        cpu: 25m
+        memory: 64Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+    
+    # Persistent storage
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: longhorn
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 2Gi
+
+# Prometheus Node Exporter - collects hardware and OS metrics
+prometheus-node-exporter:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 64Mi
+
+# Kube State Metrics - generates metrics about Kubernetes objects
+kube-state-metrics:
+  resources:
+    requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+# Prometheus Operator
+prometheusOperator:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+# Disable components not needed for lightweight setup
+kubeApiServer:
+  enabled: true
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeProxy:
+  enabled: false
+kubeEtcd:
+  enabled: false
+kubeDns:
+  enabled: false
