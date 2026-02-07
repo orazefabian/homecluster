@@ -44,17 +44,3 @@ spec:
   dnsNames:
     - "argocd.halo.fabseit.net"
 
---- 
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: local-fabseit-net-prod
-  namespace: velero
-spec:
-  secretName: local-fabseit-net-velero-prod-tls
-  issuerRef:
-    name: cloudflare-clusterissuer-prod
-    kind: ClusterIssuer
-  commonName: "velero.halo.fabseit.net"
-  dnsNames:
-    - "velero.halo.fabseit.net"
