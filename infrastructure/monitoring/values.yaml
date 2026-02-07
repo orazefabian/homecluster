@@ -56,10 +56,18 @@ grafana:
       - ReadWriteOnce
     size: 2Gi
   
-  # Admin password - Grafana will generate a random password on first deployment
-  # Retrieve it using: kubectl get secret -n monitoring monitoring-kube-prometheus-grafana -o jsonpath="{.data.admin-password}" | base64 --decode
-  # To set a custom password, create a secret and reference it with admin.existingSecret
-  # adminPassword: set-via-secret
+  # Admin credentials are managed via the chart's default auto-generated password.
+  # The password is stored in a Kubernetes Secret created by the Grafana subchart.
+  # Retrieve it with:
+  # kubectl get secret -n monitoring monitoring-helm-grafana -o jsonpath="{.data.admin-password}" | base64 --decode
+  #
+  # To set a custom password, uncomment and set adminPassword below:
+  # adminPassword: "change-me"
+  #
+  # For production use, create a Secret with keys "admin-user" and "admin-password"
+  # and reference it (preferred method):
+  # admin:
+  #   existingSecret: monitoring-grafana-admin
   
   # Default dashboards
   defaultDashboardsEnabled: true

@@ -35,15 +35,17 @@ This is configured as a **lightweight** monitoring solution with minimal resourc
 After deployment, Grafana can be accessed via port-forward:
 
 ```bash
-kubectl port-forward -n monitoring svc/monitoring-kube-prometheus-grafana 3000:80
+kubectl port-forward -n monitoring svc/monitoring-helm-grafana 3000:80
 ```
 
 Default credentials:
 - Username: `admin`
-- Password: Retrieve the auto-generated password with:
+- Password: The chart generates a random password on first deployment. Retrieve it with:
   ```bash
-  kubectl get secret -n monitoring monitoring-kube-prometheus-grafana -o jsonpath="{.data.admin-password}" | base64 --decode
+  kubectl get secret -n monitoring monitoring-helm-grafana -o jsonpath="{.data.admin-password}" | base64 --decode
   ```
+
+> **Note**: The service and secret names use the ArgoCD Application name prefix (`monitoring-helm`) followed by the Grafana subchart name. If you customize the admin password or use `admin.existingSecret` in `values.yaml`, update the secret name accordingly.
 
 ## Metrics Collection
 

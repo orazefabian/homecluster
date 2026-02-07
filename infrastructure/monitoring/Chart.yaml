@@ -2,7 +2,7 @@ apiVersion: v2
 name: monitoring
 description: A Helm chart for deploying lightweight k8s monitoring with kube-prometheus-stack
 type: application
-version: 1.0.0
+version: 1.0.1
 dependencies:
   - name: kube-prometheus-stack
     version: 67.4.0
