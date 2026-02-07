@@ -26,9 +26,10 @@ The configuration is now split into multiple files for better organization and p
 ### Individual Applications
 
 3. **argocd-cert-manager-manifests.yaml**
-   - Manages additional cert-manager manifests (ClusterIssuers, Certificates, CRDs)
+   - Manages additional cert-manager manifests (ClusterIssuers, Certificates)
    - Located in `infrastructure/cert-manager/manifests/`
    - Applied separately to avoid conflicts with the Helm chart
+   - Note: CRDs are now managed by the Helm chart via `installCRDs: true`
 
 4. **argocd-longhorn-manifests.yaml**
    - Manages additional longhorn manifests (Ingress, Certificates)
