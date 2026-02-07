@@ -22,6 +22,10 @@ spec:
             chartPath: ./infrastructure/longhorn
             namespace: longhorn-system
             valuesFile: values.yaml
+          - name: monitoring-helm
+            chartPath: ./infrastructure/monitoring
+            namespace: monitoring
+            valuesFile: values.yaml
 
   template:
     metadata:
