@@ -1,0 +1,24 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana
+  namespace: monitoring
+
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: monitoring.halo.fabseit.net
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: monitoring-helm-grafana
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - monitoring.halo.fabseit.net
+      secretName: monitoring-fabseit-net-prod-tls

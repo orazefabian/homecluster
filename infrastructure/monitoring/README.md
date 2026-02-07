@@ -32,13 +32,30 @@ This is configured as a **lightweight** monitoring solution with minimal resourc
 
 ## Access
 
-After deployment, Grafana can be accessed via port-forward:
+### Via Ingress (Recommended)
+
+Grafana is accessible via HTTPS through the configured ingress:
+
+```
+https://monitoring.halo.fabseit.net
+```
+
+The ingress is configured with:
+- TLS certificate issued by cert-manager using Let's Encrypt
+- nginx ingress controller
+
+### Via Port-Forward (Alternative)
+
+For local access or troubleshooting, you can use port-forward:
 
 ```bash
 kubectl port-forward -n monitoring svc/monitoring-helm-grafana 3000:80
 ```
 
-Default credentials:
+Then access Grafana at `http://localhost:3000`
+
+### Default Credentials
+
 - Username: `admin`
 - Password: The chart generates a random password on first deployment. Retrieve it with:
   ```bash
@@ -60,5 +77,9 @@ This configuration balances monitoring capabilities with resource usage.
 The configuration is managed through:
 - `Chart.yaml`: Defines the Helm chart dependency
 - `values.yaml`: Overrides default values for lightweight operation
+- `manifests/`: Contains additional Kubernetes resources:
+  - `ingress.yaml`: Ingress configuration for Grafana access
+  - `certificate.yaml`: Production TLS certificate for monitoring.halo.fabseit.net
+  - `certificate-dev.yaml`: Development/staging TLS certificate
 
-To modify the configuration, edit `values.yaml` and commit the changes. ArgoCD will automatically sync the updates.
+To modify the configuration, edit the relevant files and commit the changes. ArgoCD will automatically sync the updates.

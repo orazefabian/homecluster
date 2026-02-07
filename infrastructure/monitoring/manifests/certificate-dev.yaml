@@ -1,0 +1,14 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: monitoring-fabseit-net-dev
+  namespace: monitoring
+spec:
+  secretName: monitoring-fabseit-net-dev-tls
+  issuerRef:
+    name: cloudflare-clusterissuer-dev
+    kind: ClusterIssuer
+  commonName: "monitoring.halo.fabseit.net"
+  dnsNames:
+    - "monitoring.halo.fabseit.net"
+
