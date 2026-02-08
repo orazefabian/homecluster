@@ -11,7 +11,8 @@ spec:
   selector:
     matchLabels:
       app: kite
-  strategy: {}
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
@@ -44,3 +45,10 @@ spec:
           ports:
             - containerPort: 8080
               protocol: TCP
+          volumeMounts:
+            - name: kite-data
+              mountPath: /data
+      volumes:
+        - name: kite-data
+          persistentVolumeClaim:
+            claimName: kite-data-pvc
