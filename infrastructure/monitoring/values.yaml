@@ -13,7 +13,7 @@ kube-prometheus-stack:
         limits:
           cpu: 500m
           memory: 1256Mi
-      
+
       # Persistent storage using Longhorn
       storageSpec:
         volumeClaimTemplate:
@@ -23,31 +23,31 @@ kube-prometheus-stack:
             resources:
               requests:
                 storage: 10Gi
-      
+
       # Data retention settings
       retention: 15d
       retentionSize: "9GB"
-      
+
       # Reduce scrape intervals for lower resource usage
       scrapeInterval: 60s
       evaluationInterval: 60s
-      
+
       # Disable remote write (not needed for basic monitoring)
       remoteWrite: []
 
   # Grafana configuration
   grafana:
     enabled: true
-    
+
     # Resource limits
     resources:
       requests:
-        cpu: 50m
-        memory: 128Mi
+        cpu: 250m
+        memory: 228Mi
       limits:
-        cpu: 200m
-        memory: 256Mi
-    
+        cpu: 500m
+        memory: 556Mi
+
     # Persistent storage for dashboards and settings
     persistence:
       enabled: true
@@ -56,7 +56,7 @@ kube-prometheus-stack:
       accessModes:
         - ReadWriteOnce
       size: 2Gi
-    
+
     # Admin credentials are managed via the chart's default auto-generated password.
     # The password is stored in a Kubernetes Secret created by the Grafana subchart.
     # Retrieve it with:
@@ -69,7 +69,7 @@ kube-prometheus-stack:
     # and reference it (preferred method):
     # admin:
     #   existingSecret: monitoring-grafana-admin
-    
+
     # Default dashboards
     defaultDashboardsEnabled: true
     defaultDashboardsTimezone: UTC
@@ -85,7 +85,7 @@ kube-prometheus-stack:
         limits:
           cpu: 100m
           memory: 128Mi
-      
+
       # Persistent storage
       storage:
         volumeClaimTemplate:
