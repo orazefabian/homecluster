@@ -5,7 +5,7 @@ metadata:
   namespace: halo
 spec:
   accessModes:
-    - ReadWriteMany # Allows multiple pods to access the volume
+    - ReadWriteOnce # Single node access only
   resources:
     requests:
       storage: 1Gi # Adjust size as needed
