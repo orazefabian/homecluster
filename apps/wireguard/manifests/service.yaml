@@ -5,9 +5,9 @@ metadata:
     app: wireguard
   name: wireguard
   namespace: halo
-  annotations:
-    metallb.universe.tf/loadBalancerIPs: "192.168.8.51"
 spec:
+  allocateLoadBalancerNodePorts: false
+  loadBalancerIP: 192.168.8.51
   ports:
     - targetPort: 51820
       port: 51820

@@ -18,9 +18,9 @@ kind: Service
 metadata:
   name: paperless-service-ext-ip
   namespace: halo
-  annotations:
-     metallb.universe.tf/loadBalancerIPs: "192.168.8.32"
 spec:
+  allocateLoadBalancerNodePorts: false
+  loadBalancerIP: 192.168.8.32
   selector:
     app: paperless
   ports:
