@@ -9,10 +9,10 @@ kube-prometheus-stack:
       resources:
         requests:
           cpu: 100m
-          memory: 512Mi
+          memory: 712Mi
         limits:
           cpu: 500m
-          memory: 1256Mi
+          memory: 1556Mi
 
       # Persistent storage using Longhorn
       storageSpec:
