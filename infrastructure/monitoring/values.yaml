@@ -22,7 +22,7 @@ kube-prometheus-stack:
             accessModes: ["ReadWriteOnce"]
             resources:
               requests:
-                storage: 10Gi
+                storage: 50Gi
 
       # Data retention settings
       retention: 15d
@@ -125,7 +125,7 @@ kube-prometheus-stack:
       limits:
         cpu: 200m
         memory: 256Mi
-    
+
     # Disable admission webhook patch jobs to prevent ArgoCD sync issues
     # The webhooks work fine without the patch jobs when using ServerSideApply
     admissionWebhooks:
