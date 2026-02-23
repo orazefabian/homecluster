@@ -26,6 +26,8 @@ spec:
               memory: "2Gi"
               cpu: "1000m"
           env:
+            - name: NODES_EXCLUDE
+              value: "[]"
             - name : DB_TYPE
               value: postgresdb
             - name: DB_POSTGRESDB_HOST
