@@ -50,6 +50,15 @@ spec:
       template:
         spec:
           serviceAccountName: secrets-backup
+          affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: NotIn
+                    values:
+                    - halo-8
           containers:
           - name: backup
             image: skatefabse/k8s-secrets-backup:arm-latest
