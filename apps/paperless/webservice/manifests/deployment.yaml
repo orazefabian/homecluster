@@ -4,6 +4,8 @@ metadata:
   name: paperless
   namespace: halo
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: paperless

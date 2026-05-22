@@ -4,6 +4,8 @@ metadata:
   name: postgres
   namespace: halo
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: postgres

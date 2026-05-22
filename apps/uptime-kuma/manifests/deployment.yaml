@@ -5,6 +5,8 @@ metadata:
   namespace: halo # Change the namespace if needed
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: uptime-kuma
