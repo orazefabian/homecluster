@@ -23,6 +23,9 @@ spec:
         - image: ghcr.io/zxh326/kite:latest
           imagePullPolicy: IfNotPresent
           name: kite
+          env:
+            - name: DB_DSN
+              value: /data/db.sqlite
           resources:
             limits:
               cpu: 1000m
