@@ -4,6 +4,10 @@ kind: Ingress
 metadata:
   name: longhorn
   namespace: longhorn-system
+  annotations:
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: longhorn-basic-auth
+    nginx.ingress.kubernetes.io/auth-realm: "Longhorn"
 
 spec:
   ingressClassName: nginx # Specify the Traefik ingress class explicitly
