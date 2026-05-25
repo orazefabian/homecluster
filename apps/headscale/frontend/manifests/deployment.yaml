@@ -18,41 +18,41 @@ spec:
         app: headplane
     spec:
       containers:
-      - name: headplane
-        image: ghcr.io/tale/headplane:0.6.1
-        ports:
-        - containerPort: 3000
-          name: http
-          protocol: TCP
-        env:
-        - name: HEADSCALE_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: headscale-ui-apikey
-              key: api-key
-        volumeMounts:
-        - name: config
-          mountPath: /etc/headplane
-          readOnly: true
-        - name: data
-          mountPath: /var/lib/headplane
-        - name: cookie-secret
-          mountPath: /var/run/secrets/headplane
-          readOnly: true
-        resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "256Mi"
-            cpu: "200m"
+        - name: headplane
+          image: ghcr.io/tale/headplane:0.6.1
+          ports:
+            - containerPort: 3000
+              name: http
+              protocol: TCP
+          env:
+            - name: HEADSCALE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: headscale-ui-apikey
+                  key: api-key
+          volumeMounts:
+            - name: config
+              mountPath: /etc/headplane
+              readOnly: true
+            - name: data
+              mountPath: /var/lib/headplane
+            - name: cookie-secret
+              mountPath: /var/run/secrets/headplane
+              readOnly: true
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "200m"
       volumes:
-      - name: config
-        configMap:
-          name: headplane-config
-      - name: data
-        persistentVolumeClaim:
-          claimName: headplane-data
-      - name: cookie-secret
-        secret:
-          secretName: headplane-cookie-secret
+        - name: config
+          configMap:
+            name: headplane-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: headplane-data
+        - name: cookie-secret
+          secret:
+            secretName: headplane-cookie-secret
