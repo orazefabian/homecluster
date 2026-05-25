@@ -1,0 +1,29 @@
+apiVersion: longhorn.io/v1beta2
+kind: BackupTarget
+metadata:
+  name: default
+  namespace: longhorn-system
+spec:
+  backupTargetURL: nfs://192.168.8.98:/mnt/backup-data?nfsOptions=noac%2Cintr%2Csoft%2Ctimeo%3D300%2Cretry%3D2
+  credentialSecret: ""
+  pollInterval: 1h0m0s
+---
+apiVersion: longhorn.io/v1beta2
+kind: BackupTarget
+metadata:
+  name: halo-8-ssd
+  namespace: longhorn-system
+spec:
+  backupTargetURL: nfs://192.168.8.98:/mnt/ssd-data/longhorn-backups?nfsOptions=noac%2Cintr%2Csoft%2Ctimeo%3D300%2Cretry%3D2
+  credentialSecret: ""
+  pollInterval: 1h0m0s
+---
+apiVersion: longhorn.io/v1beta2
+kind: BackupTarget
+metadata:
+  name: s3-hetzner
+  namespace: longhorn-system
+spec:
+  backupTargetURL: s3://backup-halo-store@eu-central/
+  credentialSecret: hetzner-s3-credentials
+  pollInterval: 10m0s

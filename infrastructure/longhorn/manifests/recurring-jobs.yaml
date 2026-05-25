@@ -1,0 +1,47 @@
+apiVersion: longhorn.io/v1beta2
+kind: RecurringJob
+metadata:
+  name: main-backup
+  namespace: longhorn-system
+spec:
+  name: main-backup
+  cron: "0 1 ? * SAT"
+  task: backup
+  groups:
+    - main
+  retain: 2
+  concurrency: 1
+  labels: {}
+  parameters: {}
+---
+apiVersion: longhorn.io/v1beta2
+kind: RecurringJob
+metadata:
+  name: random-volumes
+  namespace: longhorn-system
+spec:
+  name: random-volumes
+  cron: "0 1 ? * TUE"
+  task: backup
+  groups:
+    - default
+  retain: 2
+  concurrency: 1
+  labels: {}
+  parameters: {}
+---
+apiVersion: longhorn.io/v1beta2
+kind: RecurringJob
+metadata:
+  name: s3-monthly-backup
+  namespace: longhorn-system
+spec:
+  name: s3-monthly-backup
+  cron: "0 2 1 * *"
+  task: backup
+  groups:
+    - main
+  retain: 2
+  concurrency: 1
+  labels: {}
+  parameters: {}
