@@ -3,6 +3,10 @@ kind: PersistentVolumeClaim
 metadata:
   name: uptime-kuma-data
   namespace: halo
+  labels:
+    recurring-job-group.longhorn.io/default: "enabled"
+    recurring-job.longhorn.io/random-volumes: "enabled"
+    recurring-job.longhorn.io/s3-monthly-backup: "enabled"
 spec:
   accessModes:
     - ReadWriteOnce

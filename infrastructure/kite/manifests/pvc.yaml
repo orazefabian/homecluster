@@ -7,6 +7,9 @@ metadata:
   labels:
     app: kite
     app.kubernetes.io/instance: kite
+    recurring-job-group.longhorn.io/default: "enabled"
+    recurring-job.longhorn.io/random-volumes: "enabled"
+    recurring-job.longhorn.io/s3-monthly-backup: "enabled"
 spec:
   accessModes:
   - ReadWriteOnce

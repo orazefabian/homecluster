@@ -3,6 +3,8 @@ kind: PersistentVolumeClaim
 metadata:
   name: headplane-data
   namespace: halo
+  labels:
+    recurring-job-group.longhorn.io/default: "enabled"
 spec:
   accessModes:
     - ReadWriteOnce

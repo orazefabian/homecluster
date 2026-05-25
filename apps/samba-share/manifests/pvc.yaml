@@ -4,6 +4,10 @@ kind: PersistentVolumeClaim
 metadata:
   name: samba-data
   namespace: halo
+  labels:
+    recurring-job-group.longhorn.io/default: "enabled"
+    recurring-job.longhorn.io/main-backup: "enabled"
+    recurring-job.longhorn.io/s3-monthly-backup: "enabled"
 spec:
   accessModes:
     - ReadWriteOnce # Allows multiple pods to access the volume

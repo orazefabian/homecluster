@@ -17,6 +17,11 @@ kube-prometheus-stack:
       # Persistent storage using Longhorn
       storageSpec:
         volumeClaimTemplate:
+          metadata:
+            labels:
+              recurring-job-group.longhorn.io/default: "enabled"
+              recurring-job.longhorn.io/random-volumes: "enabled"
+              recurring-job.longhorn.io/s3-monthly-backup: "enabled"
           spec:
             storageClassName: longhorn
             accessModes: ["ReadWriteOnce"]
@@ -56,6 +61,10 @@ kube-prometheus-stack:
       accessModes:
         - ReadWriteOnce
       size: 2Gi
+      labels:
+        recurring-job-group.longhorn.io/default: "enabled"
+        recurring-job.longhorn.io/random-volumes: "enabled"
+        recurring-job.longhorn.io/s3-monthly-backup: "enabled"
 
     # Admin credentials are managed via the chart's default auto-generated password.
     # The password is stored in a Kubernetes Secret created by the Grafana subchart.
@@ -89,6 +98,10 @@ kube-prometheus-stack:
       # Persistent storage
       storage:
         volumeClaimTemplate:
+          metadata:
+            labels:
+              recurring-job-group.longhorn.io/default: "enabled"
+              recurring-job.longhorn.io/s3-monthly-backup: "enabled"
           spec:
             storageClassName: longhorn
             accessModes: ["ReadWriteOnce"]
