@@ -65,9 +65,10 @@ data:
     dns:
       magic_dns: false
       base_domain: halo.fabseit.net
-      override_local_dns: false
+      override_local_dns: true
       nameservers:
-        global: []
+        global:
+          - 9.9.9.9
         split:
           fabseit.net:
             - 192.168.8.53
