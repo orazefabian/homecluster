@@ -48,10 +48,10 @@ kube-prometheus-stack:
     resources:
       requests:
         cpu: 250m
-        memory: 228Mi
+        memory: 428Mi
       limits:
         cpu: 500m
-        memory: 556Mi
+        memory: 756Mi
 
     # Persistent storage for dashboards and settings
     persistence:
