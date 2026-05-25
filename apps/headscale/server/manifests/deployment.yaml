@@ -16,6 +16,8 @@ spec:
     metadata:
       labels:
         app: headscale
+      annotations:
+        reloader.stakater.com/auto: "true"
     spec:
       securityContext:
         fsGroup: 1000

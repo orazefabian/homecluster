@@ -16,6 +16,8 @@ spec:
     metadata:
       labels:
         app: samba
+      annotations:
+        reloader.stakater.com/auto: "true"
     spec:
       containers:
       - name: samba

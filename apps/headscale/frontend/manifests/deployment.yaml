@@ -16,6 +16,8 @@ spec:
     metadata:
       labels:
         app: headplane
+      annotations:
+        reloader.stakater.com/auto: "true"
     spec:
       containers:
         - name: headplane
