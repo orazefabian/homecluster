@@ -27,4 +27,8 @@ spec:
     port: 9090
     protocol: TCP
     targetPort: 9090
+  - name: stun
+    port: 3478
+    protocol: UDP
+    targetPort: 3478
   type: LoadBalancer

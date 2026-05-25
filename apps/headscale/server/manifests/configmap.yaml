@@ -20,6 +20,13 @@ data:
       allocation: sequential
 
     derp:
+      server:
+        enabled: true
+        region_id: 999
+        region_code: "homelab"
+        region_name: "Home Lab"
+        stun_listen_addr: "0.0.0.0:3478"
+        private_key_path: /var/lib/headscale/derp_server_private.key
       urls:
         - https://controlplane.tailscale.com/derpmap/default
       paths: []
@@ -56,17 +63,13 @@ data:
       path: ""
 
     dns:
-      magic_dns: true
+      magic_dns: false
       base_domain: halo.fabseit.net
       override_local_dns: false
       nameservers:
-        global:
-          - 1.1.1.1
-          - 1.0.0.1
+        global: []
         split:
           fabseit.net:
-            - 192.168.8.53
-          halo.fabseit.net:
             - 192.168.8.53
           data.home:
             - 192.168.8.53
