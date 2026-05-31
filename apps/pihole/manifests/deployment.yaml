@@ -19,7 +19,7 @@ spec:
         - name: regcred
       containers:
         - name: pihole
-          image: pihole/pihole:2024.06.0
+          image: pihole/pihole:2026.05.0
           imagePullPolicy: IfNotPresent
           resources:
             requests:
@@ -38,15 +38,15 @@ spec:
           env:
             - name: TZ
               value: "Europe/Berlin"
-            - name: DNSMASQ_USER
-              value: "pihole"
-            - name: WEBPASSWORD
+            - name: FTLCONF_webserver_api_password
               valueFrom:
                 secretKeyRef:
                   name: pihole-secret
                   key: WEBPASSWORD
-            - name: PIHOLE_DNS_
+            - name: FTLCONF_dns_upstreams
               value: "9.9.9.9;1.1.1.1"
+            - name: FTLCONF_misc_etc_dnsmasq_d
+              value: "true"
           volumeMounts:
             - mountPath: /etc/dnsmasq.d
               name: dnsmasq-config-volume
