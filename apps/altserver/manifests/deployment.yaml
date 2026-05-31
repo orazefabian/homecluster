@@ -1,0 +1,102 @@
+# AltServer-Linux — automatic WiFi re-signing for sideloaded iOS apps (AltStore).
+#
+# ONE-TIME SETUP (required before this pod is useful):
+#   1. Label the target node:
+#        kubectl label node <node-name> altserver=true
+#      The pod must run on this specific node for USB pairing to work.
+#
+#   2. Stop host usbmuxd on that node (conflicts with the container's own usbmuxd):
+#        sudo systemctl stop usbmuxd && sudo systemctl disable usbmuxd
+#
+#   3. Connect iPhone via USB → approve the "Trust This Computer" prompt.
+#      The container's usbmuxd creates the lockdown pairing file automatically.
+#      Check pairing: kubectl exec -n halo deploy/altserver -- ideviceinfo -k DeviceName
+#
+#   4. Install AltStore on the iPhone (one-time, also over USB):
+#        kubectl exec -n halo deploy/altserver -- sh -c \
+#          '/altserver/bin/AltServer -u <UDID> -a <apple-id> -p <password> /altserver/bin/AltStore.ipa'
+#      Find the UDID with: kubectl exec -n halo deploy/altserver -- idevice_id -l
+#
+#   5. Done. AltStore on the iPhone discovers this server via mDNS and refreshes
+#      all sideloaded apps over WiFi automatically every 7 days.
+#      The lockdown pairing file is persisted in the Longhorn PVC and backed up to S3.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: altserver
+  namespace: halo
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: altserver
+  template:
+    metadata:
+      labels:
+        app: altserver
+    spec:
+      # hostNetwork is required so avahi-daemon can broadcast _altserver._tcp mDNS
+      # on the LAN (192.168.8.x), allowing iOS devices to auto-discover this server.
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      imagePullSecrets:
+        - name: regcred
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: altserver
+                    operator: In
+                    values:
+                      - "true"
+      containers:
+        - name: altserver
+          # dreth/altserver-docker is a self-contained image managed by supervisord that runs:
+          # avahi-daemon (mDNS), usbmuxd (device comms), anisette-server (Apple auth, :6969),
+          # and AltServer itself. Binaries are downloaded from GitHub on first start.
+          image: dreth/altserver-docker:latest
+          imagePullPolicy: Always
+          env:
+            # Allow downloading Apple Provision libraries on first start (needed for anisette).
+            - name: ALLOW_PROVISION_TO_DOWNLOAD_LIBS
+              value: "true"
+          securityContext:
+            privileged: true
+          volumeMounts:
+            # iOS device pairing records — MUST persist. Created when the iPhone first
+            # trusts this server over USB. Losing these requires re-pairing via USB.
+            - mountPath: /var/lib/lockdown
+              name: altserver-data
+              subPath: lockdown
+            # Apple Provision libraries for the anisette server.
+            # Persisted to avoid a multi-minute re-download on every pod restart.
+            - mountPath: /root/.config/Provision/lib
+              name: altserver-data
+              subPath: provision-lib
+            # AltServer + netmuxd + anisette binaries downloaded at first start.
+            # Persisted so restarts are fast (no re-download from GitHub releases).
+            - mountPath: /altserver/bin
+              name: altserver-data
+              subPath: bin
+            # USB device tree — needed for the one-time pairing step.
+            # After pairing, WiFi refresh works without USB being connected.
+            - mountPath: /dev/bus/usb
+              name: usb-devices
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+      volumes:
+        - name: altserver-data
+          persistentVolumeClaim:
+            claimName: altserver-data
+        - name: usb-devices
+          hostPath:
+            path: /dev/bus/usb
+            type: Directory

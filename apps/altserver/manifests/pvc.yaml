@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: altserver-data
+  namespace: halo
+  labels:
+    # Back up lockdown pairing files — losing them means re-pairing the iPhone via USB.
+    recurring-job-group.longhorn.io/default: "enabled"
+    recurring-job.longhorn.io/s3-monthly-backup: "enabled"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+  storageClassName: longhorn
