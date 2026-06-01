@@ -1,25 +1,26 @@
 # AltServer-Linux — automatic WiFi re-signing for sideloaded iOS apps (AltStore).
 #
-# ONE-TIME SETUP (required before this pod is useful):
-#   1. Label the target node:
-#        kubectl label node <node-name> altserver=true
-#      The pod must run on this specific node for USB pairing to work.
+# ONE-TIME SETUP — pair your iPhone on any PC, then copy the file into the pod:
 #
-#   2. Stop host usbmuxd on that node (conflicts with the container's own usbmuxd):
-#        sudo systemctl stop usbmuxd && sudo systemctl disable usbmuxd
+#   On macOS:  brew install libimobiledevice
+#   On Linux:  apt install libimobiledevice-utils
+#   → Plug iPhone into that PC, tap "Trust" on the phone.
+#     The lockdown pairing file appears at:
+#       macOS: /var/db/lockdown/<UDID>.plist
+#       Linux: /var/lib/lockdown/<UDID>.plist
 #
-#   3. Connect iPhone via USB → approve the "Trust This Computer" prompt.
-#      The container's usbmuxd creates the lockdown pairing file automatically.
-#      Check pairing: kubectl exec -n halo deploy/altserver -- ideviceinfo -k DeviceName
+#   Copy it into the running pod (no USB connection to the cluster ever needed):
+#     POD=$(kubectl get pod -n halo -l app=altserver -o jsonpath='{.items[0].metadata.name}')
+#     kubectl cp /var/lib/lockdown/<UDID>.plist halo/$POD:/var/lib/lockdown/<UDID>.plist
 #
-#   4. Install AltStore on the iPhone (one-time, also over USB):
-#        kubectl exec -n halo deploy/altserver -- sh -c \
-#          '/altserver/bin/AltServer -u <UDID> -a <apple-id> -p <password> /altserver/bin/AltStore.ipa'
-#      Find the UDID with: kubectl exec -n halo deploy/altserver -- idevice_id -l
+#   Install AltStore over the same WiFi connection (iPhone and cluster on same LAN):
+#     kubectl exec -n halo deploy/altserver -- sh -c \
+#       '/altserver/bin/AltServer -u <UDID> -a <apple-id> -p <password> /altserver/bin/AltStore.ipa'
+#   Find the UDID with: kubectl exec -n halo deploy/altserver -- idevice_id -l
 #
-#   5. Done. AltStore on the iPhone discovers this server via mDNS and refreshes
-#      all sideloaded apps over WiFi automatically every 7 days.
-#      The lockdown pairing file is persisted in the Longhorn PVC and backed up to S3.
+#   Done. AltStore discovers this server via mDNS and refreshes sideloaded apps
+#   over WiFi automatically every 7 days. The pairing file is persisted in the
+#   Longhorn PVC and backed up to S3, so this step is truly one-time.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -43,15 +44,6 @@ spec:
       dnsPolicy: ClusterFirstWithHostNet
       imagePullSecrets:
         - name: regcred
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: altserver
-                    operator: In
-                    values:
-                      - "true"
       containers:
         - name: altserver
           # dreth/altserver-docker is a self-contained image managed by supervisord that runs:
@@ -64,10 +56,13 @@ spec:
             - name: ALLOW_PROVISION_TO_DOWNLOAD_LIBS
               value: "true"
           securityContext:
-            privileged: true
+            capabilities:
+              add:
+                - NET_ADMIN  # avahi: join multicast group 224.0.0.251 for mDNS
+                - NET_RAW    # avahi: raw socket for mDNS packet handling
           volumeMounts:
-            # iOS device pairing records — MUST persist. Created when the iPhone first
-            # trusts this server over USB. Losing these requires re-pairing via USB.
+            # iOS device pairing records — MUST persist. Copied in once from your PC.
+            # Losing these requires re-copying from your PC (or re-pairing via USB).
             - mountPath: /var/lib/lockdown
               name: altserver-data
               subPath: lockdown
@@ -81,10 +76,6 @@ spec:
             - mountPath: /altserver/bin
               name: altserver-data
               subPath: bin
-            # USB device tree — needed for the one-time pairing step.
-            # After pairing, WiFi refresh works without USB being connected.
-            - mountPath: /dev/bus/usb
-              name: usb-devices
           resources:
             requests:
               cpu: "100m"
@@ -96,7 +87,3 @@ spec:
         - name: altserver-data
           persistentVolumeClaim:
             claimName: altserver-data
-        - name: usb-devices
-          hostPath:
-            path: /dev/bus/usb
-            type: Directory
