@@ -53,6 +53,17 @@ spec:
       dnsPolicy: ClusterFirstWithHostNet
       imagePullSecrets:
         - name: regcred
+      initContainers:
+        # The anisette-v3-server runs as non-root user 'Alcoholic'. Longhorn mounts
+        # PVC subPaths as root:root, so the container can't read its own lib files
+        # on restarts. This init container fixes ownership before anything starts.
+        - name: fix-anisette-permissions
+          image: busybox:1.36-musl
+          command: ["sh", "-c", "chmod -R 755 /anisette-lib"]
+          volumeMounts:
+            - name: altserver-data
+              mountPath: /anisette-lib
+              subPath: anisette-lib
       containers:
         # ── avahi ──────────────────────────────────────────────────────────────
         # Installs dbus + avahi-daemon on first start (~30 s), then broadcasts
