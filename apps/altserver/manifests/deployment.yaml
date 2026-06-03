@@ -129,10 +129,10 @@ spec:
           resources:
             requests:
               cpu: "50m"
-              memory: "64Mi"
+              memory: "256Mi"
             limits:
               cpu: "200m"
-              memory: "128Mi"
+              memory: "512Mi"
 
       volumes:
         - name: altserver-data
