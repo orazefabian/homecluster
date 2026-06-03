@@ -4,7 +4,8 @@ metadata:
   name: altserver-data
   namespace: halo
   labels:
-    # Back up lockdown pairing files — losing them means re-pairing the iPhone via USB.
+    # Back up lockdown pairing files and anisette provisioning data.
+    # Losing lockdown/ means re-copying the pairing file from your PC.
     recurring-job-group.longhorn.io/default: "enabled"
     recurring-job.longhorn.io/s3-monthly-backup: "enabled"
 spec:
@@ -12,5 +13,5 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 2Gi
+      storage: 1Gi
   storageClassName: longhorn
