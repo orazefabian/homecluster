@@ -118,19 +118,18 @@ spec:
         # Generates Apple authentication tokens used during app signing/refresh.
         # AltServer hits this on localhost:6969 for every signing operation.
         # Self-hosting avoids Apple ID lockouts caused by shared public servers.
-        # runAsUser: 0 — Apple's library archive embeds restrictive permissions
-        # (files end up unreadable by the non-root 'Alcoholic' user on Longhorn
-        # volumes). Running as root sidesteps this without any other side effects.
         - name: anisette
           image: dadoum/anisette-v3-server:latest
           imagePullPolicy: Always
-          securityContext:
-            runAsUser: 0
           volumeMounts:
-            # Persist anisette provisioning data so Apple auth survives pod restarts.
+            # Apple Provision libraries (libCoreADI.so etc.) are stored on an
+            # emptyDir rather than the Longhorn PVC. Longhorn mounts subPaths as
+            # root:root, which causes Permission denied when the non-root
+            # 'Alcoholic' user tries to read files extracted from Apple's archive.
+            # emptyDir has no such restriction. Downside: ~30 s re-download on
+            # every pod restart, which is acceptable for a home cluster.
             - mountPath: /home/Alcoholic/.config/anisette-v3/lib
-              name: altserver-data
-              subPath: anisette-lib
+              name: anisette-lib
           resources:
             requests:
               cpu: "50m"
@@ -145,4 +144,8 @@ spec:
             claimName: altserver-data
         # Shared D-Bus socket between avahi and altserver containers.
         - name: dbus-socket
+          emptyDir: {}
+        # Ephemeral storage for Apple Provision libraries — re-downloaded on each
+        # pod start. Using emptyDir avoids Longhorn's root:root ownership problem.
+        - name: anisette-lib
           emptyDir: {}
