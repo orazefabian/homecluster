@@ -46,8 +46,11 @@ spec:
           - name: n8n-app
             path: ./apps/n8n
             namespace: halo
-          - name: immich-app          
+          - name: immich-app
             path: ./apps/immich
+            namespace: halo
+          - name: anisette-app
+            path: ./apps/anisette/manifests
             namespace: halo
           - name: metallb
             path: ./infrastructure/metallb/manifests
