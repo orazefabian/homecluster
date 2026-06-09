@@ -1,4 +1,5 @@
 {
+  "platform": "github",
   "repositories": ["orazefabian/homecluster"],
   "onboarding": false,
   "requireConfig": "optional"
