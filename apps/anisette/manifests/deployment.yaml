@@ -14,6 +14,8 @@ spec:
     metadata:
       labels:
         app: anisette
+      annotations:
+        reloader.stakater.com/auto: "true"
     spec:
       containers:
         - name: anisette
