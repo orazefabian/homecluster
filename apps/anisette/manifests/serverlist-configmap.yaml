@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: anisette-server-list
-  namespace: halo
-data:
-  servers.json: '{"servers":[{"name":"Home Cluster","address":"https://anisette.halo.fabseit.net"},{"name":"SideStore","address":"https://ani.sidestore.io"}]}'
