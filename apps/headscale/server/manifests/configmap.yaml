@@ -35,7 +35,9 @@ data:
 
     disable_check_updates: false
 
-    ephemeral_node_inactivity_timeout: 20m
+    node:
+      ephemeral:
+        inactivity_timeout: 20m
 
     database:
       type: sqlite
@@ -82,5 +84,3 @@ data:
 
     logtail:
       enabled: false
-
-    randomize_client_port: false
