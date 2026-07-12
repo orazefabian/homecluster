@@ -54,7 +54,7 @@ data:
         - ArgoCD:
             href: https://argocd.halo.fabseit.net
             description: GitOps deployments
-            icon: argo.png
+            icon: argo-cd.png
         - Longhorn:
             href: https://longhorn.halo.fabseit.net
             description: Storage
@@ -101,10 +101,6 @@ data:
             href: https://bitwarden.halo.fabseit.net
             description: Password manager
             icon: bitwarden.png
-        - Filebrowser:
-            href: https://filebrowser.halo.fabseit.net
-            description: Web file manager
-            icon: filebrowser.png
 
   bookmarks.yaml: |
     - Network:
