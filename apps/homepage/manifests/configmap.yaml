@@ -54,7 +54,7 @@ data:
         - ArgoCD:
             href: https://argocd.halo.fabseit.net
             description: GitOps deployments
-            icon: argocd.png
+            icon: argo.png
         - Longhorn:
             href: https://longhorn.halo.fabseit.net
             description: Storage
