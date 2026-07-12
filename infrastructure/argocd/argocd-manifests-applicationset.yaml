@@ -22,9 +22,6 @@ spec:
           - name: ddclient-app
             path: ./apps/ddclient/manifests
             namespace: halo
-          - name: homepage-app
-            path: ./apps/homepage/manifests
-            namespace: halo
           - name: uptime-kuma-app
             path: ./apps/uptime-kuma/manifests
             namespace: halo

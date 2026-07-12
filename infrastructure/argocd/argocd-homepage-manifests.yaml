@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: homepage
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/orazefabian/homecluster-helm
+    targetRevision: HEAD
+    path: ./apps/homepage/manifests
+    # Intentionally NO `directory:` block. Its presence forces ArgoCD to treat
+    # the source as a plain directory and disables Kustomize auto-detection,
+    # which makes it try to `kubectl apply` kustomization.yaml as a raw
+    # resource. Without it, ArgoCD detects kustomization.yaml and runs
+    # `kustomize build` (needed for the background-image configMapGenerator).
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: halo
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      # ServerSideApply avoids stuffing the ~500 KB background image into the
+      # client-side last-applied-configuration annotation (262 KB limit).
+      - ServerSideApply=true
+    automated:
+      selfHeal: true
+      prune: false
