@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: homepage
+  namespace: halo
+  labels:
+    app: homepage
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: homepage
+  template:
+    metadata:
+      labels:
+        app: homepage
+    spec:
+      serviceAccountName: homepage
+      automountServiceAccountToken: true
+      containers:
+        - name: homepage
+          image: ghcr.io/gethomepage/homepage:v1.13.2
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: HOMEPAGE_ALLOWED_HOSTS
+              value: "dashboard.halo.fabseit.net,dashboard.fabseit.net"
+            - name: TZ
+              value: "Europe/Berlin"
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          livenessProbe:
+            httpGet:
+              path: /api/healthcheck
+              port: http
+              # Probes hit the pod by IP; send an allowed Host header so
+              # Homepage's HOMEPAGE_ALLOWED_HOSTS validation lets them through.
+              httpHeaders:
+                - name: Host
+                  value: dashboard.halo.fabseit.net
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /api/healthcheck
+              port: http
+              httpHeaders:
+                - name: Host
+                  value: dashboard.halo.fabseit.net
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+          volumeMounts:
+            # Mount each config file individually via subPath so the rest of
+            # /app/config stays writable — Homepage copies skeleton files
+            # (custom.css, custom.js, logs, ...) into it on boot and crashes
+            # with EROFS if the whole directory is a read-only ConfigMap mount.
+            - name: config
+              mountPath: /app/config/settings.yaml
+              subPath: settings.yaml
+            - name: config
+              mountPath: /app/config/kubernetes.yaml
+              subPath: kubernetes.yaml
+            - name: config
+              mountPath: /app/config/docker.yaml
+              subPath: docker.yaml
+            - name: config
+              mountPath: /app/config/widgets.yaml
+              subPath: widgets.yaml
+            - name: config
+              mountPath: /app/config/services.yaml
+              subPath: services.yaml
+            - name: config
+              mountPath: /app/config/bookmarks.yaml
+              subPath: bookmarks.yaml
+      volumes:
+        - name: config
+          configMap:
+            name: homepage-config

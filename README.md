@@ -24,7 +24,7 @@ Here's how the repo is organized:
 .
 ├── apps/
 │   ├── ddclient/
-│   ├── heimdall/
+│   ├── homepage/
 │   ├── uptime-kuma/
 │   ├── pihole/
 │   ├── bitwarden/
@@ -59,7 +59,7 @@ Here's how the repo is organized:
 ### 🔑 Key Components:
 1. **Applications** (`apps/`):
     - `ddclient`: Dynamically update DNS entries. 🔃
-    - `heimdall`: Dashboard for all sorts of services. 📊
+    - `homepage`: Landing dashboard with live k8s cluster stats and links to all services. 📊
     - `uptime-kuma`: Uptime monitoring tool. ✅
     - `pihole`: DNS sinkhole for ad blocking. 🚫
     - `bitwarden`: Secure password management. 🔐

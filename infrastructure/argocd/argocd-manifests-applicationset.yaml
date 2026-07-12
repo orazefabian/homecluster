@@ -22,8 +22,8 @@ spec:
           - name: ddclient-app
             path: ./apps/ddclient/manifests
             namespace: halo
-          - name: heimdall-app
-            path: ./apps/heimdall/manifests
+          - name: homepage-app
+            path: ./apps/homepage/manifests
             namespace: halo
           - name: uptime-kuma-app
             path: ./apps/uptime-kuma/manifests

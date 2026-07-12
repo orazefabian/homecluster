@@ -1,0 +1,116 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: homepage-config
+  namespace: halo
+  labels:
+    app.kubernetes.io/instance: homepage
+data:
+  settings.yaml: |
+    title: halo cluster
+    headerStyle: clean
+    theme: dark
+    color: slate
+    layout:
+      Infrastructure:
+        style: row
+        columns: 4
+      Applications:
+        style: row
+        columns: 4
+
+  kubernetes.yaml: |
+    mode: cluster
+
+  docker.yaml: ""
+
+  widgets.yaml: |
+    - kubernetes:
+        cluster:
+          show: true
+          cpu: true
+          memory: true
+          showLabel: true
+          label: cluster
+        nodes:
+          show: true
+          cpu: true
+          memory: true
+          showLabel: true
+    - resources:
+        label: system
+        cpu: true
+        memory: true
+    - search:
+        provider: duckduckgo
+        target: _blank
+
+  services.yaml: |
+    - Infrastructure:
+        - Kite:
+            href: https://kite.halo.fabseit.net
+            description: Kubernetes dashboard
+            icon: kubernetes.png
+        - ArgoCD:
+            href: https://argocd.halo.fabseit.net
+            description: GitOps deployments
+            icon: argocd.png
+        - Longhorn:
+            href: https://longhorn.halo.fabseit.net
+            description: Storage
+            icon: longhorn.png
+        - Monitoring:
+            href: https://monitoring.halo.fabseit.net
+            description: Prometheus + Grafana
+            icon: grafana.png
+        - Pi-hole:
+            href: https://pihole.halo.fabseit.net
+            description: DNS / ad blocking
+            icon: pi-hole.png
+        - Uptime Kuma:
+            href: https://uptime.halo.fabseit.net
+            description: Uptime monitoring
+            icon: uptime-kuma.png
+        - Speedtest:
+            href: https://speedtest.halo.fabseit.net
+            description: Network speed test
+            icon: speedtest-tracker.png
+        - Headplane:
+            href: https://headplane.halo.fabseit.net
+            description: Headscale web UI
+            icon: tailscale.png
+
+    - Applications:
+        - Home Assistant:
+            href: https://homeassistant.halo.fabseit.net
+            description: Home automation
+            icon: home-assistant.png
+        - Immich:
+            href: https://immich.halo.fabseit.net
+            description: Photo management
+            icon: immich.png
+        - Paperless:
+            href: https://paperless.halo.fabseit.net
+            description: Document management
+            icon: paperless-ngx.png
+        - n8n:
+            href: https://n8n.halo.fabseit.net
+            description: Workflow automation
+            icon: n8n.png
+        - Bitwarden:
+            href: https://bitwarden.halo.fabseit.net
+            description: Password manager
+            icon: bitwarden.png
+        - Filebrowser:
+            href: https://filebrowser.halo.fabseit.net
+            description: Web file manager
+            icon: filebrowser.png
+
+  bookmarks.yaml: |
+    - Network:
+        - FritzBox:
+            - abbr: FB
+              href: http://192.168.8.1
+        - Cloudflare:
+            - abbr: CF
+              href: https://dash.cloudflare.com

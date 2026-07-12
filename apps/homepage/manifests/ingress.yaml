@@ -1,0 +1,33 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: homepage
+  namespace: halo
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: dashboard.halo.fabseit.net
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: homepage
+                port:
+                  number: 80
+    - host: dashboard.fabseit.net
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: homepage
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - dashboard.halo.fabseit.net
+        - dashboard.fabseit.net
+      secretName: local-fabseit-net-prod-tls
