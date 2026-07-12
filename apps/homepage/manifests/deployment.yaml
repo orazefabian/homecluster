@@ -86,7 +86,15 @@ spec:
             - name: config
               mountPath: /app/config/bookmarks.yaml
               subPath: bookmarks.yaml
+            # Background image served from Homepage's static web root
+            # (/app/public -> /images/background.jpg).
+            - name: background
+              mountPath: /app/public/images/background.jpg
+              subPath: background.jpg
       volumes:
         - name: config
           configMap:
             name: homepage-config
+        - name: background
+          configMap:
+            name: homepage-background

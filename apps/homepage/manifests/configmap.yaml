@@ -8,16 +8,26 @@ metadata:
 data:
   settings.yaml: |
     title: halo cluster
-    headerStyle: clean
+    background:
+      image: /images/background.jpg
+      blur: sm
+      brightness: 45
+      saturate: 90
+      opacity: 100
+    cardBlur: md
     theme: dark
     color: slate
+    headerStyle: boxedWidgets
+    hideVersion: true
     layout:
       Infrastructure:
         style: row
         columns: 4
+        useEqualHeights: true
       Applications:
         style: row
         columns: 4
+        useEqualHeights: true
 
   kubernetes.yaml: |
     mode: cluster
