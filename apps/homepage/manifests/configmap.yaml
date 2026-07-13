@@ -10,11 +10,11 @@ data:
     title: halo cluster
     background:
       image: /images/background.jpg
-      blur: sm
-      brightness: 45
-      saturate: 90
+      blur: xl
+      brightness: 30
+      saturate: 60
       opacity: 100
-    cardBlur: md
+    cardBlur: xl
     theme: dark
     color: slate
     headerStyle: boxedWidgets
