@@ -11,7 +11,7 @@ data:
     background:
       image: /images/background.jpg
       blur: xl
-      brightness: 30
+      brightness: 55
       saturate: 60
       opacity: 100
     cardBlur: xl
@@ -28,6 +28,52 @@ data:
         style: row
         columns: 4
         useEqualHeights: true
+
+  custom.css: |
+    /*
+     * Homepage's default tiles are near-transparent (dark:bg-white/5 = 5%).
+     * Over a visible background image the text is unreadable, so give the
+     * service cards, bookmark cards and top widget boxes a solid dark
+     * (slate-900) backing while keeping the frosted-glass blur.
+     *
+     * .information-widget-search needs naming on top of .widget-container:
+     * the search widget renders via ContainerForm, which (unlike Container)
+     * never appends the widget-container class, so it would otherwise keep
+     * the default 5% fill and look washed out.
+     */
+    .service-card,
+    .widget-container,
+    .information-widget-search,
+    .bookmark a {
+      background-color: rgba(15, 23, 42, 0.72) !important;
+    }
+
+    .service-card:hover,
+    .bookmark a:hover {
+      background-color: rgba(30, 41, 59, 0.85) !important;
+    }
+
+    /* Tone the search input down so it reads as a field on the dark form
+     * rather than a bright panel. */
+    .information-widget-search input {
+      background-color: rgba(255, 255, 255, 0.06) !important;
+      border-color: rgba(148, 163, 184, 0.3) !important;
+      color: #e2e8f0 !important;
+    }
+
+    .information-widget-search input::placeholder {
+      color: rgba(226, 232, 240, 0.6) !important;
+    }
+
+    /*
+     * The section headers sit directly on the (now visible) background image,
+     * not on a tile. A text-shadow keeps them legible over bright areas of
+     * the photo without having to dim the whole background.
+     */
+    .service-group-name,
+    .bookmark-group-name {
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+    }
 
   kubernetes.yaml: |
     mode: cluster
@@ -117,6 +163,4 @@ data:
         - FritzBox:
             - abbr: FB
               href: http://192.168.8.1
-        - Cloudflare:
-            - abbr: CF
-              href: https://dash.cloudflare.com
+              icon: fritzbox.png

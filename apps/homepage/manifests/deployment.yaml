@@ -86,6 +86,12 @@ spec:
             - name: config
               mountPath: /app/config/bookmarks.yaml
               subPath: bookmarks.yaml
+            # Custom CSS is auto-loaded by Homepage from /app/config/custom.css.
+            # Mounting our own via subPath means the file already exists, so
+            # Homepage's boot-time skeleton copy skips it (no EROFS).
+            - name: config
+              mountPath: /app/config/custom.css
+              subPath: custom.css
             # Background image served from Homepage's static web root
             # (/app/public -> /images/background.jpg).
             - name: background
