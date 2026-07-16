@@ -75,32 +75,52 @@ data:
       text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
     }
 
+    /*
+     * Homepage has no size setting for the header widgets - their text is a
+     * hardcoded text-xs with fixed min-widths. Scaling the whole region is
+     * more robust than overriding each Tailwind class individually.
+     */
+    #information-widgets {
+      zoom: 1.15;
+    }
+
   kubernetes.yaml: |
     mode: cluster
 
   docker.yaml: ""
 
   widgets.yaml: |
+    # Note: the kubernetes widget renders CPU + memory bars unconditionally;
+    # it only reads showLabel/label, so cpu/memory keys here would be ignored.
     - kubernetes:
         cluster:
           show: true
-          cpu: true
-          memory: true
           showLabel: true
           label: cluster
         nodes:
           show: true
-          cpu: true
-          memory: true
           showLabel: true
+    # This reads the node the homepage pod happens to be scheduled on, not the
+    # cluster as a whole - the kubernetes widget above covers cluster-wide.
+    # disk/cputemp are omitted: they'd report the container's filesystem and
+    # need host sensors that aren't exposed to the pod.
     - resources:
         label: system
         cpu: true
         memory: true
+        uptime: true
+        expanded: true
+        refresh: 3000
     - search:
         provider: duckduckgo
         target: _blank
+        showSearchSuggestions: true
 
+  # Pod status badges: `app` enables the k8s status UI on the tile, and
+  # `podSelector` supplies the actual label selector. podSelector is required
+  # here because Homepage otherwise defaults to `app.kubernetes.io/name=<app>`,
+  # while these workloads are labelled with a plain `app:` key.
+  # Clicking a badge expands live CPU/memory for the pod.
   services.yaml: |
     - Infrastructure:
         - Kite:
@@ -123,40 +143,67 @@ data:
             href: https://pihole.halo.fabseit.net
             description: DNS / ad blocking
             icon: pi-hole.png
+            namespace: halo
+            app: pihole
+            podSelector: app=pihole
         - Uptime Kuma:
             href: https://uptime.halo.fabseit.net
             description: Uptime monitoring
             icon: uptime-kuma.png
+            namespace: halo
+            app: uptime-kuma
+            podSelector: app=uptime-kuma
         - Speedtest:
             href: https://speedtest.halo.fabseit.net
             description: Network speed test
             icon: speedtest-tracker.png
+            namespace: halo
+            app: speedtest
+            podSelector: app=speedtest
         - Headplane:
             href: https://headplane.halo.fabseit.net
             description: Headscale web UI
             icon: tailscale.png
+            namespace: halo
+            app: headplane
+            podSelector: app=headplane
 
     - Applications:
         - Home Assistant:
             href: https://homeassistant.halo.fabseit.net
             description: Home automation
             icon: home-assistant.png
+            namespace: halo
+            app: homeassistant
+            podSelector: app=homeassistant
         - Immich:
             href: https://immich.halo.fabseit.net
             description: Photo management
             icon: immich.png
+            namespace: halo
+            app: immich-server
+            podSelector: app=immich-server
         - Paperless:
             href: https://paperless.halo.fabseit.net
             description: Document management
             icon: paperless-ngx.png
+            namespace: halo
+            app: paperless
+            podSelector: app=paperless
         - n8n:
             href: https://n8n.halo.fabseit.net
             description: Workflow automation
             icon: n8n.png
+            namespace: halo
+            app: n8n
+            podSelector: app=n8n
         - Bitwarden:
             href: https://bitwarden.halo.fabseit.net
             description: Password manager
             icon: bitwarden.png
+            namespace: halo
+            app: bitwarden
+            podSelector: app=bitwarden
 
   bookmarks.yaml: |
     - Network:
