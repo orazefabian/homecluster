@@ -75,15 +75,6 @@ data:
       text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
     }
 
-    /*
-     * Homepage has no size setting for the header widgets - their text is a
-     * hardcoded text-xs with fixed min-widths. Scaling the whole region is
-     * more robust than overriding each Tailwind class individually.
-     */
-    #information-widgets {
-      zoom: 1.15;
-    }
-
   kubernetes.yaml: |
     mode: cluster
 
