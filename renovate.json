@@ -1,8 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:base"],
+  "extends": ["config:recommended"],
   "labels": ["renovate", "dependencies"],
-  "prHourlyLimit": 2,
+  "prHourlyLimit": 0,
   "prConcurrentLimit": 15,
   "dependencyDashboard": true,
   "dependencyDashboardTitle": "Renovate Dependency Dashboard",
@@ -19,102 +19,102 @@
   },
   "packageRules": [
     {
-      "matchPaths": ["apps/bitwarden/**"],
+      "matchFileNames": ["apps/bitwarden/**"],
       "groupName": "bitwarden",
       "groupSlug": "bitwarden"
     },
     {
-      "matchPaths": ["apps/ddclient/**"],
+      "matchFileNames": ["apps/ddclient/**"],
       "groupName": "ddclient",
       "groupSlug": "ddclient"
     },
     {
-      "matchPaths": ["apps/filebrowser/**"],
+      "matchFileNames": ["apps/filebrowser/**"],
       "groupName": "filebrowser",
       "groupSlug": "filebrowser"
     },
     {
-      "matchPaths": ["apps/headscale/**"],
+      "matchFileNames": ["apps/headscale/**"],
       "groupName": "headscale",
       "groupSlug": "headscale"
     },
     {
-      "matchPaths": ["apps/heimdall/**"],
+      "matchFileNames": ["apps/heimdall/**"],
       "groupName": "heimdall",
       "groupSlug": "heimdall"
     },
     {
-      "matchPaths": ["apps/homeassistant/**"],
+      "matchFileNames": ["apps/homeassistant/**"],
       "groupName": "home-assistant",
       "groupSlug": "home-assistant"
     },
     {
-      "matchPaths": ["apps/immich/**"],
+      "matchFileNames": ["apps/immich/**"],
       "groupName": "immich",
       "groupSlug": "immich"
     },
     {
-      "matchPaths": ["apps/n8n/**"],
+      "matchFileNames": ["apps/n8n/**"],
       "groupName": "n8n",
       "groupSlug": "n8n"
     },
     {
-      "matchPaths": ["apps/paperless/**"],
+      "matchFileNames": ["apps/paperless/**"],
       "groupName": "paperless-ngx",
       "groupSlug": "paperless-ngx"
     },
     {
-      "matchPaths": ["apps/pihole/**"],
+      "matchFileNames": ["apps/pihole/**"],
       "groupName": "pihole",
       "groupSlug": "pihole"
     },
     {
-      "matchPaths": ["apps/samba-share/**"],
+      "matchFileNames": ["apps/samba-share/**"],
       "groupName": "samba",
       "groupSlug": "samba"
     },
     {
-      "matchPaths": ["apps/speedtest/**"],
+      "matchFileNames": ["apps/speedtest/**"],
       "groupName": "speedtest-tracker",
       "groupSlug": "speedtest-tracker"
     },
     {
-      "matchPaths": ["apps/uptime-kuma/**"],
+      "matchFileNames": ["apps/uptime-kuma/**"],
       "groupName": "uptime-kuma",
       "groupSlug": "uptime-kuma"
     },
     {
-      "matchPaths": ["apps/wireguard/**"],
+      "matchFileNames": ["apps/wireguard/**"],
       "groupName": "wireguard",
       "groupSlug": "wireguard"
     },
     {
-      "matchPaths": ["infrastructure/cert-manager/**"],
+      "matchFileNames": ["infrastructure/cert-manager/**"],
       "groupName": "infra: cert-manager",
       "groupSlug": "infra-cert-manager"
     },
     {
-      "matchPaths": ["infrastructure/ingress-nginx/**"],
+      "matchFileNames": ["infrastructure/ingress-nginx/**"],
       "groupName": "infra: ingress-nginx",
       "groupSlug": "infra-ingress-nginx"
     },
     {
-      "matchPaths": ["infrastructure/metallb/**"],
+      "matchFileNames": ["infrastructure/metallb/**"],
       "groupName": "infra: metallb",
       "groupSlug": "infra-metallb"
     },
     {
-      "matchPaths": ["infrastructure/kite/**"],
+      "matchFileNames": ["infrastructure/kite/**"],
       "groupName": "infra: kite",
       "groupSlug": "infra-kite"
     },
     {
-      "matchPaths": ["infrastructure/reloader/**"],
+      "matchFileNames": ["infrastructure/reloader/**"],
       "groupName": "infra: reloader",
       "groupSlug": "infra-reloader"
     },
     {
-      "matchPaths": ["infrastructure/monitoring/**"],
+      "matchFileNames": ["infrastructure/monitoring/**"],
       "groupName": "infra: monitoring",
       "groupSlug": "infra-monitoring"
     }
