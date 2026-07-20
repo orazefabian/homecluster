@@ -1,0 +1,29 @@
+# Values for the upstream metallb subchart.
+#
+# NOTE: these must stay nested under `metallb:` — the key has to match the
+# dependency name in Chart.yaml, otherwise Helm passes them to the (empty)
+# parent chart and they are silently ignored.
+metallb:
+  # The speaker mounts a memberlist encryption secret, which the controller
+  # generates at runtime. The chart defaults this to `metallb-memberlist`, but
+  # this cluster's MetalLB predates the chart and its secret is named plain
+  # `memberlist` (created 168 days ago, when the rendered manifests were first
+  # applied by hand). Pointing the chart at the existing name keeps the current
+  # secret in place — leaving the default would make the speaker mount a secret
+  # that does not exist yet and stall every speaker pod in ContainerCreating,
+  # which would stop L2 announcement of all LoadBalancer IPs.
+  speaker:
+    secretName: memberlist
+
+    # The chart defaults frr.enabled to true, which injects frr, frr-metrics
+    # and reloader sidecars into the speaker DaemonSet. FRR only matters for
+    # BGP; this cluster announces over plain L2/ARP via the L2Advertisement in
+    # ./manifests, and the hand-applied speaker ran a single `speaker`
+    # container. Leaving this on would add three sidecars per node for a mode
+    # that is not in use.
+    frr:
+      enabled: false
+
+  # The remaining defaults already match what the hand-applied manifests ran:
+  # hostNetwork on the speaker, `kubernetes.io/os=linux` node selector, the
+  # metallb-excludel2 ConfigMap, and the metallb-webhook-cert Secret.
