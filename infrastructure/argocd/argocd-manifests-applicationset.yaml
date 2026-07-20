@@ -4,6 +4,17 @@ metadata:
   name: manifests-applicationset
   namespace: argocd
 spec:
+  # Without this the ApplicationSet controller stamps
+  # resources-finalizer.argocd.argoproj.io onto every generated Application,
+  # so removing an entry from the list below cascade-deletes that app's live
+  # resources — including CRDs, and with them any CRs of those types. That
+  # contradicts the repo-wide `prune: false` stance and cannot be worked
+  # around by patching the finalizer off an Application, since the controller
+  # immediately re-adds it. With this set, removing an entry deletes only the
+  # Application object and orphans the resources, which is the intended
+  # behaviour here.
+  syncPolicy:
+    preserveResourcesOnDeletion: true
   ignoreApplicationDifferences:
     - jsonPointers:
       - /spec/syncPolicy
