@@ -131,7 +131,7 @@ data:
             description: Prometheus + Grafana
             icon: grafana.png
         - Pi-hole:
-            href: https://pihole.halo.fabseit.net
+            href: https://pihole.halo.fabseit.net/admin/login
             description: DNS / ad blocking
             icon: pi-hole.png
             namespace: halo
