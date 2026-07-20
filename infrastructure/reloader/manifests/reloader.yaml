@@ -26,7 +26,7 @@ spec:
       serviceAccountName: reloader-reloader
       containers:
         - name: reloader-reloader
-          image: stakater/reloader:v1.0.51 # Use latest stable version
+          image: stakater/reloader:v1.4.19 # Use latest stable version
           imagePullPolicy: IfNotPresent
           env:
             - name: WATCH_NAMESPACE
