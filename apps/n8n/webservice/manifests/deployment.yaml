@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: n8n
-          image: n8nio/n8n:2.9.1-arm64
+          image: n8nio/n8n:2.31.4-arm64
           ports:
             - containerPort: 5678
           resources:
