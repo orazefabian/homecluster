@@ -57,9 +57,6 @@ spec:
           - name: immich-app
             path: ./apps/immich
             namespace: halo
-          - name: metallb
-            path: ./infrastructure/metallb/manifests
-            namespace: metallb-system
           - name: secrets-backup
             path: ./infrastructure/secrets-backup/manifests
             namespace: secrets-backup

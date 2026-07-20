@@ -28,6 +28,10 @@ spec:
             chartPath: ./infrastructure/longhorn
             namespace: longhorn-system
             valuesFile: values.yaml
+          - name: metallb-helm
+            chartPath: ./infrastructure/metallb
+            namespace: metallb-system
+            valuesFile: values.yaml
           - name: monitoring-helm
             chartPath: ./infrastructure/monitoring
             namespace: monitoring
