@@ -1,2 +1,10 @@
 *secret.yaml
 *auth
+
+# Vendored Helm subchart tarballs.
+# Renovate bumps Chart.yaml/Chart.lock but never the tarball, and Helm renders
+# from whatever is physically in charts/ — so a committed tarball silently
+# overrides the pinned version and the upgrade never reaches the cluster
+# (ArgoCD still reports Synced/Healthy). ArgoCD's repo-server runs
+# `helm dependency build`, which resolves the correct version from Chart.lock.
+infrastructure/monitoring/charts/*.tgz
