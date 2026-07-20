@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: immich-server
-          image: ghcr.io/immich-app/immich-server:v2.7.5
+          image: ghcr.io/immich-app/immich-server:v3.0.3
           ports:
             - containerPort: 2283
           resources:
@@ -76,7 +76,7 @@ spec:
     spec:
       containers:
         - name: immich-machine-learning
-          image: ghcr.io/immich-app/immich-machine-learning:v2.7.5
+          image: ghcr.io/immich-app/immich-machine-learning:v3.0.3
           ports:
             - containerPort: 3003
           resources:
