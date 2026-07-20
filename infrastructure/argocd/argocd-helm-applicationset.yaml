@@ -4,6 +4,12 @@ metadata:
   name: helm-applicationset
   namespace: argocd
 spec:
+  # See the matching comment in argocd-manifests-applicationset.yaml. This one
+  # matters more: the charts here own CRDs (Longhorn, cert-manager,
+  # kube-prometheus-stack), so a cascade delete would take the CRs with them —
+  # volumes, issuers, address pools.
+  syncPolicy:
+    preserveResourcesOnDeletion: true
   ignoreApplicationDifferences:
     - jsonPointers:
       - /spec/syncPolicy
