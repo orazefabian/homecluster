@@ -23,7 +23,7 @@ spec:
         fsGroup: 1000
       containers:
       - name: headscale
-        image: headscale/headscale:v0.29.2
+        image: headscale/headscale:v0.29.1
         command: ["headscale"]
         args: ["serve"]
         ports:
