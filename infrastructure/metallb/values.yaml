@@ -24,6 +24,14 @@ metallb:
     frr:
       enabled: false
 
+  # `speaker.frr` above only covers the legacy FRR mode. frr-k8s is the second,
+  # separate BGP backend, and chart 0.16.x flipped its default from false to
+  # true — the 0.14.9 → 0.16.1 upgrade silently brought up a 4-node frr-k8s
+  # DaemonSet (5 containers each) plus an frr-k8s-statuscleaner Deployment.
+  # This cluster announces over plain L2/ARP, so no BGP backend is needed.
+  frrk8s:
+    enabled: false
+
   # The remaining defaults already match what the hand-applied manifests ran:
   # hostNetwork on the speaker, `kubernetes.io/os=linux` node selector, the
   # metallb-excludel2 ConfigMap, and the metallb-webhook-cert Secret.
