@@ -1,0 +1,91 @@
+name: Vendor Helm charts
+
+# Renovate bumps Chart.yaml/Chart.lock but never the vendored charts/*.tgz.
+# Helm renders whatever tarball is physically in charts/, so without this job the
+# bump changes no rendered output: ArgoCD reports Synced/Healthy and the upgrade
+# never reaches the cluster. This job downloads the locked subchart onto the PR
+# branch so the merge actually deploys something.
+
+on:
+  pull_request:
+    paths:
+      - 'infrastructure/**/Chart.lock'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  vendor:
+    runs-on: ubuntu-latest
+    # Forks cannot be pushed to with GITHUB_TOKEN; the guard job still fails them.
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+          fetch-depth: 0
+          # A push made with GITHUB_TOKEN does not trigger further workflows, so
+          # the verify job would never run on the commit this job creates and the
+          # PR would sit with stale checks. Pushing as the Renovate PAT fires a
+          # normal `synchronize` event instead; the re-run finds nothing left to
+          # vendor and exits, so it cannot loop.
+          token: ${{ secrets.RENOVATE_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - uses: azure/setup-helm@v4
+
+      - name: Rebuild charts/ for every chart whose Chart.lock changed
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch --no-tags origin "${{ github.base_ref }}"
+            changed=$(git diff --name-only "origin/${{ github.base_ref }}...HEAD" -- 'infrastructure/*/Chart.lock')
+          else
+            changed=$(ls infrastructure/*/Chart.lock)
+          fi
+
+          if [ -z "$changed" ]; then
+            echo "No Chart.lock changes, nothing to vendor."
+            exit 0
+          fi
+
+          for lock in $changed; do
+            chart_dir=$(dirname "$lock")
+            echo "::group::helm dependency build $chart_dir"
+
+            # `helm dependency build` only resolves repositories that are
+            # registered locally -- it will not fetch from a bare URL. Register
+            # every repo the lock references first (same thing argocd-repo-server
+            # does before it builds).
+            i=0
+            for repo_url in $(awk '/^ *repository:/ { print $2 }' "$lock"); do
+              case "$repo_url" in
+                oci://*|file://*) continue ;;
+              esac
+              helm repo add "dep-$(basename "$chart_dir")-$i" "$repo_url" --force-update
+              i=$((i + 1))
+            done
+            helm repo update
+
+            # Resolves strictly from Chart.lock and fails if it is out of sync
+            # with Chart.yaml. It rebuilds charts/ from scratch, so the stale
+            # tarball is removed and the locked one added in one step.
+            helm dependency build "$chart_dir"
+            echo "::endgroup::"
+          done
+
+      - name: Commit the tarballs
+        run: |
+          set -euo pipefail
+          git add -A infrastructure/*/charts
+          if git diff --cached --quiet; then
+            echo "Vendored charts already up to date."
+            exit 0
+          fi
+          git config user.name 'renovate[bot]'
+          git config user.email '29139614+renovate[bot]@users.noreply.github.com'
+          git commit -m 'chore: vendor Helm subchart tarball(s)'
+          git push origin HEAD:"${{ github.head_ref || github.ref_name }}"
+
+      - name: Re-check the result
+        run: ./helper/verify-vendored-charts.sh

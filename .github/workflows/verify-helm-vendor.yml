@@ -1,0 +1,26 @@
+name: Verify vendored Helm charts
+
+# Fails if any infrastructure/*/charts/*.tgz disagrees with its Chart.lock.
+# Without this, a stale tarball silently pins the old version and ArgoCD still
+# reports Synced/Healthy -- see helper/verify-vendored-charts.sh.
+
+on:
+  pull_request:
+    paths:
+      - 'infrastructure/**'
+  push:
+    branches:
+      - main
+    paths:
+      - 'infrastructure/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: ./helper/verify-vendored-charts.sh
