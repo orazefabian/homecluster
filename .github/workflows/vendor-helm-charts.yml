@@ -32,7 +32,7 @@ jobs:
           # vendor and exits, so it cannot loop.
           token: ${{ secrets.RENOVATE_TOKEN || secrets.GITHUB_TOKEN }}
 
-      - uses: azure/setup-helm@v4
+      - uses: azure/setup-helm@v5
 
       - name: Rebuild charts/ for every chart whose Chart.lock changed
         run: |
