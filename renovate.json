@@ -49,19 +49,51 @@
       "groupSlug": "home-assistant"
     },
     {
-      "matchFileNames": ["apps/immich/**"],
+      "description": "Home Assistant's Postgres is a sidecar in the same file as the app container, so it cannot be split by path like the other apps. Match on package name instead. This rule MUST stay after the general home-assistant rule above: Renovate applies packageRules in order and later matches win.",
+      "matchFileNames": ["apps/homeassistant/**"],
+      "matchPackageNames": ["postgres"],
+      "groupName": "home-assistant-postgres",
+      "groupSlug": "home-assistant-postgres"
+    },
+    {
+      "matchFileNames": ["apps/immich/app/**"],
       "groupName": "immich",
       "groupSlug": "immich"
     },
     {
-      "matchFileNames": ["apps/n8n/**"],
+      "matchFileNames": ["apps/immich/postgres/**"],
+      "groupName": "immich-postgres",
+      "groupSlug": "immich-postgres"
+    },
+    {
+      "matchFileNames": ["apps/immich/redis/**"],
+      "groupName": "immich-redis",
+      "groupSlug": "immich-redis"
+    },
+    {
+      "matchFileNames": ["apps/n8n/webservice/**"],
       "groupName": "n8n",
       "groupSlug": "n8n"
     },
     {
-      "matchFileNames": ["apps/paperless/**"],
+      "matchFileNames": ["apps/n8n/postgresdb/**"],
+      "groupName": "n8n-postgres",
+      "groupSlug": "n8n-postgres"
+    },
+    {
+      "matchFileNames": ["apps/paperless/webservice/**"],
       "groupName": "paperless-ngx",
       "groupSlug": "paperless-ngx"
+    },
+    {
+      "matchFileNames": ["apps/paperless/postgresdb/**"],
+      "groupName": "paperless-postgres",
+      "groupSlug": "paperless-postgres"
+    },
+    {
+      "matchFileNames": ["apps/paperless/redis/**"],
+      "groupName": "paperless-redis",
+      "groupSlug": "paperless-redis"
     },
     {
       "matchFileNames": ["apps/pihole/**"],
