@@ -10,9 +10,9 @@ spec:
   # volumes, issuers, address pools.
   syncPolicy:
     preserveResourcesOnDeletion: true
-  ignoreApplicationDifferences:
-    - jsonPointers:
-      - /spec/syncPolicy
+  # NOTE: no ignoreApplicationDifferences for /spec/syncPolicy — see the matching
+  # note in argocd-manifests-applicationset.yaml. Sync behaviour is declared in
+  # the template below and nowhere else.
   generators:
     - list:
         elements:
@@ -56,6 +56,15 @@ spec:
         syncOptions:
           - CreateNamespace=true
           - ServerSideApply=true
+          # Prune here is gated on manual approval, unlike the manifests
+          # ApplicationSet. These charts own CRDs: if an upgrade renames or
+          # drops one, an unattended prune would delete the CRD and every CR of
+          # that type with it — volumes.longhorn.io, Certificates,
+          # IPAddressPools, ServiceMonitors. Deletions park until approved in
+          # the UI/CLI, or via the argocd.argoproj.io/deletion-approved
+          # annotation on the Application. Everything else syncs normally.
+          - Prune=confirm
         automated:
-          selfHeal: true
-          prune: false
+          # selfHeal off to match the manifests ApplicationSet.
+          selfHeal: false
+          prune: true
