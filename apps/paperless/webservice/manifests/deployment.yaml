@@ -27,27 +27,14 @@ spec:
             memory: "2Gi"
             cpu: "1300m"
         env:
-        # PostgreSQL Configuration
-        - name: PAPERLESS_DB_HOST
-          value: "postgres-service"
-        - name: PAPERLESS_DB_PORT
-          value: "5432"
-        - name: PAPERLESS_DB_NAME
-          valueFrom:
-            secretKeyRef:
-              name: postgres-secret
-              key: POSTGRES_DB
-        - name: PAPERLESS_DB_USER
-          valueFrom:
-            secretKeyRef:
-              name: postgres-secret
-              key: POSTGRES_USER
-        - name: PAPERLESS_DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: postgres-secret
-              key: POSTGRES_PASSWORD
-        
+        # Database: SQLite, stored on paperless-pvc at
+        # /usr/src/paperless/data/db.sqlite3 and covered by the PVC backups.
+        # Deliberate for this single-user instance — see issue #91. Paperless
+        # switches to Postgres as soon as PAPERLESS_DBHOST is set (note: no
+        # underscore after DB), so do not add that variable back by accident.
+        - name: PAPERLESS_DBENGINE
+          value: "sqlite"
+
         # Redis Configuration
         - name: PAPERLESS_REDIS
           value: "redis://redis-service:6379"
