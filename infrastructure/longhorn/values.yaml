@@ -1,4 +1,15 @@
-persistence:
-  defaultClassReplicaCount: 2
-defaultSettings:
-  defaultReplicaCount: 2
+# Values for the upstream longhorn subchart.
+#
+# NOTE: these must stay nested under `longhorn:` — the key has to match the
+# dependency name in Chart.yaml, otherwise Helm passes them to the (empty)
+# parent chart and they are silently ignored.
+longhorn:
+  persistence:
+    # Retain, not the chart's default Delete: pruning or accidentally removing
+    # a PVC must not destroy the Longhorn volume behind it. Released volumes
+    # then have to be cleaned up by hand (delete the PV *and* the
+    # volumes.longhorn.io object — Retain skips the CSI delete).
+    reclaimPolicy: Retain
+    defaultClassReplicaCount: 2
+  defaultSettings:
+    defaultReplicaCount: 2
