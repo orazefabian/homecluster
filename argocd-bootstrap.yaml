@@ -18,5 +18,11 @@ spec:
     syncOptions:
       - CreateNamespace=true
     automated:
-      selfHeal: true
+      # See argocd-manifests-applicationset.yaml for the selfHeal reasoning.
+      selfHeal: false
+      # Deliberately NOT pruning here, unlike every other app. This is the root
+      # app: its resources are the ApplicationSets and Applications themselves,
+      # so a prune would delete an Application object and orphan everything it
+      # manages in one step. Removing an app from this repo should be a
+      # conscious `kubectl delete app <name>`.
       prune: false

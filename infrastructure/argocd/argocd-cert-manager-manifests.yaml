@@ -18,5 +18,6 @@ spec:
     syncOptions:
       - CreateNamespace=true
     automated:
-      selfHeal: true
-      prune: false
+      # See argocd-manifests-applicationset.yaml for the reasoning.
+      selfHeal: false
+      prune: true

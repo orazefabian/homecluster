@@ -24,5 +24,6 @@ spec:
       # client-side last-applied-configuration annotation (262 KB limit).
       - ServerSideApply=true
     automated:
-      selfHeal: true
-      prune: false
+      # See argocd-manifests-applicationset.yaml for the reasoning.
+      selfHeal: false
+      prune: true

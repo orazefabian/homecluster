@@ -7,17 +7,20 @@ spec:
   # Without this the ApplicationSet controller stamps
   # resources-finalizer.argocd.argoproj.io onto every generated Application,
   # so removing an entry from the list below cascade-deletes that app's live
-  # resources — including CRDs, and with them any CRs of those types. That
-  # contradicts the repo-wide `prune: false` stance and cannot be worked
-  # around by patching the finalizer off an Application, since the controller
+  # resources — including CRDs, and with them any CRs of those types. Pruning
+  # (below) is scoped to individual resources leaving a manifest; deleting a
+  # whole app should not take its data with it. This cannot be worked around
+  # by patching the finalizer off an Application, since the controller
   # immediately re-adds it. With this set, removing an entry deletes only the
   # Application object and orphans the resources, which is the intended
   # behaviour here.
   syncPolicy:
     preserveResourcesOnDeletion: true
-  ignoreApplicationDifferences:
-    - jsonPointers:
-      - /spec/syncPolicy
+  # NOTE: no ignoreApplicationDifferences for /spec/syncPolicy. It used to be
+  # here, which froze each Application's live syncPolicy and made the template
+  # below purely decorative — apps ran with `automated: {}` while this file
+  # claimed selfHeal was on. Sync behaviour is declared here and nowhere else;
+  # editing it in the UI will now be reverted.
   generators:
     - list:
         elements:
@@ -85,5 +88,13 @@ spec:
         syncOptions:
           - CreateNamespace=true
         automated:
-          selfHeal: true
-          prune: false
+          # selfHeal off on purpose: this is a single-operator home cluster and
+          # scaling something to 0 or tweaking it by hand for a while is a
+          # legitimate workflow. The tweak survives until the next push to HEAD
+          # (any commit, Renovate's included), which re-syncs and reverts it.
+          selfHeal: false
+          # Resources removed from a manifest are deleted on the next sync.
+          # Safe for volumes: the longhorn StorageClass is reclaimPolicy=Retain,
+          # so a pruned PVC leaves its data behind as a Released PV. Secrets are
+          # created out-of-band and untracked, so prune never touches them.
+          prune: true

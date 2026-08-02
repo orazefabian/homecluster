@@ -5,6 +5,11 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: reloader
+  annotations:
+    # Never prune the namespace itself: deleting it cascades to everything
+    # inside, including secrets that are created out-of-band and are otherwise
+    # invisible to ArgoCD. Individual resources in here are still prunable.
+    argocd.argoproj.io/sync-options: Prune=false
 ---
 apiVersion: apps/v1
 kind: Deployment
