@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: uptime-kuma
-        image: louislam/uptime-kuma:2.4.0
+        image: louislam/uptime-kuma:2.5.0
         resources:
           requests:
             memory: "256Mi"
