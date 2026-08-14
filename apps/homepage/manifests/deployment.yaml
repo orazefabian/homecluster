@@ -30,6 +30,14 @@ spec:
               value: "dashboard.halo.fabseit.net,dashboard.fabseit.net"
             - name: TZ
               value: "Europe/Berlin"
+          # Widget API tokens. Homepage substitutes {{HOMEPAGE_VAR_X}} in any config
+          # file with the env var of the same name, so the whole secret is pulled in
+          # with envFrom - adding a widget credential then only touches the secret.
+          # Created out-of-band (homecluster-secrets/.secrets/apps/homepage-secret.yaml);
+          # the reloader annotation above restarts the pod when it changes.
+          envFrom:
+            - secretRef:
+                name: homepage-secret
           ports:
             - name: http
               containerPort: 3000

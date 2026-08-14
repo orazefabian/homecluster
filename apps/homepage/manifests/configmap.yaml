@@ -112,6 +112,22 @@ data:
   # here because Homepage otherwise defaults to `app.kubernetes.io/name=<app>`,
   # while these workloads are labelled with a plain `app:` key.
   # Clicking a badge expands live CPU/memory for the pod.
+  #
+  # Widget credentials: {{HOMEPAGE_VAR_X}} is replaced at read time with the env
+  # var of the same name, which the deployment pulls in via envFrom from secret
+  # `homepage-secret` (kept out of git, see homecluster-secrets). No credential
+  # ever lands in this ConfigMap.
+  #
+  # Widget URLs use in-cluster Service DNS so the tiles keep working when
+  # ingress-nginx or Pi-hole is down, with two exceptions called out inline:
+  # Paperless (Django ALLOWED_HOSTS) and ArgoCD (self-signed in-cluster TLS).
+  #
+  # `fields` is capped at four per widget on purpose: the Infrastructure and
+  # Applications rows use useEqualHeights, so the tallest tile sets the height
+  # of the whole row.
+  #
+  # Kite, Longhorn, n8n, Bitwarden and Headplane stay link-only - Homepage has
+  # no widget for any of them.
   services.yaml: |
     - Infrastructure:
         - Kite:
@@ -122,6 +138,13 @@ data:
             href: https://argocd.halo.fabseit.net
             description: GitOps deployments
             icon: argo-cd.png
+            # Via the ingress, not argocd-server.argocd.svc: the in-cluster
+            # endpoint serves a self-signed cert that Node rejects.
+            widget:
+              type: argocd
+              url: https://argocd.halo.fabseit.net
+              key: "{{HOMEPAGE_VAR_ARGOCD_KEY}}"
+              fields: ["apps", "synced", "outOfSync", "degraded"]
         - Longhorn:
             href: https://longhorn.halo.fabseit.net
             description: Storage
@@ -130,6 +153,16 @@ data:
             href: https://monitoring.halo.fabseit.net
             description: Prometheus + Grafana
             icon: grafana.png
+            # version 2 is the API shape for Grafana > 10.4; kube-prometheus-stack
+            # 67.11 ships Grafana 11.x. The credentials belong to a dedicated
+            # Viewer user, not the chart's admin account.
+            widget:
+              type: grafana
+              version: 2
+              url: http://monitoring-helm-grafana.monitoring.svc.cluster.local
+              username: "{{HOMEPAGE_VAR_GRAFANA_USERNAME}}"
+              password: "{{HOMEPAGE_VAR_GRAFANA_PASSWORD}}"
+              fields: ["dashboards", "datasources", "totalalerts", "alertstriggered"]
         - Pi-hole:
             href: https://pihole.halo.fabseit.net/admin/login
             description: DNS / ad blocking
@@ -137,6 +170,14 @@ data:
             namespace: halo
             app: pihole
             podSelector: app=pihole
+            # version 6 is mandatory for the v6 API (image pihole/pihole:2026.07.2);
+            # without it Homepage talks to the removed v5 endpoints.
+            widget:
+              type: pihole
+              version: 6
+              url: http://pihole.halo.svc.cluster.local
+              key: "{{HOMEPAGE_VAR_PIHOLE_KEY}}"
+              fields: ["queries", "blocked", "blocked_percent", "gravity"]
         - Uptime Kuma:
             href: https://uptime.halo.fabseit.net
             description: Uptime monitoring
@@ -144,6 +185,14 @@ data:
             namespace: halo
             app: uptime-kuma
             podSelector: app=uptime-kuma
+            # No credential - the widget reads a public status page instead of the
+            # API. `slug` must match a status page created in Uptime Kuma
+            # (the path segment after /status/), otherwise the tile 404s.
+            widget:
+              type: uptimekuma
+              url: http://uptime-kuma.halo.svc.cluster.local:3001
+              slug: halo
+              fields: ["up", "down", "uptime"]
         - Speedtest:
             href: https://speedtest.halo.fabseit.net
             description: Network speed test
@@ -151,6 +200,14 @@ data:
             namespace: halo
             app: speedtest
             podSelector: app=speedtest
+            # Widget version 1 (the default): the deployed image is the
+            # henrywhitaker3 variant. version 2 - and its `key` field - only
+            # applies to the alexjustesen fork.
+            widget:
+              type: speedtest
+              url: http://speedtest.halo.svc.cluster.local
+              bitratePrecision: 1
+              fields: ["download", "upload", "ping"]
         - Headplane:
             href: https://headplane.halo.fabseit.net
             description: Headscale web UI
@@ -167,6 +224,11 @@ data:
             namespace: halo
             app: homeassistant
             podSelector: app=homeassistant
+            widget:
+              type: homeassistant
+              url: http://homeassistant.halo.svc.cluster.local:8123
+              key: "{{HOMEPAGE_VAR_HOMEASSISTANT_KEY}}"
+              fields: ["people_home", "lights_on", "switches_on"]
         - Immich:
             href: https://immich.halo.fabseit.net
             description: Photo management
@@ -174,6 +236,14 @@ data:
             namespace: halo
             app: immich-server
             podSelector: app=immich-server
+            # version 2 is required from Immich v1.118 onward (deployed: v3.1.0).
+            # The API key needs the server.statistics permission.
+            widget:
+              type: immich
+              version: 2
+              url: http://immich-server.halo.svc.cluster.local:2283
+              key: "{{HOMEPAGE_VAR_IMMICH_KEY}}"
+              fields: ["users", "photos", "videos", "storage"]
         - Paperless:
             href: https://paperless.halo.fabseit.net
             description: Document management
@@ -181,6 +251,14 @@ data:
             namespace: halo
             app: paperless
             podSelector: app=paperless
+            # Via the ingress, not paperless-service.halo.svc: paperless-ngx is
+            # Django and derives ALLOWED_HOSTS from PAPERLESS_URL, so a cluster-DNS
+            # Host header comes back as 400 Bad Request.
+            widget:
+              type: paperlessngx
+              url: https://paperless.halo.fabseit.net
+              key: "{{HOMEPAGE_VAR_PAPERLESS_KEY}}"
+              fields: ["total", "inbox"]
         - n8n:
             href: https://n8n.halo.fabseit.net
             description: Workflow automation
