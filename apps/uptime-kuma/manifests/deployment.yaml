@@ -16,20 +16,20 @@ spec:
         app: uptime-kuma
     spec:
       containers:
-      - name: uptime-kuma
-        image: louislam/uptime-kuma:2.5.0
-        resources:
-          requests:
-            memory: "256Mi"
-            cpu: "150m"
-          limits:
-            memory: "512Mi"
-            cpu: "250m"
-        volumeMounts:
-        - name: data-volume
-          mountPath: /app/data/
-          readOnly: false
+        - name: uptime-kuma
+          image: louislam/uptime-kuma:2.5.0
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "512Mi"
+              cpu: "450m"
+          volumeMounts:
+            - name: data-volume
+              mountPath: /app/data/
+              readOnly: false
       volumes:
-      - name: data-volume
-        persistentVolumeClaim:
-          claimName: uptime-kuma-data # Links to the ConfigMap defined below
+        - name: data-volume
+          persistentVolumeClaim:
+            claimName: uptime-kuma-data # Links to the ConfigMap defined below
