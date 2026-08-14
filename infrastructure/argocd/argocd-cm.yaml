@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-cm
+  namespace: argocd
+  # These two labels ship with the upstream install manifest. They must stay
+  # declared here: the sync is a client-side apply, so a label present in the
+  # live object's last-applied-configuration but absent from this file would be
+  # removed by the 3-way merge.
+  labels:
+    app.kubernetes.io/name: argocd-cm
+    app.kubernetes.io/part-of: argocd
+data:
+  # Local account used by the Homepage dashboard's argocd widget. `apiKey` is
+  # the only capability, so the account can mint and use tokens but cannot log
+  # in to the UI. Paired with `g, homepage, role:readonly` in argocd-rbac-cm.
+  #
+  # The token itself is NOT here - it is generated per-account under
+  # Settings -> Accounts -> homepage -> Tokens and stored in the out-of-band
+  # secret `homepage-secret` in the halo namespace.
+  accounts.homepage: apiKey

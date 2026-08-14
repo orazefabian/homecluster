@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-rbac-cm
+  namespace: argocd
+  # See argocd-cm.yaml - the upstream labels must be declared, not inherited.
+  labels:
+    app.kubernetes.io/name: argocd-rbac-cm
+    app.kubernetes.io/part-of: argocd
+data:
+  # `role:readonly` is built in and grants get/list on every resource, which is
+  # all the Homepage widget needs (it reads /api/v1/applications).
+  #
+  # policy.default is deliberately left unset: with no default role, any account
+  # not named here is denied. The built-in `admin` user is a superuser and
+  # bypasses this policy entirely, so it cannot be locked out by this file.
+  policy.csv: "g, homepage, role:readonly"

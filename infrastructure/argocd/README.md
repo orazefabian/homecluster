@@ -39,6 +39,20 @@ The configuration is now split into multiple files for better organization and p
 5. **argocd-ingress.yaml**
    - Manages the ArgoCD ingress configuration
 
+### ArgoCD's Own Config
+
+6. **argocd-cm.yaml** / **argocd-rbac-cm.yaml**
+   - ArgoCD's own configuration, adopted from the upstream install manifest
+     (both ConfigMaps shipped empty) so it survives a rebuild
+   - Currently they declare one thing: the `homepage` local account with the
+     `apiKey` capability, bound to `role:readonly`, which the Homepage dashboard's
+     argocd widget authenticates as
+   - **These are now the source of truth.** A key added by hand or in the UI is
+     reverted on the next push to HEAD, so add it here instead
+   - The built-in `admin` user bypasses `policy.csv` entirely, and
+     `argocd-bootstrap` runs with `prune: false` + `selfHeal: false`, so a bad
+     edit here cannot delete the ConfigMaps or lock you out of the UI
+
 ## Why This Structure?
 
 The previous single ApplicationSet used `directory.recurse: true` for all deployments, which caused issues with Helm charts:
