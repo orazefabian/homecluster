@@ -251,12 +251,15 @@ data:
             namespace: halo
             app: paperless
             podSelector: app=paperless
-            # Via the ingress, not paperless-service.halo.svc: paperless-ngx is
-            # Django and derives ALLOWED_HOSTS from PAPERLESS_URL, so a cluster-DNS
-            # Host header comes back as 400 Bad Request.
+            # In-cluster Service, not the ingress. Going through the public
+            # hostname made this tile flap with `queryAaaa ENODATA`: the name has
+            # no AAAA record, and Homepage's proxy treats the empty IPv6 answer
+            # as fatal instead of falling back to the A record. Verified that
+            # paperless-ngx accepts this Host header - its ALLOWED_HOSTS is not
+            # restricted to PAPERLESS_URL.
             widget:
               type: paperlessngx
-              url: https://paperless.halo.fabseit.net
+              url: http://paperless-service.halo.svc.cluster.local:8000
               key: "{{HOMEPAGE_VAR_PAPERLESS_KEY}}"
               fields: ["total", "inbox"]
         - n8n:
