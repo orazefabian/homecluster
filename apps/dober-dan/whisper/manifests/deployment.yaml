@@ -28,7 +28,14 @@ spec:
       labels:
         app: dober-dan-whisper
     spec:
+      # runAsUser is required, not decorative: the image sets USER by name
+      # (nextjs/piper/whisper), and kubelet cannot resolve a name to a UID
+      # without starting the container. With runAsNonRoot and no numeric UID
+      # it refuses outright — "image has non-numeric user, cannot verify user
+      # is non-root" — and the pod never starts. 1001 is the uid useradd is
+      # given in the Dockerfile.
       securityContext:
+        runAsUser: 1001
         fsGroup: 1001
       containers:
         - name: whisper
