@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-dober-dan
+  namespace: halo
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: postgres-dober-dan
+  template:
+    metadata:
+      labels:
+        app: postgres-dober-dan
+    spec:
+      containers:
+        - name: postgres-dober-dan
+          image: postgres:17-alpine
+          ports:
+            - name: postgres
+              containerPort: 5432
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          envFrom:
+            - secretRef:
+                name: dober-dan-db-secret
+          env:
+            # The mount point is the volume root, which Longhorn gives us with
+            # a lost+found in it; initdb refuses a non-empty directory.
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            - name: pg-data
+              mountPath: /var/lib/postgresql/data
+              subPath: dober_dan
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      volumes:
+        - name: pg-data
+          persistentVolumeClaim:
+            claimName: pg-dober-dan-data

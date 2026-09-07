@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-dober-dan
+  namespace: halo
+spec:
+  type: ClusterIP
+  selector:
+    app: postgres-dober-dan
+  ports:
+    - port: 5432
+      targetPort: 5432
+      protocol: TCP

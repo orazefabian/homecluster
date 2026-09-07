@@ -1,0 +1,76 @@
+# Slovene speech recognition.
+#
+# The heaviest thing here by a distance, and the one to turn off first if the
+# cluster feels it. Optional at runtime: without it, speaking exercises fall
+# back to self-assessment — she records, the audio is kept, and she rates
+# herself, which she does anyway since the transcript is never a verdict.
+#
+# WHISPER_MODEL is `medium`. It needs ~2 GB resident and takes appreciably
+# longer per phrase than `small` on ARM cores, but Slovene accuracy at `small`
+# is poor enough to be misleading — and the transcript is shown to her as
+# "verstanden als: …", so a bad one is worse than a slow one. Drop to `small`
+# if the node cannot spare the memory.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dober-dan-whisper
+  namespace: halo
+spec:
+  replicas: 1
+  strategy:
+    # The model PVC is RWO.
+    type: Recreate
+  selector:
+    matchLabels:
+      app: dober-dan-whisper
+  template:
+    metadata:
+      labels:
+        app: dober-dan-whisper
+    spec:
+      securityContext:
+        fsGroup: 1001
+      containers:
+        - name: whisper
+          image: ghcr.io/orazefabian/lang-learn-app/whisper:0.2.0
+          ports:
+            - name: http
+              containerPort: 5001
+          env:
+            - name: WHISPER_MODEL
+              value: medium
+            - name: WHISPER_COMPUTE_TYPE
+              value: int8
+            - name: WHISPER_LANGUAGE
+              value: sl
+          volumeMounts:
+            - name: models
+              mountPath: /models
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "250m"
+            limits:
+              memory: "3Gi"
+              cpu: "1000m"
+          readinessProbe:
+            httpGet: { path: /health, port: http }
+            # First start downloads the model (~1.5 GB for medium). Nothing
+            # depends on this being ready, so it gets as long as it needs.
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 60
+          livenessProbe:
+            httpGet: { path: /health, port: http }
+            initialDelaySeconds: 900
+            periodSeconds: 60
+            failureThreshold: 5
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+      volumes:
+        - name: models
+          persistentVolumeClaim:
+            claimName: dober-dan-whisper-models

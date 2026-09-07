@@ -1,0 +1,52 @@
+# Slovene text to speech.
+#
+# The voice is baked into the image, so this needs no volume and no network at
+# startup. Optional at runtime: if it is down, listening exercises disappear
+# from her session rather than failing.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dober-dan-piper
+  namespace: halo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dober-dan-piper
+  template:
+    metadata:
+      labels:
+        app: dober-dan-piper
+    spec:
+      containers:
+        - name: piper
+          image: ghcr.io/orazefabian/lang-learn-app/piper:0.2.0
+          ports:
+            - name: http
+              containerPort: 5000
+          env:
+            - name: PIPER_VOICE
+              value: sl_SI-artur-medium
+          # CPU-bound and single-threaded per request. Audio is generated in
+          # batches after content changes, never while a card is on screen, so
+          # a slow synth costs nothing at review time.
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+          readinessProbe:
+            httpGet: { path: /health, port: http }
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          livenessProbe:
+            httpGet: { path: /health, port: http }
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]

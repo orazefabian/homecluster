@@ -96,6 +96,23 @@
       "groupSlug": "paperless-redis"
     },
     {
+      "description": "The app image is built from orazefabian/lang-learn-app and tagged by release. Grouped on its own so a Slovene app release is one PR.",
+      "matchFileNames": ["apps/dober-dan/webservice/**"],
+      "groupName": "dober-dan",
+      "groupSlug": "dober-dan"
+    },
+    {
+      "matchFileNames": ["apps/dober-dan/postgresdb/**"],
+      "groupName": "dober-dan-postgres",
+      "groupSlug": "dober-dan-postgres"
+    },
+    {
+      "description": "Piper and Whisper come from the same repo as the app but change far less often; a voice or model bump should not ride along with an app release.",
+      "matchFileNames": ["apps/dober-dan/piper/**", "apps/dober-dan/whisper/**"],
+      "groupName": "dober-dan-speech",
+      "groupSlug": "dober-dan-speech"
+    },
+    {
       "matchFileNames": ["apps/pihole/**"],
       "groupName": "pihole",
       "groupSlug": "pihole"

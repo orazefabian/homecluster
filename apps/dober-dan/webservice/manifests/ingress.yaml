@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dober-dan-ingress
+  namespace: halo
+  annotations:
+    # Speech recordings. The app caps one at 10 MB; the nginx default of 1 MB
+    # would reject them first.
+    nginx.ingress.kubernetes.io/proxy-body-size: "12m"
+    # Whisper on arm64 takes its time over a phrase.
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: dober-dan.halo.fabseit.net
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: dober-dan-service
+                port:
+                  number: 3000
+  tls:
+    - hosts:
+        - dober-dan.halo.fabseit.net
+      secretName: local-fabseit-net-prod-tls

@@ -60,6 +60,9 @@ spec:
           - name: immich-app
             path: ./apps/immich
             namespace: halo
+          - name: dober-dan
+            path: ./apps/dober-dan
+            namespace: halo
           - name: secrets-backup
             path: ./infrastructure/secrets-backup/manifests
             namespace: secrets-backup

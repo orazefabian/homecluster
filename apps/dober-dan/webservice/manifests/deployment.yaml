@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dober-dan
+  namespace: halo
+  annotations:
+    # Restart when the secret changes, so rotating SESSION_SECRET or adding an
+    # Anthropic key does not need a manual rollout.
+    reloader.stakater.com/auto: "true"
+spec:
+  replicas: 1
+  strategy:
+    # RWO media volume, like everything else here.
+    type: Recreate
+  selector:
+    matchLabels:
+      app: dober-dan
+  template:
+    metadata:
+      labels:
+        app: dober-dan
+    spec:
+      securityContext:
+        fsGroup: 1001
+      containers:
+        - name: dober-dan
+          image: ghcr.io/orazefabian/lang-learn-app/app:0.2.0
+          ports:
+            - name: http
+              containerPort: 3000
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+          envFrom:
+            - secretRef:
+                name: dober-dan-secret
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: MEDIA_ROOT
+              value: /media
+            - name: PIPER_URL
+              value: http://dober-dan-piper:5000
+            - name: PIPER_VOICE
+              value: sl_SI-artur-medium
+            - name: WHISPER_URL
+              value: http://dober-dan-whisper:5001
+            # Must match the whisper deployment: this is recorded on every
+            # speech attempt so results stay comparable across model changes.
+            - name: WHISPER_MODEL
+              value: medium
+            - name: APP_URL
+              value: https://dober-dan.halo.fabseit.net
+            # The app runs the weekly digest itself; there is no CronJob.
+            - name: DIGEST_ENABLED
+              value: "true"
+            - name: DIGEST_DAY
+              value: sunday
+            - name: DIGEST_HOUR
+              value: "18"
+            - name: DIGEST_TIMEZONE
+              value: Europe/Berlin
+            - name: LOG_LEVEL
+              value: info
+          volumeMounts:
+            - name: media
+              mountPath: /media
+          startupProbe:
+            # Migrations run at boot; this is what gives them room so the
+            # liveness probe below can stay tight.
+            httpGet: { path: /api/health, port: http }
+            periodSeconds: 5
+            failureThreshold: 60
+          readinessProbe:
+            # Fails only while Postgres is unreachable. Piper and Whisper are
+            # reported by this endpoint but never gate it: without them the
+            # listening and speaking exercises degrade rather than break.
+            httpGet: { path: /api/ready, port: http }
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /api/health, port: http }
+            periodSeconds: 30
+            failureThreshold: 3
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+      volumes:
+        - name: media
+          persistentVolumeClaim:
+            claimName: dober-dan-media

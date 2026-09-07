@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: dober-dan-whisper-models
+  namespace: halo
+  # No backup labels on purpose: this is a re-downloadable model cache, not
+  # data. Backing it up would cost gigabytes to save a download.
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      # medium is ~1.5 GB, large-v3 ~3 GB. Sized for either.
+      storage: 5Gi
