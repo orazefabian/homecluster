@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Automation & Tools",
+    "quality_profile": "showcase",
+    "viewBox": [1280, 480]
+  },
+  "components": [
+    { "id": "lan", "type": "frontend", "label": "LAN Clients", "sublabel": "192.168.8.0/24", "pos": [40, 40], "size": [170, 64] },
+    { "id": "ingress", "type": "cloud", "label": "ingress-nginx", "sublabel": "192.168.8.30 · TLS", "pos": [520, 40], "size": [200, 64] },
+    { "id": "n8n", "type": "backend", "label": "n8n", "sublabel": "2.33.3 · workflows", "pos": [250, 200], "size": [170, 64] },
+    { "id": "dd-web", "type": "frontend", "label": "Dober dan", "sublabel": "Next.js app 0.2.0", "pos": [470, 200], "size": [190, 64] },
+    { "id": "homepage", "type": "frontend", "label": "Homepage", "sublabel": "v1.13.2 · dashboard", "pos": [700, 200], "size": [170, 64] },
+    { "id": "kuma", "type": "backend", "label": "Uptime Kuma", "sublabel": "2.5.0", "pos": [910, 200], "size": [150, 64] },
+    { "id": "speedtest", "type": "backend", "label": "Speedtest", "sublabel": "speedtest-tracker", "pos": [1090, 200], "size": [150, 64] },
+    { "id": "n8n-pg", "type": "database", "label": "Postgres 15", "sublabel": "n8n data", "pos": [250, 370], "size": [170, 64] },
+    { "id": "piper", "type": "backend", "label": "Piper", "sublabel": "Slovene TTS", "pos": [430, 370], "size": [130, 64] },
+    { "id": "dd-pg", "type": "database", "label": "Postgres 17", "sublabel": "learning history", "pos": [580, 370], "size": [140, 64] },
+    { "id": "whisper", "type": "backend", "label": "Whisper", "sublabel": "Slovene ASR", "pos": [740, 370], "size": [130, 64] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "namespace halo", "wraps": ["n8n", "dd-web", "homepage", "kuma", "speedtest", "n8n-pg", "piper", "dd-pg", "whisper"] }
+  ],
+  "connections": [
+    { "id": "lan-https", "from": "lan", "to": "ingress", "label": "HTTPS", "variant": "emphasis" },
+    { "id": "in-n8n", "from": "ingress", "to": "n8n", "variant": "emphasis", "fromSide": "bottom", "toSide": "top" },
+    { "id": "in-dd", "from": "ingress", "to": "dd-web", "variant": "emphasis", "fromSide": "bottom", "toSide": "top" },
+    { "id": "in-homepage", "from": "ingress", "to": "homepage", "variant": "emphasis", "fromSide": "bottom", "toSide": "top" },
+    { "id": "in-kuma", "from": "ingress", "to": "kuma", "variant": "emphasis", "fromSide": "bottom", "toSide": "top" },
+    { "id": "in-speedtest", "from": "ingress", "to": "speedtest", "variant": "emphasis", "fromSide": "bottom", "toSide": "top" },
+    { "id": "n8n-sql", "from": "n8n", "to": "n8n-pg", "label": "SQL", "fromSide": "bottom", "toSide": "top", "labelDy": 24 },
+    { "id": "dd-tts", "from": "dd-web", "to": "piper", "label": "TTS", "fromSide": "bottom", "toSide": "top" },
+    { "id": "dd-sql", "from": "dd-web", "to": "dd-pg", "label": "SQL", "fromSide": "bottom", "toSide": "top" },
+    { "id": "dd-asr", "from": "dd-web", "to": "whisper", "label": "ASR", "fromSide": "bottom", "toSide": "top" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Hosts", "items": ["n8n(.halo).fabseit.net", "dober-dan / uptime / speedtest .halo", "dashboard(.halo).fabseit.net"] },
+    { "dot": "amber", "title": "Heads-up", "items": ["Heimdall ingress claims the same dashboard hosts as Homepage"] }
+  ]
+}

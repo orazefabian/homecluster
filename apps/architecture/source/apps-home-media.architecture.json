@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Home & Media Apps",
+    "quality_profile": "showcase",
+    "viewBox": [1210, 480]
+  },
+  "components": [
+    { "id": "ingress", "type": "cloud", "label": "ingress-nginx", "sublabel": "192.168.8.30 · TLS", "pos": [400, 40], "size": [200, 64] },
+    { "id": "lan", "type": "frontend", "label": "LAN Clients", "sublabel": "192.168.8.0/24", "pos": [1030, 40], "size": [150, 64] },
+    { "id": "ha", "type": "backend", "label": "Home Assistant", "sublabel": "2026.7.4 · .8.36:8123", "pos": [30, 200], "size": [170, 64], "tag": "ConBee II Zigbee" },
+    { "id": "immich", "type": "backend", "label": "Immich Server", "sublabel": "v3.1.0 · photos", "pos": [300, 200], "size": [190, 64] },
+    { "id": "paperless", "type": "backend", "label": "Paperless-ngx", "sublabel": "3.0.5 · SQLite · 100Gi", "pos": [650, 200], "size": [170, 64] },
+    { "id": "bitwarden", "type": "security", "label": "Vaultwarden", "sublabel": "1.37.1 · 2Gi", "pos": [850, 200], "size": [150, 64] },
+    { "id": "samba", "type": "database", "label": "Samba Share", "sublabel": ".8.50 · 200Gi", "pos": [1030, 200], "size": [150, 64], "tag": "5 user shares" },
+    { "id": "ha-pg", "type": "database", "label": "Postgres 15", "sublabel": "HA recorder", "pos": [30, 370], "size": [170, 64] },
+    { "id": "immich-ml", "type": "backend", "label": "Immich ML", "sublabel": "machine-learning", "pos": [220, 370], "size": [130, 64] },
+    { "id": "immich-pg", "type": "database", "label": "Postgres 14", "sublabel": "VectorChord", "pos": [365, 370], "size": [130, 64] },
+    { "id": "valkey", "type": "database", "label": "Valkey 9", "sublabel": "job queue", "pos": [510, 370], "size": [120, 64] },
+    { "id": "paperless-redis", "type": "database", "label": "Redis 6", "sublabel": "task broker", "pos": [650, 370], "size": [170, 64] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "namespace halo · Longhorn RWO volumes", "wraps": ["ha", "immich", "paperless", "bitwarden", "samba", "ha-pg", "immich-ml", "immich-pg", "valkey", "paperless-redis"] }
+  ],
+  "connections": [
+    { "id": "in-ha", "from": "ingress", "to": "ha", "variant": "emphasis", "fromSide": "bottom", "toSide": "top" },
+    { "id": "in-immich", "from": "ingress", "to": "immich", "variant": "emphasis", "fromSide": "bottom", "toSide": "top" },
+    { "id": "in-paperless", "from": "ingress", "to": "paperless", "variant": "emphasis", "fromSide": "bottom", "toSide": "top" },
+    { "id": "in-bitwarden", "from": "ingress", "to": "bitwarden", "variant": "emphasis", "fromSide": "bottom", "toSide": "top" },
+    { "id": "lan-smb", "from": "lan", "to": "samba", "label": "SMB :445", "fromSide": "bottom", "toSide": "top", "labelDy": 24 },
+    { "id": "ha-sql", "from": "ha", "to": "ha-pg", "label": "SQL", "fromSide": "bottom", "toSide": "top", "labelDy": 24 },
+    { "id": "immich-infer", "from": "immich", "to": "immich-ml", "label": "inference", "fromSide": "bottom", "toSide": "top" },
+    { "id": "immich-sql", "from": "immich", "to": "immich-pg", "label": "SQL", "fromSide": "bottom", "toSide": "top", "labelAt": [430, 345] },
+    { "id": "immich-jobs", "from": "immich", "to": "valkey", "label": "jobs", "fromSide": "bottom", "toSide": "top" },
+    { "id": "paperless-tasks", "from": "paperless", "to": "paperless-redis", "label": "Celery", "fromSide": "bottom", "toSide": "top", "labelDy": 24 }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Hosts", "items": ["homeassistant(.halo).fabseit.net", "immich / paperless .halo.fabseit.net", "bitwarden(.halo).fabseit.net", "Samba: LAN only, no ingress"] },
+    { "dot": "amber", "title": "Constraints", "items": ["HA pinned to node homeassistant=true", "Immich DB on PG14 — EOL Nov 2026", "Recreate strategy on every RWO app"] }
+  ]
+}

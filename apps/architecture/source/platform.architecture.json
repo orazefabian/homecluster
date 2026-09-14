@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Platform: GitOps, Storage & Backup",
+    "quality_profile": "showcase",
+    "viewBox": [1100, 560]
+  },
+  "components": [
+    { "id": "git", "type": "external", "label": "GitHub", "sublabel": "orazefabian/homecluster", "brand": "github", "pos": [40, 80], "size": [170, 64] },
+    { "id": "argocd", "type": "cloud", "label": "ArgoCD", "sublabel": "2 ApplicationSets", "pos": [290, 80], "size": [170, 64], "tag": "SSA on · prune off" },
+    { "id": "workloads", "type": "backend", "label": "Workloads", "sublabel": "namespace halo", "pos": [560, 80], "size": [170, 64] },
+    { "id": "reloader", "type": "backend", "label": "Reloader", "sublabel": "v1.4.19", "pos": [860, 80], "size": [170, 64] },
+    { "id": "secretsbk", "type": "backend", "label": "Secrets Backup", "sublabel": "CronJob 02:00", "pos": [290, 250], "size": [170, 64] },
+    { "id": "longhorn", "type": "database", "label": "Longhorn", "sublabel": "RWO volumes", "pos": [560, 250], "size": [170, 64] },
+    { "id": "monitoring", "type": "backend", "label": "Prometheus + Grafana", "sublabel": "kube-prometheus-stack", "pos": [860, 250], "size": [190, 64] },
+    { "id": "nfs", "type": "database", "label": "NFS Server", "sublabel": "192.168.8.98 HDD + SSD", "pos": [280, 440], "size": [190, 64] },
+    { "id": "s3", "type": "external", "label": "Hetzner S3", "sublabel": "backup-halo-store", "pos": [770, 440], "size": [170, 64] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "k3s cluster", "wraps": ["argocd", "workloads", "reloader", "secretsbk", "longhorn", "monitoring"] }
+  ],
+  "connections": [
+    { "id": "git-argo", "from": "git", "to": "argocd", "label": "watch" },
+    { "id": "argo-sync", "from": "argocd", "to": "workloads", "label": "auto-sync", "variant": "emphasis" },
+    { "id": "reload", "from": "reloader", "to": "workloads", "label": "restart" },
+    { "id": "scrape", "from": "monitoring", "to": "workloads", "label": "scrape", "variant": "dashed" },
+    { "id": "pvc", "from": "workloads", "to": "longhorn", "label": "PVCs", "labelDy": 24 },
+    { "id": "lh-nfs", "from": "longhorn", "to": "nfs", "label": "Tue / Sat", "fromSide": "bottom", "toSide": "top" },
+    { "id": "lh-s3", "from": "longhorn", "to": "s3", "label": "monthly", "fromSide": "bottom", "toSide": "top" },
+    { "id": "sec-nfs", "from": "secretsbk", "to": "nfs", "label": "secrets", "variant": "security", "fromSide": "bottom", "toSide": "top", "labelDy": 24 }
+  ],
+  "cards": [
+    { "dot": "violet", "title": "GitOps", "items": ["Manifest + Helm ApplicationSets", "Helm: cert-manager, ingress-nginx, Longhorn"] },
+    { "dot": "emerald", "title": "Backups", "items": ["Recurring jobs keep 2 each", "Kite: cluster dashboard (kite.halo)"] }
+  ]
+}

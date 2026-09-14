@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Network & Remote Access",
+    "quality_profile": "showcase",
+    "viewBox": [1260, 660]
+  },
+  "components": [
+    { "id": "fritzbox", "type": "external", "label": "FritzBox", "sublabel": "DHCP · DNS relay .8.1", "pos": [40, 60], "size": [170, 64], "tag": "rebind: fabseit.net" },
+    { "id": "lan", "type": "frontend", "label": "LAN Clients", "sublabel": "192.168.8.0/24", "pos": [40, 240], "size": [170, 64] },
+    { "id": "remote", "type": "external", "label": "Remote Devices", "sublabel": "away from home", "pos": [40, 470], "size": [170, 64] },
+    { "id": "pihole", "type": "backend", "label": "Pi-hole", "sublabel": "DNS 192.168.8.53", "pos": [300, 60], "size": [170, 64] },
+    { "id": "ddclient", "type": "backend", "label": "DDClient", "sublabel": "dynamic DNS", "pos": [800, 60], "size": [170, 64] },
+    { "id": "ingress", "type": "cloud", "label": "ingress-nginx", "sublabel": "MetalLB 192.168.8.30", "pos": [550, 240], "size": [170, 64] },
+    { "id": "certmgr", "type": "security", "label": "cert-manager", "sublabel": "wildcard *.fabseit.net", "pos": [800, 240], "size": [170, 64] },
+    { "id": "wg", "type": "security", "label": "WireGuard", "sublabel": ".8.51 UDP 51820", "pos": [300, 400], "size": [170, 64], "tag": "DNS DNAT → .53" },
+    { "id": "headscale", "type": "security", "label": "Headscale", "sublabel": "vpn.fabseit.net", "pos": [300, 540], "size": [170, 64], "tag": "UI: Headplane" },
+    { "id": "router", "type": "backend", "label": "Subnet Router", "sublabel": "tailscale · .8.0/24", "pos": [550, 540], "size": [170, 64] },
+    { "id": "cloudflare", "type": "external", "label": "Cloudflare", "sublabel": "fabseit.net zone", "pos": [1060, 60], "size": [170, 64] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "k3s cluster", "wraps": ["pihole", "ddclient", "ingress", "certmgr", "wg", "headscale", "router"] }
+  ],
+  "connections": [
+    { "id": "lan-dns", "from": "lan", "to": "fritzbox", "label": "DNS" },
+    { "id": "fritz-up", "from": "fritzbox", "to": "pihole", "label": "upstream" },
+    { "id": "lan-https", "from": "lan", "to": "ingress", "label": "HTTPS", "variant": "emphasis" },
+    { "id": "cert-tls", "from": "certmgr", "to": "ingress", "label": "TLS", "variant": "security" },
+    { "id": "dd-cf", "from": "ddclient", "to": "cloudflare", "label": "public IP", "variant": "dashed" },
+    { "id": "cert-cf", "from": "certmgr", "to": "cloudflare", "label": "DNS-01", "variant": "security" },
+    { "id": "remote-wg", "from": "remote", "to": "wg", "label": "full tunnel", "variant": "security" },
+    { "id": "remote-hs", "from": "remote", "to": "headscale", "label": "split DNS", "variant": "security" },
+    { "id": "router-hs", "from": "router", "to": "headscale", "label": "registers" },
+    { "id": "wg-ingress", "from": "wg", "to": "ingress", "variant": "dashed" },
+    { "id": "router-ingress", "from": "router", "to": "ingress", "label": "subnet route", "variant": "dashed" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "IP layout", "items": [".30 ingress · .36 HA · .50 Samba", ".51 WireGuard · .53 Pi-hole", "MetalLB L2 pool .30–.80"] },
+    { "dot": "rose", "title": "VPN choice", "items": ["WireGuard: full tunnel, DNS via DNAT", "Headscale: override_local_dns + split DNS"] }
+  ]
+}

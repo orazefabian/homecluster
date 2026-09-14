@@ -39,6 +39,13 @@ The configuration is now split into multiple files for better organization and p
 5. **argocd-ingress.yaml**
    - Manages the ArgoCD ingress configuration
 
+6. **argocd-homepage-manifests.yaml** / **argocd-architecture-manifests.yaml**
+   - Kustomize-based apps (`configMapGenerator`), so they cannot live in the
+     manifests ApplicationSet: its `directory.recurse` disables Kustomize
+     auto-detection and ArgoCD would try to apply `kustomization.yaml` as a
+     raw resource ("could not find kustomize.config.k8s.io/Kustomization")
+   - No `directory:` block, plus `ServerSideApply=true` for the large ConfigMaps
+
 ### ArgoCD's Own Config
 
 6. **argocd-cm.yaml** / **argocd-rbac-cm.yaml**

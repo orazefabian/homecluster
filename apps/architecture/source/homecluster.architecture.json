@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Halo Home Cluster",
+    "quality_profile": "showcase",
+    "viewBox": [1370, 640],
+    "views": [
+      { "id": "request-path", "label": "HTTPS request path", "focus": ["users", "ingress", "certmgr", "apps"], "note": "LAN clients hit ingress-nginx on 192.168.8.30 with the wildcard cert from cert-manager." },
+      { "id": "dns", "label": "DNS resolution", "focus": ["users", "fritzbox", "pihole"], "note": "FritzBox relays to Pi-hole with 9.9.9.9 fallback; fabseit.net is rebind-whitelisted." },
+      { "id": "remote", "label": "Remote access", "focus": ["remote", "vpn", "ingress"], "note": "WireGuard full tunnel or Headscale split DNS + 192.168.8.0/24 subnet route." },
+      { "id": "storage", "label": "Storage and backup", "focus": ["apps", "longhorn", "backup"], "note": "RWO Longhorn volumes, recurring jobs to NFS and Hetzner S3." }
+    ]
+  },
+  "components": [
+    { "id": "fritzbox", "type": "external", "label": "FritzBox", "sublabel": "router · DNS relay .8.1", "pos": [40, 140], "size": [160, 64] },
+    { "id": "users", "type": "frontend", "label": "LAN Clients", "sublabel": "192.168.8.0/24", "pos": [40, 300], "size": [160, 64] },
+    { "id": "remote", "type": "external", "label": "Remote Devices", "sublabel": "phones · laptops", "pos": [40, 470], "size": [160, 64] },
+    { "id": "pihole", "type": "backend", "label": "Pi-hole", "sublabel": "DNS 192.168.8.53", "pos": [280, 140], "size": [160, 64] },
+    { "id": "vpn", "type": "security", "label": "WireGuard + Headscale", "sublabel": ".8.51 UDP · vpn.fabseit.net", "pos": [280, 470], "size": [180, 64] },
+    { "id": "certmgr", "type": "security", "label": "cert-manager", "sublabel": "Cloudflare DNS-01", "pos": [500, 140], "size": [160, 64] },
+    { "id": "ingress", "type": "cloud", "label": "ingress-nginx", "sublabel": "MetalLB 192.168.8.30", "pos": [500, 300], "size": [160, 64], "tag": "*.halo.fabseit.net" },
+    { "id": "apps", "type": "backend", "label": "Apps", "sublabel": "11 apps · see detail tabs", "pos": [740, 300], "size": [180, 64], "tag": "own Postgres / Redis" },
+    { "id": "longhorn", "type": "database", "label": "Longhorn", "sublabel": "RWO volumes", "pos": [980, 300], "size": [160, 64] },
+    { "id": "argocd", "type": "cloud", "label": "ArgoCD", "sublabel": "GitOps · this repo", "pos": [740, 470], "size": [180, 64] },
+    { "id": "backup", "type": "database", "label": "Backup Targets", "sublabel": "NFS .8.98 · Hetzner S3", "pos": [1190, 300], "size": [160, 64] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "k3s cluster · namespace halo", "wraps": ["pihole", "vpn", "certmgr", "ingress", "apps", "longhorn", "argocd"] }
+  ],
+  "connections": [
+    { "id": "users-https", "from": "users", "to": "ingress", "label": "HTTPS", "variant": "emphasis" },
+    { "id": "users-dns", "from": "users", "to": "fritzbox", "label": "DNS" },
+    { "id": "fritz-upstream", "from": "fritzbox", "to": "pihole", "label": "upstream" },
+    { "id": "remote-vpn", "from": "remote", "to": "vpn", "label": "tunnel", "variant": "security" },
+    { "id": "vpn-ingress", "from": "vpn", "to": "ingress", "label": "subnet route", "variant": "dashed" },
+    { "id": "cert-tls", "from": "certmgr", "to": "ingress", "label": "wildcard TLS", "variant": "security", "labelDy": 24 },
+    { "id": "ingress-apps", "from": "ingress", "to": "apps", "variant": "emphasis" },
+    { "id": "apps-pvc", "from": "apps", "to": "longhorn", "label": "PVCs" },
+    { "id": "gitops-sync", "from": "argocd", "to": "apps", "label": "sync", "variant": "dashed" },
+    { "id": "longhorn-backup", "from": "longhorn", "to": "backup", "label": "recurring", "variant": "dashed" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Network", "items": ["MetalLB L2 pool .30–.80", "FritzBox → Pi-hole, 9.9.9.9 fallback", "VPN: WireGuard full tunnel or Headscale split DNS"] },
+    { "dot": "emerald", "title": "Apps", "items": ["Home Assistant, Immich, Paperless, Vaultwarden", "n8n, Dober dan, Homepage, Heimdall", "Uptime Kuma, Speedtest, Samba"] },
+    { "dot": "violet", "title": "Platform", "items": ["ArgoCD: SSA on, prune off", "Tue / Sat NFS jobs, monthly S3", "Reloader, Kite, kube-prometheus-stack"] }
+  ]
+}

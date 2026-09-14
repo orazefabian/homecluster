@@ -1,0 +1,32 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: halo
+
+resources:
+  - deployment.yaml
+  - service.yaml
+  - ingress.yaml
+
+# One ConfigMap per page: each rendered diagram is ~810 KB and a ConfigMap is
+# capped at 1 MiB. The name-suffix hash is kept on purpose — any change to a
+# page renames its ConfigMap, which rolls the Deployment without Reloader.
+configMapGenerator:
+  - name: architecture-index
+    files:
+      - site/index.html
+  - name: architecture-overview
+    files:
+      - site/homecluster-architecture.html
+  - name: architecture-home-media
+    files:
+      - site/apps-home-media.html
+  - name: architecture-tools
+    files:
+      - site/apps-tools.html
+  - name: architecture-network
+    files:
+      - site/network.html
+  - name: architecture-platform
+    files:
+      - site/platform.html

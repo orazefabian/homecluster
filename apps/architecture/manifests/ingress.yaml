@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: architecture
+  namespace: halo
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: architecture.halo.fabseit.net
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: architecture
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - architecture.halo.fabseit.net
+      secretName: local-fabseit-net-prod-tls

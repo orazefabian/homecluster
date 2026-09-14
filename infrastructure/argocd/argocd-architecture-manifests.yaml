@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  # Not "architecture": that name was taken by the Application the manifests
+  # ApplicationSet generated before this app moved out of it.
+  name: architecture-diagrams
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/orazefabian/homecluster-helm
+    targetRevision: HEAD
+    path: ./apps/architecture/manifests
+    # Intentionally NO `directory:` block (same as homepage). The manifests
+    # ApplicationSet sets `directory.recurse`, which disables Kustomize
+    # auto-detection and makes ArgoCD apply kustomization.yaml as a raw
+    # resource. Without it, ArgoCD runs `kustomize build` for the
+    # configMapGenerator that turns each diagram page into a ConfigMap.
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: halo
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      # ServerSideApply keeps the ~810 KB page ConfigMaps out of the
+      # client-side last-applied-configuration annotation (262 KB limit).
+      - ServerSideApply=true
+    automated:
+      # See argocd-manifests-applicationset.yaml for the reasoning.
+      selfHeal: false
+      prune: true

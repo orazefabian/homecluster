@@ -118,6 +118,7 @@ All in namespace `halo`.
 | Monitoring | `monitoring.halo.fabseit.net` | Prometheus + Grafana (kube-prometheus-stack). |
 | Samba Share | — | SMB file share, no ingress. |
 | DDClient | — | Dynamic DNS updater, no ingress. |
+| Architecture | `architecture.halo.fabseit.net` | Static cluster diagrams (nginx + one ConfigMap per page). Sources and update steps in `apps/architecture/README.md`. |
 
 ---
 
@@ -141,3 +142,28 @@ All in namespace `halo`.
 - **Headscale `override_local_dns: true`**: With `false`, split DNS rules are silently ignored on most client OSes. The global `9.9.9.9` fallback ensures public DNS still works when away from home.
 - **Two VPN options**: WireGuard (full tunnel, routes DNS to Pi-hole via DNAT) and Headscale/Tailscale (overlay, uses split DNS + subnet routing). WireGuard is the simpler/more reliable option for full tunnel access; Headscale is preferred for selective routing.
 - **ArgoCD prune disabled**: Prevents accidental deletion of resources when manifests are temporarily removed or reorganised.
+
+---
+
+## Keeping the Architecture Diagrams Current
+
+`apps/architecture/` serves the cluster diagrams at `architecture.halo.fabseit.net`. **Whenever a change affects topology, update the diagrams in the same change** — adding/removing/renaming an app, a new database/Redis/sidecar, ingress hosts, LoadBalancer IPs, DNS/VPN/TLS setup, storage or backup targets, or ArgoCD/infra components. Version bumps and resource tweaks do not need an update.
+
+Both the JSON source and the rendered HTML are committed (ArgoCD serves the HTML via ConfigMaps; the JSON is what gets edited):
+
+| Change area | Source (`apps/architecture/source/`) | Rendered page (`apps/architecture/manifests/site/`) |
+|---|---|---|
+| App added/removed, high-level flow | `homecluster.architecture.json` (incl. the "Apps" card) | `homecluster-architecture.html` |
+| HA, Immich, Paperless, Vaultwarden, Samba | `apps-home-media.architecture.json` | `apps-home-media.html` |
+| n8n, Dober dan, Homepage, Uptime Kuma, Speedtest | `apps-tools.architecture.json` | `apps-tools.html` |
+| DNS, VPN, IPs, certs, DDClient | `network.architecture.json` | `network.html` |
+| ArgoCD, Longhorn, backups, monitoring | `platform.architecture.json` | `platform.html` |
+
+Steps:
+1. Edit the affected JSON. Keep external things (FritzBox, Cloudflare, GitHub, NFS, S3, clients) outside the `k3s cluster` boundary — boundaries are bounding boxes, so place external nodes so the box does not cover them.
+2. Re-render with the Archify skill (`~/.claude/skills/archify`); it must pass `--quality showcase`:
+   `~/.nvm/versions/node/v24.14.0/bin/node bin/archify.mjs deliver architecture <source>.json <page>.html --quality showcase`
+   (The user's zsh `node` is a broken nvm lazy-load function — call the binary by full path.) A failed delivery leaves the old HTML untouched; fix the diagnosed node/label and rerun.
+3. Commit JSON and HTML together. Kustomize hashes the ConfigMap names, so the pod rolls automatically.
+
+Adding a new page/tab also requires: a link + `pages` entry in `manifests/site/index.html`, a `configMapGenerator` entry in `manifests/kustomization.yaml`, and a matching `projected.sources` entry in `manifests/deployment.yaml`. Each page must stay under 1 MiB (ConfigMap limit). Details in `apps/architecture/README.md`.

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Halo Home Cluster</title>
+<style>
+  :root { --bg:#f6f7f9; --fg:#1b1f24; --muted:#5b6470; --line:#dde1e6; --accent:#2563eb; --chip:#fff; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0f1216; --fg:#e6e9ee; --muted:#9aa4b1; --line:#262c34; --accent:#60a5fa; --chip:#161a20; } }
+  * { box-sizing: border-box; }
+  html, body { margin:0; height:100%; background:var(--bg); color:var(--fg); font:14px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  body { display:flex; flex-direction:column; }
+  nav { display:flex; align-items:center; gap:6px; padding:10px 16px; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  nav strong { margin-right:12px; }
+  nav a { padding:6px 12px; border-radius:8px; color:var(--muted); text-decoration:none; border:1px solid transparent; }
+  nav a:hover { color:var(--fg); }
+  nav a[aria-current] { color:var(--fg); background:var(--chip); border-color:var(--line); }
+  nav .sep { width:1px; height:20px; background:var(--line); margin:0 6px; }
+  iframe { flex:1; width:100%; border:0; }
+</style>
+</head>
+<body>
+<nav>
+  <strong>Halo Home Cluster</strong>
+  <a href="#overview">Overview</a>
+  <span class="sep"></span>
+  <a href="#home-media">Home &amp; Media</a>
+  <a href="#tools">Automation &amp; Tools</a>
+  <a href="#network">Network &amp; VPN</a>
+  <a href="#platform">Platform &amp; Backup</a>
+</nav>
+<iframe id="view" title="Diagram"></iframe>
+<script>
+  const pages = {
+    "overview": "homecluster-architecture.html",
+    "home-media": "apps-home-media.html",
+    "tools": "apps-tools.html",
+    "network": "network.html",
+    "platform": "platform.html"
+  };
+  function show() {
+    const key = pages[location.hash.slice(1)] ? location.hash.slice(1) : "overview";
+    document.getElementById("view").src = pages[key];
+    document.querySelectorAll("nav a").forEach(a => a.toggleAttribute("aria-current", a.hash === "#" + key));
+  }
+  addEventListener("hashchange", show);
+  show();
+</script>
+</body>
+</html>

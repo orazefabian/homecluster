@@ -134,6 +134,10 @@ data:
             href: https://kite.halo.fabseit.net
             description: Kubernetes dashboard
             icon: kubernetes.png
+        - Architecture:
+            href: https://architecture.halo.fabseit.net
+            description: Cluster diagrams
+            icon: mdi-sitemap
         - ArgoCD:
             href: https://argocd.halo.fabseit.net
             description: GitOps deployments
