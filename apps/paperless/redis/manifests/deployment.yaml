@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: redis
-        image: redis:6-alpine # Lightweight Redis version
+        image: redis:8-alpine # Lightweight Redis version
         ports:
         - containerPort: 6379
         resources:
