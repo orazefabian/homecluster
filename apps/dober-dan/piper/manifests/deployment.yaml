@@ -28,7 +28,7 @@ spec:
         runAsUser: 1001
       containers:
         - name: piper
-          image: ghcr.io/orazefabian/lang-learn-app/piper:0.2.0
+          image: ghcr.io/orazefabian/lang-learn-app/piper:0.2.1
           ports:
             - name: http
               containerPort: 5000
