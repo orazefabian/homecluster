@@ -31,7 +31,7 @@ spec:
         fsGroup: 1001
       containers:
         - name: dober-dan
-          image: ghcr.io/orazefabian/lang-learn-app/app:0.2.0
+          image: ghcr.io/orazefabian/lang-learn-app/app:0.2.1
           ports:
             - name: http
               containerPort: 3000
