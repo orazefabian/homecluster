@@ -3,7 +3,7 @@
   "extends": ["config:recommended"],
   "labels": ["renovate", "dependencies"],
   "prHourlyLimit": 0,
-  "prConcurrentLimit": 15,
+  "prConcurrentLimit": 20,
   "dependencyDashboard": true,
   "dependencyDashboardTitle": "Renovate Dependency Dashboard",
   "kubernetes": {
