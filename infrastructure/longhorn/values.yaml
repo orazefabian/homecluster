@@ -13,3 +13,17 @@ longhorn:
     defaultClassReplicaCount: 2
   defaultSettings:
     defaultReplicaCount: 2
+  metrics:
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        # kube-prometheus-stack only picks up ServiceMonitors carrying its
+        # release label (serviceMonitorSelector on the Prometheus CR).
+        release: monitoring-helm
+      metricRelabelings:
+        # Controller internals (REST client + workqueue) are ~80% of the
+        # series each longhorn-manager exposes and say nothing about volume
+        # performance. Keeps volume/replica/engine/node/disk/backup metrics.
+        - sourceLabels: [__name__]
+          regex: longhorn_(rest_client|workqueue)_.*
+          action: drop

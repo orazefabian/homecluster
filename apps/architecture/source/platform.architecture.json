@@ -26,6 +26,7 @@
     { "id": "argo-sync", "from": "argocd", "to": "workloads", "label": "auto-sync", "variant": "emphasis" },
     { "id": "reload", "from": "reloader", "to": "workloads", "label": "restart" },
     { "id": "scrape", "from": "monitoring", "to": "workloads", "label": "scrape", "variant": "dashed" },
+    { "id": "scrape-lh", "from": "monitoring", "to": "longhorn", "label": "scrape", "variant": "dashed" },
     { "id": "pvc", "from": "workloads", "to": "longhorn", "label": "PVCs", "labelDy": 24 },
     { "id": "lh-nfs", "from": "longhorn", "to": "nfs", "label": "Tue / Sat", "fromSide": "bottom", "toSide": "top" },
     { "id": "lh-s3", "from": "longhorn", "to": "s3", "label": "monthly", "fromSide": "bottom", "toSide": "top" },
