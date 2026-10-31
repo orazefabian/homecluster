@@ -47,6 +47,20 @@ spec:
               value: "9.9.9.9;1.1.1.1"
             - name: FTLCONF_misc_etc_dnsmasq_d
               value: "true"
+            # Local DNS is config-as-code: setting these makes the matching
+            # admin-UI pages read-only and overwrites what pihole.toml holds.
+            - name: FTLCONF_dns_hosts
+              value: "192.168.8.99 nas.home;192.168.8.50 data.home;192.168.8.1 fritz.box;192.168.8.98 raspi.home"
+            # Every *.fabseit.net name (incl. *.halo.fabseit.net) goes to the
+            # ingress-nginx LB, so new apps need no DNS entry. vpn.fabseit.net
+            # is excluded and resolved upstream: Headscale terminates its own
+            # TLS and WireGuard is UDP, neither goes through the ingress.
+            - name: FTLCONF_misc_dnsmasq_lines
+              value: "address=/fabseit.net/192.168.8.30;server=/vpn.fabseit.net/#"
+            # Clears the per-app CNAMEs once set via the UI; the wildcard above
+            # replaces them.
+            - name: FTLCONF_dns_cnameRecords
+              value: ""
           volumeMounts:
             - mountPath: /etc/dnsmasq.d
               name: dnsmasq-config-volume
