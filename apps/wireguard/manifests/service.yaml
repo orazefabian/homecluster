@@ -15,3 +15,7 @@ spec:
   selector:
     app: wireguard
   type: LoadBalancer
+  # Only the node running the pod announces the VIP, so tunnel traffic isn't
+  # forwarded through whichever node MetalLB happened to pick. Also lets
+  # WireGuard see the peers' real endpoints instead of a node IP.
+  externalTrafficPolicy: Local

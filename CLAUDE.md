@@ -31,6 +31,8 @@ ServerSideApply is enabled cluster-wide to handle oversized CRD annotations (kub
 
 MetalLB pool: `192.168.8.30–192.168.8.80` (Layer 2 / ARP).
 
+With `externalTrafficPolicy: Cluster` (the default) MetalLB may announce a VIP from any node, which then forwards to the pod — an extra hop on every packet. Pi-hole, Samba and WireGuard therefore use `Local`, so the VIP follows the pod (and client IPs are preserved).
+
 ---
 
 ## DNS Architecture

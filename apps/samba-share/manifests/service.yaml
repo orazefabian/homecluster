@@ -20,3 +20,7 @@ spec:
   selector:
     app: samba
   type: LoadBalancer
+  # Only the node running the pod announces the VIP, so SMB traffic isn't
+  # forwarded through whichever node MetalLB happened to pick first. Also
+  # preserves client IPs.
+  externalTrafficPolicy: Local
