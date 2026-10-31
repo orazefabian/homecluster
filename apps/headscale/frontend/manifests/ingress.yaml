@@ -5,20 +5,25 @@ metadata:
   namespace: halo
 spec:
   ingressClassName: nginx
+  # Reachable as both headplane.halo.fabseit.net and headplane.fabseit.net. The
+  # anchor keeps a single backend definition for the two hosts.
   rules:
-  - host: headplane.halo.fabseit.net
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: headplane
-            port:
-              number: 3000
+    - host: headplane.halo.fabseit.net
+      http: &http
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: headplane
+                port:
+                  number: 3000
+    - host: headplane.fabseit.net
+      http: *http
   tls:
     - hosts:
-      - headplane.halo.fabseit.net
+        - headplane.halo.fabseit.net
+        - headplane.fabseit.net
       secretName: local-fabseit-net-prod-tls
 ---
 apiVersion: networking.k8s.io/v1
@@ -30,18 +35,23 @@ metadata:
     nginx.ingress.kubernetes.io/permanent-redirect: https://headplane.halo.fabseit.net/admin
 spec:
   ingressClassName: nginx
+  # Reachable as both headplane.halo.fabseit.net and headplane.fabseit.net. The
+  # anchor keeps a single backend definition for the two hosts.
   rules:
-  - host: headplane.halo.fabseit.net
-    http:
-      paths:
-      - path: /
-        pathType: Exact
-        backend:
-          service:
-            name: headplane
-            port:
-              number: 3000
+    - host: headplane.halo.fabseit.net
+      http: &http
+        paths:
+          - path: /
+            pathType: Exact
+            backend:
+              service:
+                name: headplane
+                port:
+                  number: 3000
+    - host: headplane.fabseit.net
+      http: *http
   tls:
     - hosts:
-      - headplane.halo.fabseit.net
+        - headplane.halo.fabseit.net
+        - headplane.fabseit.net
       secretName: local-fabseit-net-prod-tls

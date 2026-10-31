@@ -1,15 +1,15 @@
----
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: grafana
   namespace: monitoring
-
 spec:
   ingressClassName: nginx
+  # Reachable as both monitoring.halo.fabseit.net and monitoring.fabseit.net. The
+  # anchor keeps a single backend definition for the two hosts.
   rules:
     - host: monitoring.halo.fabseit.net
-      http:
+      http: &http
         paths:
           - path: /
             pathType: Prefix
@@ -18,7 +18,10 @@ spec:
                 name: monitoring-helm-grafana
                 port:
                   number: 80
+    - host: monitoring.fabseit.net
+      http: *http
   tls:
     - hosts:
         - monitoring.halo.fabseit.net
+        - monitoring.fabseit.net
       secretName: monitoring-fabseit-net-prod-tls

@@ -43,4 +43,5 @@ spec:
   commonName: "argocd.halo.fabseit.net"
   dnsNames:
     - "argocd.halo.fabseit.net"
+    - "argocd.fabseit.net"
 

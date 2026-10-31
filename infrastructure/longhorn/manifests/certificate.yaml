@@ -12,4 +12,5 @@ spec:
   commonName: "longhorn.halo.fabseit.net"
   dnsNames:
     - "longhorn.halo.fabseit.net"
+    - "longhorn.fabseit.net"
 

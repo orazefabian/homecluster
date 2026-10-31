@@ -5,9 +5,11 @@ metadata:
   namespace: halo
 spec:
   ingressClassName: nginx
+  # Reachable as both architecture.halo.fabseit.net and architecture.fabseit.net. The
+  # anchor keeps a single backend definition for the two hosts.
   rules:
     - host: architecture.halo.fabseit.net
-      http:
+      http: &http
         paths:
           - path: /
             pathType: Prefix
@@ -16,7 +18,10 @@ spec:
                 name: architecture
                 port:
                   number: 80
+    - host: architecture.fabseit.net
+      http: *http
   tls:
     - hosts:
         - architecture.halo.fabseit.net
+        - architecture.fabseit.net
       secretName: local-fabseit-net-prod-tls

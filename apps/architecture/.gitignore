@@ -1,0 +1,3 @@
+# Archify delivery receipts written next to each rendered page
+manifests/site/*.delivery.json
+manifests/site/*delivery-pending.json

@@ -3,22 +3,25 @@ kind: Ingress
 metadata:
   name: pihole
   namespace: halo
-  annotations:
-    #    nginx.ingress.kubernetes.io/rewrite-target: /admin # Rewrite root 
 spec:
-  ingressClassName: nginx # Specify the Traefik ingress class explicitly
+  ingressClassName: nginx
+  # Reachable as both pihole.halo.fabseit.net and pihole.fabseit.net. The
+  # anchor keeps a single backend definition for the two hosts.
   rules:
-    - host: pihole.halo.fabseit.net # Match the host
-      http:
+    - host: pihole.halo.fabseit.net
+      http: &http
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: pihole # Backend service name
+                name: pihole
                 port:
-                  number: 80 # Backend service port
+                  number: 80
+    - host: pihole.fabseit.net
+      http: *http
   tls:
     - hosts:
-        - pihole.halo.fabseit.net # TLS will apply to this host
-      secretName: local-fabseit-net-prod-tls # Reference to the TLS secret
+        - pihole.halo.fabseit.net
+        - pihole.fabseit.net
+      secretName: local-fabseit-net-prod-tls

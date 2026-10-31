@@ -4,30 +4,24 @@ metadata:
   name: bitwarden
   namespace: halo
 spec:
-  ingressClassName: nginx # Specify the Traefik ingress class explicitly
+  ingressClassName: nginx
+  # Reachable as both bitwarden.halo.fabseit.net and bitwarden.fabseit.net. The
+  # anchor keeps a single backend definition for the two hosts.
   rules:
-    - host: bitwarden.halo.fabseit.net # Match the host
-      http:
+    - host: bitwarden.halo.fabseit.net
+      http: &http
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: bitwarden # Backend service name
+                name: bitwarden
                 port:
-                  number: 80 # Backend service port
-    - host: bitwarden.fabseit.net # Match the host
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: bitwarden # Backend service name
-                port:
-                  number: 80 # Backend service port
+                  number: 80
+    - host: bitwarden.fabseit.net
+      http: *http
   tls:
     - hosts:
-        - bitwarden.halo.fabseit.net # TLS will apply to this host
+        - bitwarden.halo.fabseit.net
         - bitwarden.fabseit.net
-      secretName: local-fabseit-net-prod-tls # Reference to the TLS secret
+      secretName: local-fabseit-net-prod-tls

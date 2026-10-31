@@ -12,4 +12,5 @@ spec:
   commonName: "monitoring.halo.fabseit.net"
   dnsNames:
     - "monitoring.halo.fabseit.net"
+    - "monitoring.fabseit.net"
 

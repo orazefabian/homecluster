@@ -4,26 +4,28 @@ metadata:
   name: argocd
   namespace: argocd
   annotations:
-    cert-manager.io/cluster-issuer: cloudflare-clusterissuer-prod
-    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
     # If you encounter a redirect loop or are getting a 307 response code
     # then you need to force the nginx ingress to connect to the backend using HTTPS.
-    #
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
 spec:
-  ingressClassName: nginx # Specify the nginx ingress class explicitly
+  ingressClassName: nginx
+  # Reachable as both argocd.halo.fabseit.net and argocd.fabseit.net. The
+  # anchor keeps a single backend definition for the two hosts.
   rules:
-    - host: argocd.halo.fabseit.net # Match the host
-      http:
+    - host: argocd.halo.fabseit.net
+      http: &http
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: argocd-server # Backend service name
+                name: argocd-server
                 port:
-                  name: https # Backend service port
+                  name: https
+    - host: argocd.fabseit.net
+      http: *http
   tls:
     - hosts:
-        - argocd.halo.fabseit.net # TLS will apply to this host
-      secretName: local-fabseit-net-argocd-prod-tls # Reference to the TLS secret
+        - argocd.halo.fabseit.net
+        - argocd.fabseit.net
+      secretName: local-fabseit-net-argocd-prod-tls

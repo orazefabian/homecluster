@@ -4,19 +4,24 @@ metadata:
   name: uptime-kuma
   namespace: halo
 spec:
-  ingressClassName: nginx # Specify the Traefik ingress class explicitly
+  ingressClassName: nginx
+  # Reachable as both uptime.halo.fabseit.net and uptime.fabseit.net. The
+  # anchor keeps a single backend definition for the two hosts.
   rules:
-    - host: uptime.halo.fabseit.net # Match the host
-      http:
+    - host: uptime.halo.fabseit.net
+      http: &http
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: uptime-kuma # Backend service name
+                name: uptime-kuma
                 port:
-                  number: 3001 # Backend service port
+                  number: 3001
+    - host: uptime.fabseit.net
+      http: *http
   tls:
     - hosts:
-        - uptime.halo.fabseit.net # TLS will apply to this host
-      secretName: local-fabseit-net-prod-tls # Reference to the TLS secret
+        - uptime.halo.fabseit.net
+        - uptime.fabseit.net
+      secretName: local-fabseit-net-prod-tls

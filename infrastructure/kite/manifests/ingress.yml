@@ -1,4 +1,3 @@
----
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -6,21 +5,25 @@ metadata:
   namespace: kube-system
   labels:
     app.kubernetes.io/instance: kite
-
 spec:
-  ingressClassName: nginx # Specify the Traefik ingress class explicitly
+  ingressClassName: nginx
+  # Reachable as both kite.halo.fabseit.net and kite.fabseit.net. The
+  # anchor keeps a single backend definition for the two hosts.
   rules:
-    - host: kite.halo.fabseit.net # Match the host
-      http:
+    - host: kite.halo.fabseit.net
+      http: &http
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: kite # Backend service name
+                name: kite
                 port:
-                  number: 8080 # Backend service port
+                  number: 8080
+    - host: kite.fabseit.net
+      http: *http
   tls:
     - hosts:
-        - kite.halo.fabseit.net # TLS will apply to this host
-      secretName: kite-fabseit-net-prod-tls # Reference to the TLS secret
+        - kite.halo.fabseit.net
+        - kite.fabseit.net
+      secretName: kite-fabseit-net-prod-tls

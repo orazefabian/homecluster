@@ -4,31 +4,24 @@ metadata:
   name: homeassistant
   namespace: halo
 spec:
-  ingressClassName: nginx # Specify the Traefik ingress class explicitly
+  ingressClassName: nginx
+  # Reachable as both homeassistant.halo.fabseit.net and homeassistant.fabseit.net. The
+  # anchor keeps a single backend definition for the two hosts.
   rules:
-    - host: homeassistant.halo.fabseit.net # Match the host
-      http:
+    - host: homeassistant.halo.fabseit.net
+      http: &http
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: homeassistant # Backend service name
+                name: homeassistant
                 port:
-                  number: 8123 # Backend service port
-    - host: homeassistant.fabseit.net # Match the host
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: homeassistant # Backend service name
-                port:
-                  number: 8123 # Backend service port
+                  number: 8123
+    - host: homeassistant.fabseit.net
+      http: *http
   tls:
     - hosts:
-        - homeassistant.halo.fabseit.net # TLS will apply to this host
+        - homeassistant.halo.fabseit.net
         - homeassistant.fabseit.net
-      secretName: local-fabseit-net-prod-tls # Reference to the TLS secret
- 
+      secretName: local-fabseit-net-prod-tls

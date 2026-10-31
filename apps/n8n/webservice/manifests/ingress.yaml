@@ -4,30 +4,24 @@ metadata:
   name: n8n
   namespace: halo
 spec:
-  ingressClassName: nginx # Specify the Traefik ingress class explicitly
+  ingressClassName: nginx
+  # Reachable as both n8n.halo.fabseit.net and n8n.fabseit.net. The
+  # anchor keeps a single backend definition for the two hosts.
   rules:
-    - host: n8n.halo.fabseit.net # Match the host
-      http:
+    - host: n8n.halo.fabseit.net
+      http: &http
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: n8n # Backend service name
+                name: n8n
                 port:
-                  number: 5678 # Backend service port
-    - host: n8n.fabseit.net # Match the host
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: n8n # Backend service name
-                port:
-                  number: 5678 # Backend service port
+                  number: 5678
+    - host: n8n.fabseit.net
+      http: *http
   tls:
     - hosts:
-        - n8n.halo.fabseit.net # TLS will apply to this host
+        - n8n.halo.fabseit.net
         - n8n.fabseit.net
-      secretName: local-fabseit-net-prod-tls # Reference to the TLS secret
+      secretName: local-fabseit-net-prod-tls

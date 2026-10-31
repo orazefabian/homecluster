@@ -6,19 +6,24 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: "100m"
 spec:
-  ingressClassName: nginx # Specify the Traefik ingress class explicitly
+  ingressClassName: nginx
+  # Reachable as both paperless.halo.fabseit.net and paperless.fabseit.net. The
+  # anchor keeps a single backend definition for the two hosts.
   rules:
-  - host: paperless.halo.fabseit.net
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: paperless-service
-            port:
-              number: 8000
+    - host: paperless.halo.fabseit.net
+      http: &http
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: paperless-service
+                port:
+                  number: 8000
+    - host: paperless.fabseit.net
+      http: *http
   tls:
     - hosts:
-        - paperless.halo.fabseit.net # TLS will apply to this host
-      secretName: local-fabseit-net-prod-tls # Reference to the TLS secret
+        - paperless.halo.fabseit.net
+        - paperless.fabseit.net
+      secretName: local-fabseit-net-prod-tls

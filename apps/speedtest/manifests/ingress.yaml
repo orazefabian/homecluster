@@ -4,19 +4,24 @@ metadata:
   name: speedtest
   namespace: halo
 spec:
-  ingressClassName: nginx # Specify the Traefik ingress class explicitly
+  ingressClassName: nginx
+  # Reachable as both speedtest.halo.fabseit.net and speedtest.fabseit.net. The
+  # anchor keeps a single backend definition for the two hosts.
   rules:
-    - host: speedtest.halo.fabseit.net # Match the host
-      http:
+    - host: speedtest.halo.fabseit.net
+      http: &http
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: speedtest # Backend service name
+                name: speedtest
                 port:
-                  number: 80 # Backend service port
+                  number: 80
+    - host: speedtest.fabseit.net
+      http: *http
   tls:
     - hosts:
-        - speedtest.halo.fabseit.net # TLS will apply to this host
-      secretName: local-fabseit-net-prod-tls # Reference to the TLS secret
+        - speedtest.halo.fabseit.net
+        - speedtest.fabseit.net
+      secretName: local-fabseit-net-prod-tls

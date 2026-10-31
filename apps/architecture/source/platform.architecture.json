@@ -4,6 +4,7 @@
   "meta": {
     "title": "Platform: GitOps, Storage & Backup",
     "quality_profile": "showcase",
+    "output": "apps/architecture/manifests/site/platform.html",
     "viewBox": [1100, 560]
   },
   "components": [

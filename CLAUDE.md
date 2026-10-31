@@ -162,7 +162,7 @@ Both the JSON source and the rendered HTML are committed (ArgoCD serves the HTML
 Steps:
 1. Edit the affected JSON. Keep external things (FritzBox, Cloudflare, GitHub, NFS, S3, clients) outside the `k3s cluster` boundary — boundaries are bounding boxes, so place external nodes so the box does not cover them.
 2. Re-render with the Archify skill (`~/.claude/skills/archify`); it must pass `--quality showcase`:
-   `~/.nvm/versions/node/v24.14.0/bin/node bin/archify.mjs deliver architecture <source>.json <page>.html --quality showcase`
+   `~/.nvm/versions/node/v24.22.2/bin/node bin/archify.mjs deliver architecture <source>.json <page>.html --quality showcase`
    (The user's zsh `node` is a broken nvm lazy-load function — call the binary by full path.) A failed delivery leaves the old HTML untouched; fix the diagnosed node/label and rerun.
 3. Commit JSON and HTML together. Kustomize hashes the ConfigMap names, so the pod rolls automatically.
 

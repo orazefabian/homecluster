@@ -4,6 +4,7 @@
   "meta": {
     "title": "Home & Media Apps",
     "quality_profile": "showcase",
+    "output": "apps/architecture/manifests/site/apps-home-media.html",
     "viewBox": [1210, 480]
   },
   "components": [
@@ -36,7 +37,7 @@
     { "id": "paperless-tasks", "from": "paperless", "to": "paperless-redis", "label": "Celery", "fromSide": "bottom", "toSide": "top", "labelDy": 24 }
   ],
   "cards": [
-    { "dot": "cyan", "title": "Hosts", "items": ["homeassistant(.halo).fabseit.net", "immich / paperless .halo.fabseit.net", "bitwarden(.halo).fabseit.net", "Samba: LAN only, no ingress"] },
+    { "dot": "cyan", "title": "Hosts", "items": ["<app>(.halo).fabseit.net for all", "homeassistant · immich", "paperless · bitwarden", "Samba: LAN only, no ingress"] },
     { "dot": "amber", "title": "Constraints", "items": ["HA pinned to node homeassistant=true", "Immich DB on PG14 — EOL Nov 2026", "Recreate strategy on every RWO app"] }
   ]
 }
