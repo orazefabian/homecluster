@@ -27,3 +27,14 @@ spec:
             limits:
               memory: "512Mi"
               cpu: "500m"
+      # No volume, but kept on the same nodes as the rest of Immich.
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - halo-1
+                      - halo-2

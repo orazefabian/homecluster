@@ -54,6 +54,18 @@ spec:
         - name: upload-volume
           persistentVolumeClaim:
             claimName: immich-upload-pvc
+      # Longhorn replicas only live on halo-1/halo-2 (the only nodes with a
+      # schedulable disk); running here keeps one replica local.
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - halo-1
+                      - halo-2
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -93,3 +105,15 @@ spec:
         - name: cache-volume
           persistentVolumeClaim:
             claimName: immich-cache-pvc
+      # Longhorn replicas only live on halo-1/halo-2 (the only nodes with a
+      # schedulable disk); running here keeps one replica local.
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - halo-1
+                      - halo-2

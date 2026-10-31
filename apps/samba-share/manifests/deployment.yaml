@@ -83,20 +83,17 @@ spec:
       - name: samba-data-claim
         persistentVolumeClaim:
           claimName: samba-data
-     
-      tolerations:
-      - key: "dedicated"
-        operator: "Equal"
-        value: "homeassistant"
-        effect: "NoSchedule"
 
-      # Add node affinity to ensure scheduling only on the master node with the label `homeassistant=true`
+      # Longhorn replicas only live on halo-1/halo-2 (the only nodes with a
+      # schedulable disk). Running here keeps one replica local, so client
+      # writes leave the node once instead of twice.
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: "sambashare"
+              - key: kubernetes.io/hostname
                 operator: In
                 values:
-                - "true"
+                - halo-1
+                - halo-2

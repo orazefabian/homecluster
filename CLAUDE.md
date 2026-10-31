@@ -78,6 +78,8 @@ All PVCs use `storageClassName: longhorn` and `accessModes: ReadWriteOnce`.
 
 **Important**: Because PVCs are RWO, all Deployments that have persistent storage use `strategy: Recreate` (not RollingUpdate). A rolling update would try to schedule a new pod before the old one releases the volume.
 
+**Replica placement**: only halo-1 and halo-2 have a schedulable Longhorn disk (NVMe at `/mnt/nvme-storage`), so with 2 replicas every volume has exactly one replica on each. A pod on halo-0 or halo-8 has no local replica and does all I/O over 1 GbE (writes leave the node twice). The v1 engine round-robins reads across replicas, so `dataLocality` changes nothing here — node placement is the lever. Storage-heavy workloads (Immich, Paperless, Samba) therefore carry a required `nodeAffinity` on `kubernetes.io/hostname` in `[halo-1, halo-2]`. Longhorn volume metrics are scraped by Prometheus; see the "Longhorn / Volumes" Grafana dashboard.
+
 ### Backup schedule
 
 PVCs opt into backup groups via labels:

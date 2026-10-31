@@ -63,3 +63,17 @@ spec:
       - name: paperless-storage
         persistentVolumeClaim:
           claimName: paperless-pvc
+
+      # Longhorn replicas only live on halo-1/halo-2 (the only nodes with a
+      # schedulable disk); running here keeps one replica local for the
+      # SQLite DB and media.
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - halo-1
+                - halo-2

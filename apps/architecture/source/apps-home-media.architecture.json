@@ -38,6 +38,6 @@
   ],
   "cards": [
     { "dot": "cyan", "title": "Hosts", "items": ["<app>(.halo).fabseit.net for all", "homeassistant · immich", "paperless · bitwarden", "Samba: LAN only, no ingress"] },
-    { "dot": "amber", "title": "Constraints", "items": ["HA pinned to node homeassistant=true", "Immich DB on PG14 — EOL Nov 2026", "Recreate strategy on every RWO app"] }
+    { "dot": "amber", "title": "Constraints", "items": ["HA pinned to node homeassistant=true", "Storage pods on halo-1/2 (Longhorn disks)", "Immich DB on PG14 — EOL Nov 2026", "Recreate strategy on every RWO app"] }
   ]
 }

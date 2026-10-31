@@ -35,3 +35,15 @@ spec:
       volumes:
       - name: redis-data
         emptyDir: {} # Temporary storage, cleared upon pod restart
+
+      # No Longhorn volume, but kept on the same nodes as Paperless.
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - halo-1
+                - halo-2
