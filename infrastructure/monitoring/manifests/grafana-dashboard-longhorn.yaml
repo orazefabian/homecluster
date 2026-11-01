@@ -292,7 +292,7 @@ data:
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "description": "Age of the least recent successful backup among attached volumes. Detached leftovers (e.g. heimdall-config) are excluded here but still listed in 'Time since last backup'.",
+          "description": "Age of the least recent successful backup among attached volumes. Detached leftovers are excluded here but still listed in 'Time since last backup'.",
           "gridPos": {
             "h": 4,
             "w": 6,

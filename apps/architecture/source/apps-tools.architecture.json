@@ -36,7 +36,6 @@
     { "id": "dd-asr", "from": "dd-web", "to": "whisper", "label": "ASR", "fromSide": "bottom", "toSide": "top" }
   ],
   "cards": [
-    { "dot": "cyan", "title": "Hosts", "items": ["<app>(.halo).fabseit.net for all", "n8n · dober-dan · dashboard", "uptime · speedtest"] },
-    { "dot": "amber", "title": "Heads-up", "items": ["Heimdall ingress claims the same dashboard hosts as Homepage"] }
+    { "dot": "cyan", "title": "Hosts", "items": ["<app>(.halo).fabseit.net for all", "n8n · dober-dan · dashboard", "uptime · speedtest"] }
   ]
 }

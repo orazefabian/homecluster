@@ -111,7 +111,7 @@ All in namespace `halo`.
 | Paperless-ngx | `paperless.halo.fabseit.net` | Document management. Separate Postgres + Redis deployments. |
 | n8n | `n8n.halo.fabseit.net`, `n8n.fabseit.net` | Workflow automation. Separate Postgres deployment. |
 | Bitwarden | `bitwarden.halo.fabseit.net`, `bitwarden.fabseit.net` | Password manager. |
-| Heimdall | `dashboard.halo.fabseit.net`, `dashboard.fabseit.net` | App dashboard. |
+| Homepage | `dashboard.halo.fabseit.net`, `dashboard.fabseit.net` | App dashboard. |
 | Headscale | `vpn.fabseit.net` | Self-hosted Tailscale control plane. TLS handled directly by headscale (Let's Encrypt HTTP-01), not via ingress-nginx. |
 | Headplane | `headplane.halo.fabseit.net` | Headscale web UI. |
 | WireGuard | `192.168.8.51:51820` (UDP) | VPN. Pinned away from `halo-8` node. Multiple peers configured (see deployment env `PEERS`). |

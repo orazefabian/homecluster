@@ -43,7 +43,7 @@
   ],
   "cards": [
     { "dot": "cyan", "title": "Network", "items": ["MetalLB L2 pool .30–.80", "FritzBox → Pi-hole, 9.9.9.9 fallback", "VPN: WireGuard full tunnel or Headscale split DNS"] },
-    { "dot": "emerald", "title": "Apps", "items": ["Home Assistant, Immich, Paperless, Vaultwarden", "n8n, Dober dan, Homepage, Heimdall", "Uptime Kuma, Speedtest, Samba"] },
+    { "dot": "emerald", "title": "Apps", "items": ["Home Assistant, Immich, Paperless, Vaultwarden", "n8n, Dober dan, Homepage", "Uptime Kuma, Speedtest, Samba"] },
     { "dot": "violet", "title": "Platform", "items": ["ArgoCD: SSA on, prune off", "Tue / Sat NFS jobs, monthly S3", "Reloader, Kite, kube-prometheus-stack"] }
   ]
 }

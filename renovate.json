@@ -39,11 +39,6 @@
       "groupSlug": "headscale"
     },
     {
-      "matchFileNames": ["apps/heimdall/**"],
-      "groupName": "heimdall",
-      "groupSlug": "heimdall"
-    },
-    {
       "matchFileNames": ["apps/homeassistant/**"],
       "groupName": "home-assistant",
       "groupSlug": "home-assistant"
