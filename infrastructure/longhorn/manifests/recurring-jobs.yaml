@@ -30,6 +30,27 @@ spec:
   labels: {}
   parameters: {}
 ---
+# Volumes that are NOT backed up (Prometheus TSDB, Alertmanager: regenerable).
+# Two jobs in one: a volume without any recurring-job label is silently put
+# into the "default" group (= weekly backups), so these volumes need a job;
+# and Prometheus rewrites/deletes its blocks constantly, which Longhorn only
+# reclaims through a filesystem trim (actual size grew to ~2x the volume).
+apiVersion: longhorn.io/v1beta2
+kind: RecurringJob
+metadata:
+  name: metrics-trim
+  namespace: longhorn-system
+spec:
+  name: metrics-trim
+  cron: "0 3 * * SUN"
+  task: filesystem-trim
+  groups:
+    - trim
+  retain: 0
+  concurrency: 1
+  labels: {}
+  parameters: {}
+---
 apiVersion: longhorn.io/v1beta2
 kind: RecurringJob
 metadata:

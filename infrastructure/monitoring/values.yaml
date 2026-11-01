@@ -15,13 +15,18 @@ kube-prometheus-stack:
           memory: 1556Mi
 
       # Persistent storage using Longhorn
+      # Not backed up: 15 days of metrics are regenerable, and the TSDB's
+      # constant block churn made it the largest item in every backup run.
+      # The "trim" group (weekly filesystem-trim, see
+      # infrastructure/longhorn/manifests/recurring-jobs.yaml) also keeps
+      # Longhorn from adding the volume to the "default" backup group.
+      # NOTE: labels only apply when the PVC is created - an existing PVC (and
+      # its Longhorn volume) must be relabeled by hand.
       storageSpec:
         volumeClaimTemplate:
           metadata:
             labels:
-              recurring-job-group.longhorn.io/default: "enabled"
-              recurring-job.longhorn.io/random-volumes: "enabled"
-              recurring-job.longhorn.io/s3-monthly-backup: "enabled"
+              recurring-job-group.longhorn.io/trim: "enabled"
           spec:
             storageClassName: longhorn
             accessModes: ["ReadWriteOnce"]
@@ -99,12 +104,13 @@ kube-prometheus-stack:
           memory: 128Mi
 
       # Persistent storage
+      # Not backed up either (silences/notification state only); see the
+      # Prometheus storageSpec above.
       storage:
         volumeClaimTemplate:
           metadata:
             labels:
-              recurring-job-group.longhorn.io/default: "enabled"
-              recurring-job.longhorn.io/s3-monthly-backup: "enabled"
+              recurring-job-group.longhorn.io/trim: "enabled"
           spec:
             storageClassName: longhorn
             accessModes: ["ReadWriteOnce"]
