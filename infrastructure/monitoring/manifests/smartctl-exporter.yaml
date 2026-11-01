@@ -1,0 +1,154 @@
+# S.M.A.R.T. metrics (smartctl_*) for the physical disks of every node:
+# NVMe on halo-0/1/2, USB SSD + USB HDD on halo-8. SD cards have no SMART.
+#
+# Device selection: the exporter's own --smartctl.device-include/-exclude only
+# match device *names*, and Longhorn's iSCSI volumes show up as sdX just like
+# halo-8's USB disks (names shift as volumes attach). So the entrypoint walks
+# /sys/block once at start and passes only real disks via --smartctl.device:
+#   - nvmeXn1           -> /dev/nvmeX (type nvme)
+#   - sdX, unless model is VIRTUAL-DISK or it sits on an iSCSI session
+#                        -> /dev/sdX   (type sat, needed for USB-SATA bridges)
+# Explicit devices disable the exporter's periodic rescan, so Longhorn volumes
+# attached later are never picked up. A replugged USB disk needs a pod restart.
+#
+# Spin-down: --smartctl.powermode-check=standby (smartctl --nocheck=standby)
+# skips disks that report standby. That does NOT work for the WD HDD on halo-8
+# (/mnt/backup-data): its WD Elements USB bridge spins the drive down itself
+# (30 min idle timer) and hides the power state, so smartctl would read it
+# every poll and keep it spinning forever.
+# Hence rotational disks go through a wrapper (--smartctl.path): it only runs
+# smartctl if the disk saw real block I/O in the last 10 min (= it is spinning
+# anyway, e.g. during backups), otherwise it answers like smartctl does for a
+# sleeping disk (exit 2). SMART passthrough is not counted in
+# /sys/block/<dev>/stat, so polling never resets this window. Rotational disks
+# therefore refresh only around real activity (backups, Tue/Sat), and show no
+# data after a pod restart until the next activity. The exporter logs a
+# "low-power mode" error for every skipped poll - expected, not a failure.
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: smartctl-exporter
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: smartctl-exporter
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: smartctl-exporter
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: smartctl-exporter
+    spec:
+      tolerations:
+        - operator: Exists
+      containers:
+        - name: smartctl-exporter
+          image: docker.io/prometheuscommunity/smartctl-exporter:v0.15.0
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -eu
+              mkdir -p /tmp/gate
+              cat > /tmp/smartctl-gate <<'EOF'
+              #!/bin/sh
+              # smartctl wrapper: skip gated (rotational) disks without recent I/O.
+              dev=""
+              for a in "$@"; do case "$a" in /dev/*) dev="$a" ;; esac; done
+              n=${dev#/dev/}
+              if [ -n "$n" ] && [ -f "/tmp/gate/$n.ts" ]; then
+                now=$(date +%s)
+                cur=$(tr -s ' ' < "/sys/block/$n/stat")
+                if [ "$cur" != "$(cat "/tmp/gate/$n.stat")" ]; then
+                  echo "$cur" > "/tmp/gate/$n.stat"; echo "$now" > "/tmp/gate/$n.ts"
+                fi
+                if [ $((now - $(cat "/tmp/gate/$n.ts"))) -gt 600 ]; then
+                  echo '{"json_format_version":[1,0],"smartctl":{"exit_status":2,"messages":[{"string":"Device is in STANDBY mode (inferred: no block I/O for >10 min), exit(2)","severity":"information"}]}}'
+                  exit 2
+                fi
+              fi
+              exec /usr/sbin/smartctl "$@"
+              EOF
+              chmod +x /tmp/smartctl-gate
+              devs=""
+              for b in /sys/block/nvme*n1 /sys/block/sd*; do
+                [ -e "$b" ] || continue
+                n=${b##*/}
+                case "$n" in
+                  nvme*) devs="$devs --smartctl.device=/dev/${n%n1};nvme"; continue ;;
+                esac
+                model=$(tr -d ' ' < "$b/device/model" 2>/dev/null || true)
+                [ "$model" = "VIRTUAL-DISK" ] && { echo "skip $n (Longhorn volume)"; continue; }
+                readlink -f "$b" | grep -q '/session' && { echo "skip $n (iSCSI)"; continue; }
+                devs="$devs --smartctl.device=/dev/$n;sat"
+                if [ "$(cat "$b/queue/rotational")" = "1" ]; then
+                  # Start as "idle": no reading until the disk shows real I/O.
+                  tr -s ' ' < "$b/stat" > "/tmp/gate/$n.stat"; echo 0 > "/tmp/gate/$n.ts"
+                  echo "gate $n (rotational: polled only within 10 min of real I/O)"
+                fi
+              done
+              if [ -z "$devs" ]; then
+                # Never fall back to scanning (it would include Longhorn volumes).
+                echo "no physical disks found on this node, idling"; exec sleep 2147483647
+              fi
+              echo "monitoring:$devs"
+              # shellcheck disable=SC2086
+              exec /bin/smartctl_exporter $devs \
+                --smartctl.path=/tmp/smartctl-gate \
+                --smartctl.interval=60s \
+                --smartctl.powermode-check=standby \
+                --web.listen-address=:9633
+          ports:
+            - name: metrics
+              containerPort: 9633
+          securityContext:
+            # Raw ATA/NVMe passthrough needs root + device access.
+            privileged: true
+            runAsUser: 0
+          resources:
+            requests:
+              cpu: 5m
+              memory: 24Mi
+            limits:
+              memory: 64Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: smartctl-exporter
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: smartctl-exporter
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: smartctl-exporter
+  ports:
+    - name: metrics
+      port: 9633
+      targetPort: metrics
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: smartctl-exporter
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: smartctl-exporter
+    # kube-prometheus-stack only picks up ServiceMonitors carrying its
+    # release label (serviceMonitorSelector on the Prometheus CR).
+    release: monitoring-helm
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: smartctl-exporter
+  endpoints:
+    - port: metrics
+      interval: 60s
+      scrapeTimeout: 30s
+      relabelings:
+        # instance = node name (halo-0 ...) instead of the pod IP.
+        - sourceLabels: [__meta_kubernetes_pod_node_name]
+          targetLabel: instance
+        - sourceLabels: [__meta_kubernetes_pod_node_name]
+          targetLabel: node

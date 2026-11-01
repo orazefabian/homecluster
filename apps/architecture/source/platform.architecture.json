@@ -34,6 +34,7 @@
   ],
   "cards": [
     { "dot": "violet", "title": "GitOps", "items": ["Manifest + Helm ApplicationSets", "Helm: cert-manager, ingress-nginx, Longhorn"] },
-    { "dot": "emerald", "title": "Backups", "items": ["Recurring jobs keep 2 each", "Kite: cluster dashboard (kite.halo)"] }
+    { "dot": "emerald", "title": "Backups", "items": ["Recurring jobs keep 2 each", "Kite: cluster dashboard (kite.halo)"] },
+    { "dot": "cyan", "title": "Monitoring", "items": ["node-exporter + smartctl-exporter per node", "SMART: NVMe + USB disks, idle HDD not woken"] }
   ]
 }

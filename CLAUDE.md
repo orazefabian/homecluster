@@ -119,7 +119,7 @@ All in namespace `halo`.
 | Pingvin Share | `pingvin.halo.fabseit.net` | File sharing. |
 | Uptime Kuma | `uptime.halo.fabseit.net` | Uptime monitoring. |
 | Speedtest | `speedtest.halo.fabseit.net` | Network speed testing. |
-| Monitoring | `monitoring.halo.fabseit.net` | Prometheus + Grafana (kube-prometheus-stack). |
+| Monitoring | `monitoring.halo.fabseit.net` | Prometheus + Grafana (kube-prometheus-stack). `smartctl-exporter` DaemonSet adds SMART metrics for the physical disks (Longhorn iSCSI devices filtered out; halo-8's WD HDD is only read around real I/O so it can spin down) — see the header of `infrastructure/monitoring/manifests/smartctl-exporter.yaml`. |
 | Samba Share | — | SMB file share, no ingress. |
 | DDClient | — | Dynamic DNS updater, no ingress. |
 | Architecture | `architecture.halo.fabseit.net` | Static cluster diagrams (nginx + one ConfigMap per page). Sources and update steps in `apps/architecture/README.md`. |
