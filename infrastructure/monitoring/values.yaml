@@ -35,8 +35,10 @@ kube-prometheus-stack:
                 storage: 50Gi
 
       # Data retention settings
-      retention: 15d
-      retentionSize: "9GB"
+      # ~0.38 GiB/day at 60s scrape interval -> 60 days ~ 23 GiB. Keep
+      # retentionSize above that, or it cuts history short before 60d.
+      retention: 60d
+      retentionSize: "30GB"
 
       # Reduce scrape intervals for lower resource usage
       scrapeInterval: 60s
