@@ -95,6 +95,10 @@ PVCs opt into backup groups via labels:
 Backup targets:
 - NFS HDD: `nfs://192.168.8.98:/mnt/backup-data`
 - NFS SSD: `nfs://192.168.8.98:/mnt/ssd-data/longhorn-backups`
+
+The NFS server is halo-8 itself (host config, not in this repo). Its `/etc/exports` must allow the pod CIDR `10.42.0.0/16` in addition to the node IPs: pods on other nodes reach it SNAT'd to their node IP, but halo-8's own longhorn-manager connects from its pod IP and otherwise gets `access denied` — backup records it owns never sync and deletions it owns hang forever.
+
+Prometheus and Alertmanager PVCs are deliberately **not** backed up (regenerable); they sit in the `trim` group (`metrics-trim`, weekly `filesystem-trim`), which also keeps Longhorn from auto-adding them to the `default` backup group.
 - S3: Hetzner Object Storage `eu-central` (bucket `backup-halo-store`)
 
 ---
