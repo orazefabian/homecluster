@@ -13,6 +13,17 @@ longhorn:
     defaultClassReplicaCount: 2
   defaultSettings:
     defaultReplicaCount: 2
+    # S3 (Hetzner) transfers are latency-bound, not bandwidth-bound: each
+    # worker moves one 2 MiB block at a time and manages only ~15 Mbit/s.
+    # With 1 worker the monthly S3 run crawled at 12-15 Mbit/s on a
+    # 100 Mbit/s uplink.
+    # Backup runs on ONE replica -> 4 workers ~= 60 Mbit/s, leaving uplink
+    # headroom and staying gentle on Hetzner's rate limiting (SlowDown).
+    backupConcurrentLimit: 4
+    # Restore runs on EVERY replica in parallel (v1 engine), each pulling
+    # the full backup from S3 with its own workers: 2 replicas x 6 = 12
+    # streams ~= 180 Mbit/s of the 300 Mbit/s downlink.
+    restoreConcurrentLimit: 6
   metrics:
     serviceMonitor:
       enabled: true
