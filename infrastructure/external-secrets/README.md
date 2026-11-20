@@ -39,8 +39,10 @@ Bitwarden app ──edit──▶ Vaultwarden (halo/bitwarden; PVC backed up to 
   never prune it, and ignore it when comparing.
 - `refreshInterval: 1h`. The bridge pulls from Vaultwarden every 2 minutes (its liveness probe POSTs `/sync`). If Vaultwarden or the bridge is down,
   Secrets simply stop updating. Running apps are unaffected.
-- Deployments that read a synced Secret carry `reloader.stakater.com/auto: "true"` in their **metadata**
-  annotations, so a value changed in Vaultwarden rolls the pod within about an hour.
+- To have a value changed in Vaultwarden roll the pod automatically, put `reloader.stakater.com/auto: "true"`
+  in the Deployment's **metadata** annotations. Use it for API keys and tokens. **Don't** use it for
+  database passwords: changing one in Vaultwarden doesn't change it inside Postgres. Rotate those by hand
+  (`ALTER USER`, then the Vaultwarden field, then restart the app).
 
 ## One-time setup
 
