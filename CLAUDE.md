@@ -132,7 +132,7 @@ All in namespace `halo`.
 
 ## Secrets
 
-**Source of truth is Vaultwarden.** External Secrets Operator syncs items from the org/collection `homecluster` into ordinary k8s Secrets via a `bw serve` bridge (`infrastructure/external-secrets/`; setup, conventions, migration and DR runbook in its `README.md`). Never commit secret values; create the item in Vaultwarden and commit an `ExternalSecret` next to the app instead (template in the README). Every ExternalSecret uses `creationPolicy: CreateOrMerge`, so ESO never deletes a Secret.
+**Source of truth is Vaultwarden.** External Secrets Operator syncs items from the org/collection `homecluster` into ordinary k8s Secrets via a `bw serve` bridge (`infrastructure/external-secrets/`; setup, conventions, migration and DR runbook in its `README.md`). Never commit secret values; create the item in Vaultwarden and commit an `ExternalSecret` next to the app instead (template in the README). Every ExternalSecret uses `creationPolicy: CreateOrMerge`, so ESO never deletes a Secret. Every ExternalSecret must also set `target.template.metadata` with the annotations `argocd.argoproj.io/sync-options: Prune=false` and `argocd.argoproj.io/compare-options: IgnoreExtraneous`. Otherwise ESO copies ArgoCD's `app.kubernetes.io/instance` label onto the Secret, and auto-prune deletes it.
 
 - Only hand-applied Secret: `external-secrets/bitwarden-cli` (API key + master password of the read-only `k8s` Vaultwarden account).
 - The bridge needs HTTPS: it reaches Vaultwarden at `https://bitwarden.halo.fabseit.net`, pinned to `192.168.8.30` via `hostAliases` (no DNS dependency — Pi-hole's own secret comes from ESO).

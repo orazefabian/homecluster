@@ -32,6 +32,11 @@ Bitwarden app ──edit──▶ Vaultwarden (halo/bitwarden; PVC backed up to 
 - Every ExternalSecret uses `creationPolicy: CreateOrMerge`. It creates the Secret if missing, never deletes it
   (not even when the ExternalSecret is removed or pruned), and leaves keys it doesn't manage alone.
   That last part matters for Secrets that other software also writes to (`tailscale-auth`).
+- **Always set `target.template.metadata`** (with the two ArgoCD annotations from the template below).
+  Without it, ESO copies the ExternalSecret's labels onto the Secret, including ArgoCD's
+  `app.kubernetes.io/instance` tracking label. ArgoCD then treats the Secret as its own resource that
+  isn't in git, and auto-prune **deletes it** on the next sync. The annotations are a second safeguard:
+  never prune it, and ignore it when comparing.
 - `refreshInterval: 1h`. The bridge pulls from Vaultwarden every 2 minutes (its liveness probe POSTs `/sync`). If Vaultwarden or the bridge is down,
   Secrets simply stop updating. Running apps are unaffected.
 - Deployments that read a synced Secret carry `reloader.stakater.com/auto: "true"` in their **metadata**
@@ -83,8 +88,12 @@ spec:
   target:
     name: pihole-secret
     creationPolicy: CreateOrMerge
-    # template:                                  # only for non-Opaque Secrets, e.g.
-    #   type: kubernetes.io/dockerconfigjson
+    template:                                    # REQUIRED, see Conventions
+      # type: kubernetes.io/dockerconfigjson     # only for non-Opaque Secrets
+      metadata:
+        annotations:
+          argocd.argoproj.io/sync-options: Prune=false
+          argocd.argoproj.io/compare-options: IgnoreExtraneous
   data:
     - secretKey: WEBPASSWORD                     # key in the k8s Secret
       remoteRef:
