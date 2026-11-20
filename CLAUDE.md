@@ -12,7 +12,7 @@ helper/        # Utility scripts (e.g. restore-manifests)
 
 ArgoCD watches this repo and auto-syncs everything. Two ApplicationSets:
 - **manifest-based** (`argocd-manifests-applicationset.yaml`): plain YAML apps and infra
-- **Helm-based** (`argocd-helm-applicationset.yaml`): cert-manager, ingress-nginx, longhorn
+- **Helm-based** (`argocd-helm-applicationset.yaml`): cert-manager, ingress-nginx, longhorn, metallb, monitoring, external-secrets
 
 ServerSideApply is enabled cluster-wide to handle oversized CRD annotations (kube-prometheus-stack hits the 262 KB annotation limit without it). Prune is disabled to prevent accidental deletions.
 
@@ -130,15 +130,24 @@ All in namespace `halo`.
 
 ---
 
-## Key Secrets
+## Secrets
+
+**Source of truth is Vaultwarden.** External Secrets Operator syncs items from the org/collection `homecluster` into ordinary k8s Secrets via a `bw serve` bridge (`infrastructure/external-secrets/`; setup, conventions, migration and DR runbook in its `README.md`). Never commit secret values; create the item in Vaultwarden and commit an `ExternalSecret` next to the app instead (template in the README). Every ExternalSecret uses `creationPolicy: CreateOrMerge`, so ESO never deletes a Secret.
+
+- Only hand-applied Secret: `external-secrets/bitwarden-cli` (API key + master password of the read-only `k8s` Vaultwarden account).
+- The bridge needs HTTPS: it reaches Vaultwarden at `https://bitwarden.halo.fabseit.net`, pinned to `192.168.8.30` via `hostAliases` (no DNS dependency — Pi-hole's own secret comes from ESO).
+- `bw serve` has no auth; the NetworkPolicy allowing only ESO pods is load-bearing.
+- DR order: Longhorn → hand-apply `cloudflare-api-token-secret` (+ `hetzner-s3-credentials` if restoring from S3) → restore `bitwarden-pvc` → apply bootstrap Secret → ESO fills the rest.
+- Controller-generated secrets (cert-manager TLS + ACME key, webhook certs, Helm/Prometheus/ArgoCD internals) are deliberately not in Vaultwarden.
 
 | Secret | Namespace | Purpose |
 |--------|-----------|---------|
+| `bitwarden-cli` | `external-secrets` | Bootstrap: Vaultwarden login for the ESO bridge (hand-applied) |
 | `regcred` | `halo` | Image pull secret |
-| `local-fabseit-net-prod-tls` | `halo` | Wildcard TLS cert |
+| `local-fabseit-net-prod-tls` | `halo` | Wildcard TLS cert (cert-manager) |
 | `cloudflare-api-token-secret` | `cert-manager` | Cloudflare DNS-01 token |
 | `hetzner-s3-credentials` | `longhorn-system` | S3 backup credentials |
-| `tailscale-auth` | `halo` | Headscale subnet router auth key |
+| `tailscale-auth` | `halo` | Headscale subnet router auth key (`TS_AUTHKEY` from Vaultwarden; tailscale writes its state keys into the same Secret) |
 
 ---
 

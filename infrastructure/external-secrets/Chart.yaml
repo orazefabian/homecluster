@@ -1,0 +1,9 @@
+apiVersion: v2
+name: external-secrets
+description: External Secrets Operator — syncs k8s Secrets from Vaultwarden (see README.md).
+type: application
+version: 1.0.0
+dependencies:
+  - name: external-secrets
+    version: 2.15.0
+    repository: https://charts.external-secrets.io

@@ -1,2 +1,4 @@
 *secret.yaml
 *auth
+# ExternalSecrets hold only Vaultwarden item IDs, never values — commit them.
+!*externalsecret.yaml

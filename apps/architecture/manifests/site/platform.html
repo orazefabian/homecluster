@@ -5258,8 +5258,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <path data-edge-from="git" data-edge-to="argocd" data-edge-label="watch" data-edge-key="0" data-edge-id="git-argo" data-composition-points="210,112;290,112" data-composition-crossover="halo" data-composition-independent="true" d="M 210 112 L 290 112" class="a-default" data-animate="edge" style="--step:0" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:1">
-          <path data-graph-role="automatic-crossover-underlay" d="M 460 112 L 560 112" fill="none" stroke="var(--mask)" stroke-width="5.8" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="argocd" data-edge-to="workloads" data-edge-label="auto-sync" data-edge-key="1" data-edge-id="argo-sync" data-composition-points="460,112;560,112" data-composition-crossover="halo" data-composition-independent="true" d="M 460 112 L 560 112" class="a-emphasis" data-animate="edge" style="--step:1" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+          <path data-graph-role="automatic-crossover-underlay" d="M 460 103.95 L 560 103.95" fill="none" stroke="var(--mask)" stroke-width="5.8" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="argocd" data-edge-to="workloads" data-edge-label="auto-sync" data-edge-key="1" data-edge-id="argo-sync" data-composition-points="460,103.95;560,103.95" data-composition-crossover="halo" data-composition-independent="true" d="M 460 103.95 L 560 103.95" class="a-emphasis" data-animate="edge" style="--step:1" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:2">
           <path data-graph-role="automatic-crossover-underlay" d="M 860 105 L 730 105" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
@@ -5286,8 +5286,12 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <path data-edge-from="longhorn" data-edge-to="s3" data-edge-label="monthly" data-edge-key="7" data-edge-id="lh-s3" data-composition-points="652,314;652,377;855,377;855,440" data-composition-crossover="halo" data-composition-independent="true" d="M 652 314 L 652 369 Q 652 377 660 377 L 847 377 Q 855 377 855 385 L 855 440" class="a-default" data-animate="edge" style="--step:7" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:8">
+          <path data-graph-role="automatic-crossover-underlay" d="M 460 282 L 502 282 Q 510 282 510 274 L 510 127 Q 510 119 518 119 L 560 119" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="eso" data-edge-to="workloads" data-edge-label="Vaultwarden → Secrets" data-edge-key="8" data-edge-id="eso-vw" data-composition-points="460,282;510,282;510,119;560,119" data-composition-crossover="halo" data-composition-independent="true" d="M 460 282 L 502 282 Q 510 282 510 274 L 510 127 Q 510 119 518 119 L 560 119" class="a-security" data-animate="edge" style="--step:8" stroke-width="1.5" marker-end="url(#arrowhead-security)"/>
+        </g>
+        <g data-graph-role="automatic-crossover" style="--step:9">
           <path data-graph-role="automatic-crossover-underlay" d="M 368 314 L 368 440" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="secretsbk" data-edge-to="nfs" data-edge-label="secrets" data-edge-key="8" data-edge-id="sec-nfs" data-composition-points="368,314;368,440" data-composition-crossover="halo" data-composition-independent="true" d="M 368 314 L 368 440" class="a-security" data-animate="edge" style="--step:8" stroke-width="1.5" marker-end="url(#arrowhead-security)"/>
+          <path data-edge-from="eso" data-edge-to="nfs" data-edge-label="legacy dump" data-edge-key="9" data-edge-id="sec-nfs" data-composition-points="368,314;368,440" data-composition-crossover="halo" data-composition-independent="true" d="M 368 314 L 368 440" class="a-dashed" data-animate="edge" style="--step:9" stroke-width="1.5" marker-end="url(#arrowhead-dashed)"/>
         </g>
 
         <!-- Components -->
@@ -5342,15 +5346,16 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <text data-detail="context" x="945" y="126" class="t-muted" font-size="9" text-anchor="middle">v1.4.19</text>
         </g>
 
-        <g id="node-secretsbk" data-node-id="secretsbk" data-node-label="Secrets Backup" tabindex="0" role="button" aria-label="Focus Secrets Backup, CronJob 02:00, k3s cluster" aria-pressed="false" data-node-kind="backend" data-node-sublabel="CronJob 02:00" data-node-context="k3s cluster">
-          <title>Secrets Backup · CronJob 02:00 · k3s cluster</title>
+        <g id="node-eso" data-node-id="eso" data-node-label="External Secrets" tabindex="0" role="button" aria-label="Focus External Secrets, ESO + bw serve bridge, k3s cluster" aria-pressed="false" data-node-kind="security" data-node-sublabel="ESO + bw serve bridge" data-node-context="k3s cluster">
+          <title>External Secrets · ESO + bw serve bridge · k3s cluster</title>
           <rect x="290" y="250" width="170" height="64" rx="8" class="c-mask"/>
-          <rect x="290" y="250" width="170" height="64" rx="8" class="c-backend" data-animate="node" style="--step:8" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(296 256) scale(0.6875)">
-            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          <rect x="290" y="250" width="170" height="64" rx="8" class="c-security" data-animate="node" style="--step:8" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="security" class="semantic-sigil s-security" transform="translate(296 256) scale(0.6875)">
+            <path d="M8 2.2 13 4v3.5c0 3.1-1.8 5.4-5 6.5-3.2-1.1-5-3.4-5-6.5V4Z"/>
+            <path d="m5.8 8 1.5 1.5 3-3"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="375" y="280" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Secrets Backup</text>
-        <text data-detail="context" x="375" y="296" class="t-muted" font-size="9" text-anchor="middle">CronJob 02:00</text>
+          <text data-node-label="" data-detail-anchor="" x="375" y="280" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">External Secrets</text>
+        <text data-detail="context" x="375" y="296" class="t-muted" font-size="9" text-anchor="middle">ESO + bw serve bridge</text>
         </g>
 
         <g id="node-longhorn" data-node-id="longhorn" data-node-label="Longhorn" tabindex="0" role="button" aria-label="Focus Longhorn, RWO volumes, k3s cluster" aria-pressed="false" data-node-kind="database" data-node-sublabel="RWO volumes" data-node-context="k3s cluster">
@@ -5406,8 +5411,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <text x="250" y="102" class="t-edge-default" font-size="8" text-anchor="middle">watch</text>
         </g>
         <g data-detail="context" data-edge-from="argocd" data-edge-to="workloads" data-edge-label="auto-sync" data-edge-key="1" data-edge-id="argo-sync">
-          <rect x="483.4" y="92" width="53.199999999999996" height="14" rx="3" class="c-mask"/>
-          <text x="510" y="102" class="t-edge-emphasis" font-size="8" text-anchor="middle">auto-sync</text>
+          <rect x="483.4" y="83.95" width="53.199999999999996" height="14" rx="3" class="c-mask"/>
+          <text x="510" y="93.95" class="t-edge-emphasis" font-size="8" text-anchor="middle">auto-sync</text>
         </g>
         <g data-detail="context" data-edge-from="reloader" data-edge-to="workloads" data-edge-label="restart" data-edge-key="2" data-edge-id="reload">
           <rect x="773.2" y="85" width="43.6" height="14" rx="3" class="c-mask"/>
@@ -5433,9 +5438,13 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <rect x="731.7" y="357" width="43.6" height="14" rx="3" class="c-mask"/>
           <text x="753.5" y="367" class="t-edge-default" font-size="8" text-anchor="middle">monthly</text>
         </g>
-        <g data-detail="context" data-edge-from="secretsbk" data-edge-to="nfs" data-edge-label="secrets" data-edge-key="8" data-edge-id="sec-nfs">
-          <rect x="346.2" y="318" width="43.6" height="14" rx="3" class="c-mask"/>
-          <text x="368" y="328" class="t-edge-security" font-size="8" text-anchor="middle">secrets</text>
+        <g data-detail="context" data-edge-from="eso" data-edge-to="workloads" data-edge-label="Vaultwarden → Secrets" data-edge-key="8" data-edge-id="eso-vw">
+          <rect x="454.6" y="180.5" width="110.8" height="14" rx="3" class="c-mask"/>
+          <text x="510" y="190.5" class="t-edge-security" font-size="8" text-anchor="middle">Vaultwarden → Secrets</text>
+        </g>
+        <g data-detail="context" data-edge-from="eso" data-edge-to="nfs" data-edge-label="legacy dump" data-edge-key="9" data-edge-id="sec-nfs">
+          <rect x="336.6" y="318" width="62.8" height="14" rx="3" class="c-mask"/>
+          <text x="368" y="328" class="t-edge-dashed" font-size="8" text-anchor="middle">legacy dump</text>
         </g>
 
         <!-- Boundary labels (foreground masks keep routes out of titles) -->
@@ -5459,9 +5468,13 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
             <rect x="264" y="535" width="16" height="10" rx="2.5" class="c-cloud" stroke-width="1"/>
             <text x="286" y="544" class="t-muted" font-size="10" font-weight="500">Cloud</text>
           </g>
-          <g data-legend-semantic-kind="external" data-legend-kind="external" data-legend-label="External" data-legend-x="360" data-legend-baseline="544" data-legend-width="93">
-            <rect x="360" y="535" width="16" height="10" rx="2.5" class="c-external" stroke-width="1"/>
-            <text x="382" y="544" class="t-muted" font-size="10" font-weight="500">External</text>
+          <g data-legend-semantic-kind="security" data-legend-kind="security" data-legend-label="Security" data-legend-x="360" data-legend-baseline="544" data-legend-width="93">
+            <rect x="360" y="535" width="16" height="10" rx="2.5" class="c-security" stroke-width="1"/>
+            <text x="382" y="544" class="t-muted" font-size="10" font-weight="500">Security</text>
+          </g>
+          <g data-legend-semantic-kind="external" data-legend-kind="external" data-legend-label="External" data-legend-x="475" data-legend-baseline="544" data-legend-width="93">
+            <rect x="475" y="535" width="16" height="10" rx="2.5" class="c-external" stroke-width="1"/>
+            <text x="497" y="544" class="t-muted" font-size="10" font-weight="500">External</text>
           </g>
         </g>
       </svg>
@@ -5648,7 +5661,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         </div>
         <ul>
           <li>Manifest + Helm ApplicationSets</li>
-          <li>Helm: cert-manager, ingress-nginx, Longhorn</li>
+          <li>Helm: cert-manager, ingress-nginx, Longhorn, ESO</li>
+          <li>Secrets: Vaultwarden is source of truth</li>
         </ul>
       </div>
 

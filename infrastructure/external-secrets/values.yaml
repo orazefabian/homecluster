@@ -1,0 +1,37 @@
+# External Secrets Operator. The Vaultwarden bridge (bw serve), the
+# ClusterSecretStores and the NetworkPolicy live in ./manifests (separate
+# ArgoCD app), the bridge image source in ./bitwarden-cli. See README.md.
+external-secrets:
+  installCRDs: true
+
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+    limits:
+      memory: 256Mi
+
+  serviceMonitor:
+    enabled: true
+    # The CRD exists (kube-prometheus-stack); don't depend on ArgoCD passing
+    # API capabilities for the skipIfMissing check.
+    renderMode: alwaysRender
+    additionalLabels:
+      # kube-prometheus-stack only picks up ServiceMonitors with this label.
+      release: monitoring-helm
+
+  webhook:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        memory: 128Mi
+
+  certController:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        memory: 128Mi

@@ -9,12 +9,12 @@
   "kubernetes": {
     "fileMatch": [
       "^apps/.+\\.ya?ml$",
-      "^infrastructure/(metallb|kite|reloader)/manifests/.+\\.ya?ml$"
+      "^infrastructure/(metallb|kite|reloader|external-secrets)/manifests/.+\\.ya?ml$"
     ]
   },
   "helmv3": {
     "fileMatch": [
-      "^infrastructure/(cert-manager|ingress-nginx|monitoring)/Chart\\.ya?ml$"
+      "^infrastructure/(cert-manager|ingress-nginx|monitoring|external-secrets)/Chart\\.ya?ml$"
     ]
   },
   "packageRules": [

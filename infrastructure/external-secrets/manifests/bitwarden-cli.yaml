@@ -1,0 +1,133 @@
+# Vaultwarden bridge for External Secrets Operator: the Bitwarden CLI in
+# `bw serve` mode, logged in as the dedicated read-only `k8s` account, which
+# only sees the `homecluster` collection. ESO's webhook ClusterSecretStores
+# (clustersecretstores.yaml) read items from it. See ../README.md.
+#
+# Image: community build of the Dockerfile/entrypoint from ESO's Bitwarden
+# guide (github.com/charlesthomas/bitwarden-cli; tag = Bitwarden CLI version).
+# Bitwarden publishes no official image. Pinned by digest because this
+# container holds the k8s account's master password — when Renovate bumps it,
+# glance at the upstream diff before merging.
+#
+# The only hand-applied secret in this setup (keep it in your personal vault):
+#   kubectl -n external-secrets create secret generic bitwarden-cli \
+#     --from-literal=BW_CLIENTID=user.xxxx \
+#     --from-literal=BW_CLIENTSECRET=xxxx \
+#     --from-literal=BW_PASSWORD='master password of the k8s account'
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bitwarden-cli
+  namespace: external-secrets
+  labels:
+    app: bitwarden-cli
+  annotations:
+    # Re-login when the bootstrap secret is rotated.
+    reloader.stakater.com/auto: "true"
+spec:
+  replicas: 1
+  # No PVC; the local vault copy is rebuilt from Vaultwarden on every start.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: bitwarden-cli
+  template:
+    metadata:
+      labels:
+        app: bitwarden-cli
+    spec:
+      # The CLI refuses plain-HTTP servers, so it talks to Vaultwarden through
+      # ingress-nginx with the real wildcard cert. Pin the name to the fixed
+      # ingress VIP so this does not depend on Pi-hole/FritzBox DNS — Pi-hole's
+      # own secret comes from here, which would be a loop during recovery.
+      hostAliases:
+        - ip: 192.168.8.30
+          hostnames:
+            - bitwarden.halo.fabseit.net
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: bitwarden-cli
+          image: ghcr.io/charlesthomas/bitwarden-cli:2026.10.1@sha256:20576a8429e83ca555783773045df7a7b171235c6f2321694187458779a6da85
+          ports:
+            - name: http
+              containerPort: 8087
+          env:
+            - name: BW_HOST
+              value: https://bitwarden.halo.fabseit.net
+            # Keep the CLI's local vault copy on the emptyDir (root fs is read-only).
+            - name: BITWARDENCLI_APPDATA_DIR
+              value: /data
+          envFrom:
+            - secretRef:
+                name: bitwarden-cli
+          # /status answers 200 even when locked; only "unlocked" is healthy.
+          startupProbe:
+            exec: &unlocked
+              command:
+                - sh
+                - -c
+                - wget -qO- http://127.0.0.1:8087/status | grep -q '"status":"unlocked"'
+            periodSeconds: 10
+            failureThreshold: 30
+          readinessProbe:
+            exec: *unlocked
+            periodSeconds: 30
+            timeoutSeconds: 10
+          # Doubles as the vault sync: bw serve answers from its local copy, so
+          # POST /sync every 2 min pulls changes made in the Bitwarden app (the
+          # pattern from ESO's guide). Fails if Vaultwarden stays unreachable
+          # for ~10 min -> restart and re-login.
+          livenessProbe:
+            exec:
+              command:
+                - wget
+                - -qO-
+                - --post-data=
+                - http://127.0.0.1:8087/sync?force=true
+            periodSeconds: 120
+            timeoutSeconds: 30
+            failureThreshold: 5
+          resources:
+            requests:
+              cpu: 20m
+              memory: 160Mi
+            limits:
+              memory: 384Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: data
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bitwarden-cli
+  namespace: external-secrets
+  labels:
+    app: bitwarden-cli
+spec:
+  selector:
+    app: bitwarden-cli
+  ports:
+    - name: http
+      port: 8087
+      targetPort: http

@@ -66,6 +66,11 @@ spec:
           - name: secrets-backup
             path: ./infrastructure/secrets-backup/manifests
             namespace: secrets-backup
+          # Vaultwarden bridge + ClusterSecretStores; the operator itself is
+          # external-secrets-helm in the Helm ApplicationSet.
+          - name: external-secrets
+            path: ./infrastructure/external-secrets/manifests
+            namespace: external-secrets
           - name: reloader
             path: ./infrastructure/reloader/manifests
             namespace: reloader

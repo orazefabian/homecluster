@@ -1,0 +1,22 @@
+# `bw serve` has no authentication: anything that can reach :8087 can read the
+# whole `homecluster` collection. Only the ESO controller may connect.
+# (Enforced by k3s's embedded kube-router network policy controller.)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: bitwarden-cli
+  namespace: external-secrets
+spec:
+  podSelector:
+    matchLabels:
+      app: bitwarden-cli
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: external-secrets
+      ports:
+        - port: 8087
+          protocol: TCP

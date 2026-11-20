@@ -1,0 +1,43 @@
+# Alerts for the Vaultwarden -> k8s Secret sync. A failing sync does not
+# break running apps (Secrets are kept as they are), so these fire slowly —
+# but a silent failure would mean rotations in Vaultwarden never land.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: external-secrets
+  namespace: external-secrets
+  labels:
+    # kube-prometheus-stack only picks up rules carrying its release label.
+    release: monitoring-helm
+spec:
+  groups:
+    - name: external-secrets
+      rules:
+        - alert: ExternalSecretNotSynced
+          expr: externalsecret_status_condition{condition="Ready", status="False"} == 1
+          for: 2h
+          labels:
+            severity: warning
+          annotations:
+            summary: "ExternalSecret {{ $labels.namespace }}/{{ $labels.name }} is not syncing"
+            description: >-
+              Check `kubectl -n {{ $labels.namespace }} describe externalsecret {{ $labels.name }}`.
+              Usual causes: wrong item ID / field name, or the bitwarden-cli bridge is down.
+        - alert: ClusterSecretStoreNotReady
+          expr: clustersecretstore_status_condition{condition="Ready", status="False"} == 1
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: "ClusterSecretStore {{ $labels.name }} is not ready"
+        - alert: BitwardenCliBridgeDown
+          expr: kube_deployment_status_replicas_available{namespace="external-secrets", deployment="bitwarden-cli"} < 1
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: "Vaultwarden bridge (external-secrets/bitwarden-cli) has no ready pod"
+            description: >-
+              Not unlocked or cannot reach Vaultwarden. Check its logs; if the
+              k8s account's API key or password changed, update the bootstrap
+              secret external-secrets/bitwarden-cli.
