@@ -59,9 +59,10 @@ Configured at `apps/headscale/server/manifests/configmap.yaml`:
 
 ### WireGuard VPN
 
-DNS queries from WireGuard peers are DNAT'd to `192.168.8.53:53` by PostUp rules in the server template (`apps/wireguard/manifests/server-template.yaml`, ConfigMap). The init container copies it to `/config/templates/server.conf` on every start, so the rules survive the image regenerating `wg_confs/wg0.conf` when `PEERS` changes. Changing the template alone doesn't re-render: run `helper/wg-peer.sh regen`. Peers use `ALLOWEDIPS=0.0.0.0/0` (full tunnel).
+DNS queries from WireGuard peers are DNAT'd to `192.168.8.53:53` by PostUp rules in the server template (`apps/wireguard/manifests/server-template.yaml`, ConfigMap). The init container copies it to `/config/templates/server.conf` on every start, so the rules survive the image regenerating `wg_confs/wg0.conf` when `PEERS` changes. Changing the template alone doesn't re-render; it's picked up at the next `PEERS` change, or force it by deleting `/config/wg_confs/wg0.conf` and restarting the pod. Peers use `ALLOWEDIPS=0.0.0.0/0` (full tunnel).
 
-Peers are managed by the `PEERS` env var of `apps/wireguard/manifests/deployment.yaml` (linuxserver image, keys on PVC `wireguard-data`). Add or remove a name and merge (the pod restarts, a brief VPN drop for everyone). Then use `helper/wg-peer.sh show <name>` for the QR code, `list` for peers with their last handshake, and `purge <name>` to delete a removed peer's keys (otherwise re-adding the name brings back the same keys). `LOG_CONFS=false` keeps peer QR codes, which contain private keys, out of the pod log.
+Peers are managed only by the `PEERS` env var of `apps/wireguard/manifests/deployment.yaml` (linuxserver image, keys on PVC `wireguard-data`). Add or remove a name and merge; the pod restarts, which briefly drops the VPN for everyone. Removing a name revokes the peer. Its keys stay on the PVC, though, so re-adding the same name brings them back. For a lost device, also delete `/config/peer_<name>`. `LOG_CONFS=false` keeps QR codes, which contain private keys, out of the pod log. Show a peer's QR code with:
+`kubectl -n halo exec deploy/wireguard -c wireguard -- qrencode -t ansiutf8 -r /config/peer_<name>/peer_<name>.conf`
 
 ---
 
@@ -120,7 +121,7 @@ All in namespace `halo`.
 | Homepage | `dashboard.halo.fabseit.net`, `dashboard.fabseit.net` | App dashboard. |
 | Headscale | `vpn.fabseit.net` | Self-hosted Tailscale control plane. TLS handled directly by headscale (Let's Encrypt HTTP-01), not via ingress-nginx. |
 | Headplane | `headplane.halo.fabseit.net` | Headscale web UI. |
-| WireGuard | `192.168.8.51:51820` (UDP) | VPN. Pinned away from `halo-8` node. Peers declared in deployment env `PEERS`; manage with `helper/wg-peer.sh` (see WireGuard VPN above). |
+| WireGuard | `192.168.8.51:51820` (UDP) | VPN. Pinned away from `halo-8` node. Peers declared in deployment env `PEERS` (see WireGuard VPN above). |
 | Filebrowser | `filebrowser.halo.fabseit.net` | Web file manager. |
 | Pingvin Share | `pingvin.halo.fabseit.net` | File sharing. |
 | Uptime Kuma | `uptime.halo.fabseit.net` | Uptime monitoring. |

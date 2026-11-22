@@ -33,10 +33,10 @@ spec:
       - env:
         - name: TZ
           value: Europe/Vienna
-        # Peers: add or remove a name here (letters/digits only), merge, then
-        # `helper/wg-peer.sh show <name>` for the QR code. Removing a name
-        # revokes the peer; `helper/wg-peer.sh purge <name>` also deletes its
-        # keys so re-adding the name later gets fresh ones.
+        # Peers: add or remove a name here (letters/digits only) and merge; the
+        # pod restarts and the image regenerates the server config. QR code of
+        # a new peer (scan in the WireGuard app):
+        #   kubectl -n halo exec deploy/wireguard -c wireguard -- qrencode -t ansiutf8 -r /config/peer_<name>/peer_<name>.conf
         - name: PEERS
           value: fabseMobile,benni,volte,damian,christina,dyna,chrissiPc,silvia,fabianPC
         - name: PUID
@@ -54,7 +54,7 @@ spec:
         - name: PEERDNS
           value: auto
         # Don't print every peer's QR code (= its private key) into the pod log
-        # on each regeneration; helper/wg-peer.sh shows them on demand.
+        # on each regeneration; read it from the pod when needed (see PEERS).
         - name: LOG_CONFS
           value: 'false'
         image: lscr.io/linuxserver/wireguard:1.0.20260223-r0-ls130
