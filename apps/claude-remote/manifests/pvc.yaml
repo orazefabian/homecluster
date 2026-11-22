@@ -1,0 +1,16 @@
+# $HOME of the claude-remote pod: Claude Code binary, ~/.claude (OAuth login,
+# settings, session history) and the repo clone + worktrees.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: claude-remote-home
+  namespace: halo
+  labels:
+    recurring-job-group.longhorn.io/default: "enabled"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: longhorn

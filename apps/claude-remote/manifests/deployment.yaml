@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: claude-remote
+  namespace: halo
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate # RWO Longhorn PVC
+  selector:
+    matchLabels:
+      app: claude-remote
+  template:
+    metadata:
+      labels:
+        app: claude-remote
+    spec:
+      serviceAccountName: claude-remote
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      affinity:
+        nodeAffinity:
+          # halo-0: control plane, no fan (see CLAUDE.md).
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: NotIn
+                    values: [halo-0]
+          # Local Longhorn replica.
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values: [halo-1, halo-2]
+      containers:
+        - name: claude-remote
+          image: ghcr.io/orazefabian/homecluster/claude-remote:0.1.0
+          # remote-control is a TUI server; give it a terminal.
+          stdin: true
+          tty: true
+          env:
+            - name: CLAUDE_RC_NAME
+              value: halo
+            - name: CLAUDE_RC_SPAWN
+              value: worktree
+            - name: GH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: claude-remote
+                  key: GH_TOKEN
+                  optional: true # don't block bootstrap on the Vaultwarden item
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              memory: 2Gi
+          volumeMounts:
+            - name: home
+              mountPath: /home/claude
+      volumes:
+        - name: home
+          persistentVolumeClaim:
+            claimName: claude-remote-home

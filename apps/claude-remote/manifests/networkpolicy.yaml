@@ -1,0 +1,13 @@
+# Remote Control only dials out (Anthropic, GitHub, the API server); nothing
+# needs to connect to this pod. Egress is left open.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: claude-remote
+  namespace: halo
+spec:
+  podSelector:
+    matchLabels:
+      app: claude-remote
+  policyTypes:
+    - Ingress

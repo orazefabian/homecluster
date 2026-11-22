@@ -1,0 +1,71 @@
+# Read-only, cluster-wide, WITHOUT Secrets. The pod can diagnose but not
+# change anything: no write verbs, no exec, no port-forward. Changes go through
+# a PR and ArgoCD. Built from the aggregated `view` role, which already omits
+# Secrets, plus what `view` lacks for debugging (nodes, PVs, storage, CRDs,
+# events, metrics).
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: claude-remote
+  namespace: halo
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: claude-remote-view
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: view
+subjects:
+  - kind: ServiceAccount
+    name: claude-remote
+    namespace: halo
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: claude-remote-extra-read
+rules:
+  - apiGroups: [""]
+    resources: [nodes, persistentvolumes, namespaces, events]
+    verbs: [get, list, watch]
+  - apiGroups: [storage.k8s.io]
+    resources: [storageclasses, volumeattachments, csinodes, csidrivers]
+    verbs: [get, list, watch]
+  - apiGroups: [apiextensions.k8s.io]
+    resources: [customresourcedefinitions]
+    verbs: [get, list, watch]
+  - apiGroups: [rbac.authorization.k8s.io]
+    resources: [roles, rolebindings, clusterroles, clusterrolebindings]
+    verbs: [get, list, watch]
+  - apiGroups: [metrics.k8s.io]
+    resources: [nodes, pods]
+    verbs: [get, list]
+  # CRs that `view` does not aggregate (ArgoCD, Longhorn, cert-manager, ESO,
+  # monitoring, MetalLB, Traefik/ingress). ExternalSecrets only reference
+  # Vaultwarden item IDs, never values.
+  - apiGroups:
+      - argoproj.io
+      - longhorn.io
+      - cert-manager.io
+      - acme.cert-manager.io
+      - external-secrets.io
+      - monitoring.coreos.com
+      - metallb.io
+      - networking.k8s.io
+    resources: ["*"]
+    verbs: [get, list, watch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: claude-remote-extra-read
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: claude-remote-extra-read
+subjects:
+  - kind: ServiceAccount
+    name: claude-remote
+    namespace: halo

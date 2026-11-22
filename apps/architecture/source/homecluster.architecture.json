@@ -21,7 +21,7 @@
     { "id": "vpn", "type": "security", "label": "WireGuard + Headscale", "sublabel": ".8.51 UDP · vpn.fabseit.net", "pos": [280, 470], "size": [180, 64] },
     { "id": "certmgr", "type": "security", "label": "cert-manager", "sublabel": "Cloudflare DNS-01", "pos": [500, 140], "size": [160, 64] },
     { "id": "ingress", "type": "cloud", "label": "ingress-nginx", "sublabel": "MetalLB 192.168.8.30", "pos": [500, 300], "size": [160, 64], "tag": "*(.halo).fabseit.net" },
-    { "id": "apps", "type": "backend", "label": "Apps", "sublabel": "11 apps · see detail tabs", "pos": [740, 300], "size": [180, 64], "tag": "own Postgres / Redis" },
+    { "id": "apps", "type": "backend", "label": "Apps", "sublabel": "12 apps · see detail tabs", "pos": [740, 300], "size": [180, 64], "tag": "own Postgres / Redis" },
     { "id": "longhorn", "type": "database", "label": "Longhorn", "sublabel": "RWO volumes", "pos": [750, 140], "size": [160, 64] },
     { "id": "argocd", "type": "cloud", "label": "ArgoCD", "sublabel": "GitOps · this repo", "pos": [740, 470], "size": [180, 64] },
     { "id": "backup", "type": "database", "label": "Backup Targets", "sublabel": "NFS .8.98 · Hetzner S3", "pos": [990, 140], "size": [160, 64] }
@@ -43,7 +43,7 @@
   ],
   "cards": [
     { "dot": "cyan", "title": "Network", "items": ["MetalLB L2 pool .30–.80", "FritzBox → Pi-hole, 9.9.9.9 fallback", "VPN: WireGuard full tunnel or Headscale split DNS"] },
-    { "dot": "emerald", "title": "Apps", "items": ["Home Assistant, Immich, Paperless, Vaultwarden", "n8n, Dober dan, Homepage", "Uptime Kuma, Speedtest, Samba"] },
+    { "dot": "emerald", "title": "Apps", "items": ["Home Assistant, Immich, Paperless, Vaultwarden", "n8n, Dober dan, Homepage", "Uptime Kuma, Speedtest, Samba, Claude Remote"] },
     { "dot": "violet", "title": "Platform", "items": ["ArgoCD: SSA on, prune off", "Tue / Sat NFS jobs, monthly S3", "Reloader, Kite, kube-prometheus-stack"] }
   ]
 }
