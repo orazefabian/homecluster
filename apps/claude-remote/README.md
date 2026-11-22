@@ -17,6 +17,12 @@ claude.ai cannot start anything on the cluster itself: Remote Control only lists
 - **Lifetime:** until the session ends, or **Action = Stop** in the form, or 8 h (`activeDeadlineSeconds`).
 - **Nothing persists except the login.** The repo lives in an `emptyDir`, so unpushed work is lost with
   the pod. Push a branch or open a PR.
+- **Always on a new branch.** The form has no branch field. The entrypoint clones the default branch and
+  switches to a fresh `claude/session-<UTC timestamp>` branch (`push.autoSetupRemote` on). The managed
+  memory `image/claude-session.CLAUDE.md` (baked in as `/etc/claude-code/CLAUDE.md`) tells Claude to rename
+  it to `fix/…`/`feat/…` before the first push and to finish with `gh pr create --base main`. Without
+  this, sessions sat on `main`: the push was rejected by the ruleset and there was no PR to open.
+  To continue an existing PR, ask the session to `git fetch origin <branch> && git switch <branch>`.
 - **Tools:** Node 22 (npm, pnpm and yarn via corepack), Python 3 (pip, venv), build-essential, git, gh,
   kubectl, jq, ripgrep. There's no Docker, so images build in GitHub Actions. Memory limit 4 Gi.
 

@@ -29,6 +29,8 @@ RUN usermod -l claude -d /home/claude -m node && groupmod -n claude node \
  && install -d -o 1000 -g 1000 /work
 
 COPY entrypoint.sh gh-app-token git-credential-ghapp gh /usr/local/bin/
+# Managed memory, loaded by every session: work on a branch, open a PR, never main.
+COPY claude-session.CLAUDE.md /etc/claude-code/CLAUDE.md
 RUN chmod 0755 /usr/local/bin/entrypoint.sh /usr/local/bin/gh-app-token \
       /usr/local/bin/git-credential-ghapp /usr/local/bin/gh
 

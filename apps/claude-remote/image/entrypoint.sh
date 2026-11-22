@@ -3,9 +3,11 @@
 # clone $REPO, pre-trust it, run a single Remote Control session, exit when it
 # ends. $HOME is the claude-auth PVC (login + binary); /work is an emptyDir.
 #
-#   REPO    owner/name on GitHub (required)
-#   BRANCH  branch to check out (optional, default: repo default branch)
+#   REPO        owner/name on GitHub (required)
 #   MODE=login  idle instead, for the one-time `claude /login` (bootstrap pod)
+#
+# The session always starts on a fresh work branch off the default branch
+# (main is protected by a ruleset; the app can only push branches + open PRs).
 set -euo pipefail
 
 if ! command -v claude >/dev/null 2>&1; then
@@ -28,9 +30,6 @@ fi
   echo "Not logged in. Run the bootstrap login pod first (README)." >&2; exit 1; }
 [[ "${REPO:-}" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]] || {
   echo "REPO must be owner/name, got '${REPO:-}'" >&2; exit 1; }
-
-[[ -z "${BRANCH:-}" || "$BRANCH" =~ ^[A-Za-z0-9_][A-Za-z0-9._/-]*$ ]] || {
-  echo "Invalid BRANCH '$BRANCH'" >&2; exit 1; }
 
 name="${REPO#*/}"
 dir="/work/$name"
@@ -55,8 +54,16 @@ fi
 git config --global user.name  "$git_name"
 git config --global user.email "$git_email"
 
-echo "Cloning $REPO${BRANCH:+ ($BRANCH)} ..."
-git clone --depth 50 ${BRANCH:+--branch "$BRANCH"} "https://github.com/$REPO.git" "$dir"
+echo "Cloning $REPO ..."
+git clone --depth 50 "https://github.com/$REPO.git" "$dir"
+
+# Never work on the default branch: pushes to it are rejected and a PR from
+# main to main can't exist. Start on a throwaway-named branch; Claude renames
+# it before the first push (/etc/claude-code/CLAUDE.md) and opens a PR.
+work_branch="claude/session-$(date -u +%Y%m%d-%H%M%S)"
+git -C "$dir" switch -c "$work_branch"
+git config --global push.autoSetupRemote true
+echo "Working branch: $work_branch"
 
 # Pre-accept the two one-time prompts; nobody is at a terminal to answer
 # them, and an unanswered one leaves the session hanging invisibly:
