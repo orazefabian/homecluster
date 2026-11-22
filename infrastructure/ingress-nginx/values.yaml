@@ -1,3 +1,11 @@
-controller:
-  service:
-    loadBalancerIP: 192.168.8.30
+# Values for the upstream ingress-nginx subchart.
+#
+# NOTE: these must stay nested under `ingress-nginx:` — the key has to match the
+# dependency name in Chart.yaml, otherwise Helm passes them to the (empty)
+# parent chart and they are silently ignored (see infrastructure/metallb/values.yaml).
+ingress-nginx:
+  controller:
+    service:
+      # Pins the ingress VIP. Until this was nested, .30 was only the first free
+      # address MetalLB handed out from the pool; now it is requested explicitly.
+      loadBalancerIP: 192.168.8.30

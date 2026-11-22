@@ -1,19 +1,34 @@
-installCRDs: true
-replicaCount: 1
-extraArgs:
-  - --dns01-recursive-nameservers=1.1.1.1:53,9.9.9.9:53
-  - --dns01-recursive-nameservers-only
-podDnsPolicy: None
-podDnsConfig:
-  nameservers:
-    - "1.1.1.1"
-    - "9.9.9.9"
-
-# Values for the cert-manager subchart must sit under its name. NOTE: the keys
-# above are top-level and therefore NOT applied to the subchart (the running
-# controller has none of those extraArgs) - left as-is on purpose, fixing
-# them changes DNS-01 behaviour and is a separate change.
+# Values for the upstream cert-manager subchart.
+#
+# NOTE: these must stay nested under `cert-manager:` — the key has to match the
+# dependency name in Chart.yaml, otherwise Helm passes them to the (empty)
+# parent chart and they are silently ignored (see infrastructure/metallb/values.yaml).
 cert-manager:
+  # Install/upgrade the CRDs with the chart (replaces the deprecated
+  # `installCRDs`). The live CRDs were hand-applied from v1.16.3 and never
+  # followed the chart upgrades; with this on, ArgoCD keeps them in step with
+  # the chart version. `keep` adds `helm.sh/resource-policy: keep`, so removing
+  # the chart never deletes the CRDs (and with them every Certificate/Issuer).
+  crds:
+    enabled: true
+    keep: true
+
+  replicaCount: 1
+
+  # DNS-01 propagation self-checks go straight to public resolvers instead of
+  # cluster DNS → Pi-hole → FritzBox, so certificate renewal does not depend on
+  # the Pi-hole path (or see its cached/rebind-filtered answers).
+  dns01RecursiveNameservers: "1.1.1.1:53,9.9.9.9:53"
+  dns01RecursiveNameserversOnly: true
+
+  # The controller only needs public DNS (ACME + Cloudflare API); it reaches
+  # the API server by the KUBERNETES_SERVICE_HOST IP, not by name.
+  podDnsPolicy: None
+  podDnsConfig:
+    nameservers:
+      - "1.1.1.1"
+      - "9.9.9.9"
+
   # Scraped by kube-prometheus-stack for the certificate expiry/readiness
   # alerts in infrastructure/monitoring/manifests/prometheusrule-homelab.yaml.
   prometheus:
