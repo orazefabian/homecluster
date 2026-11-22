@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations: 
+  annotations:
     meta.helm.sh/release-name: wireguard
   labels:
   name: wireguard
@@ -33,6 +33,10 @@ spec:
       - env:
         - name: TZ
           value: Europe/Vienna
+        # Peers: add or remove a name here (letters/digits only), merge, then
+        # `helper/wg-peer.sh show <name>` for the QR code. Removing a name
+        # revokes the peer; `helper/wg-peer.sh purge <name>` also deletes its
+        # keys so re-adding the name later gets fresh ones.
         - name: PEERS
           value: fabseMobile,benni,volte,damian,christina,dyna,chrissiPc,silvia,fabianPC
         - name: PUID
@@ -47,11 +51,13 @@ spec:
           value: vpn.fabseit.net
         - name: INTERNAL_SUBNET
           value: 10.13.13.0
-        - name: PEER_DNS
+        - name: PEERDNS
           value: auto
-        - name: PERSISTANTKEEPALIVE_PEERS
-          value: '25'
-        image: linuxserver/wireguard:arm64v8-alpine
+        # Don't print every peer's QR code (= its private key) into the pod log
+        # on each regeneration; helper/wg-peer.sh shows them on demand.
+        - name: LOG_CONFS
+          value: 'false'
+        image: lscr.io/linuxserver/wireguard:1.0.20260223-r0-ls130
         name: wireguard
         ports:
         - containerPort: 51820
@@ -80,35 +86,40 @@ spec:
         - sh
         - -c
         - |
-          ENI=$(ip route get 8.8.8.8 | awk '{print $5}')
+          set -eu
+          # One-time: the deprecated arm64v8-alpine image kept the server conf
+          # at /config/wg0.conf; the current image uses /config/wg_confs/, and
+          # a stale wg_confs/wg0.conf from 2025 is still on this volume. Move
+          # both aside so the image renders a fresh wg0.conf from the template
+          # (existing peer keys and IPs are reused). No-op once migrated,
+          # because the current image never writes /config/wg0.conf.
           if [ -f /config/wg0.conf ]; then
-            # Remove all existing PostUp and PostDown rules
-            sed -i '/^PostUp\s*=/d; /^PostDown\s*=/d' /config/wg0.conf
-            
-            # Create temporary file with new PostUp and PostDown rules
-            cat > /tmp/wg-rules.conf << EOF
-          PostUp = iptables -A FORWARD -i %i -j ACCEPT
-          PostUp = iptables -A FORWARD -o %i -j ACCEPT  
-          PostUp = iptables -t nat -A POSTROUTING -o $ENI -j MASQUERADE
-          PostUp = iptables -t nat -A PREROUTING -i %i -p udp --dport 53 -j DNAT --to-destination 192.168.8.53:53
-          PostUp = iptables -t nat -A PREROUTING -i %i -p tcp --dport 53 -j DNAT --to-destination 192.168.8.53:53
-          PostDown = iptables -D FORWARD -i %i -j ACCEPT
-          PostDown = iptables -D FORWARD -o %i -j ACCEPT
-          PostDown = iptables -t nat -D POSTROUTING -o $ENI -j MASQUERADE  
-          PostDown = iptables -t nat -D PREROUTING -i %i -p udp --dport 53 -j DNAT --to-destination 192.168.8.53:53
-          PostDown = iptables -t nat -D PREROUTING -i %i -p tcp --dport 53 -j DNAT --to-destination 192.168.8.53:53
-
-          EOF
-            # Insert new rules after [Interface] section
-            awk '/^\[Interface\]/{print; while(getline && !/^\[/){print}; system("cat /tmp/wg-rules.conf"); print; next}1' /config/wg0.conf > /tmp/wg0-combined.conf
-            mv /tmp/wg0-combined.conf /config/wg0.conf
-            chmod 600 /config/wg0.conf
+            mkdir -p /config/legacy-layout-backup
+            mv /config/wg0.conf /config/legacy-layout-backup/
+            if [ -d /config/wg_confs ]; then
+              mv /config/wg_confs /config/legacy-layout-backup/
+            fi
+            echo "moved legacy wg0.conf and wg_confs/ to /config/legacy-layout-backup/"
           fi
+          # Every start: server template from git (includes the DNS DNAT rules).
+          mkdir -p /config/templates
+          cp /template/server.conf /config/templates/server.conf
+        resources:
+          requests:
+            memory: "8Mi"
+            cpu: "10m"
+          limits:
+            memory: "32Mi"
         volumeMounts:
         - mountPath: "/config/"
           name: wireguard-config
+        - mountPath: /template
+          name: server-template
+          readOnly: true
       volumes:
       - name: wireguard-config
         persistentVolumeClaim:
           claimName: wireguard-data
-
+      - name: server-template
+        configMap:
+          name: wireguard-server-template

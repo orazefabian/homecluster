@@ -59,7 +59,9 @@ Configured at `apps/headscale/server/manifests/configmap.yaml`:
 
 ### WireGuard VPN
 
-DNS queries from WireGuard peers are DNAT'd to `192.168.8.53:53` via iptables rules injected by an init container. Peers use `ALLOWEDIPS=0.0.0.0/0` (full tunnel).
+DNS queries from WireGuard peers are DNAT'd to `192.168.8.53:53` by PostUp rules in the server template (`apps/wireguard/manifests/server-template.yaml`, ConfigMap). The init container copies it to `/config/templates/server.conf` on every start, so the rules survive the image regenerating `wg_confs/wg0.conf` when `PEERS` changes. Changing the template alone doesn't re-render: run `helper/wg-peer.sh regen`. Peers use `ALLOWEDIPS=0.0.0.0/0` (full tunnel).
+
+Peers are managed by the `PEERS` env var of `apps/wireguard/manifests/deployment.yaml` (linuxserver image, keys on PVC `wireguard-data`). Add or remove a name and merge (the pod restarts, a brief VPN drop for everyone). Then use `helper/wg-peer.sh show <name>` for the QR code, `list` for peers with their last handshake, and `purge <name>` to delete a removed peer's keys (otherwise re-adding the name brings back the same keys). `LOG_CONFS=false` keeps peer QR codes, which contain private keys, out of the pod log.
 
 ---
 
@@ -118,7 +120,7 @@ All in namespace `halo`.
 | Homepage | `dashboard.halo.fabseit.net`, `dashboard.fabseit.net` | App dashboard. |
 | Headscale | `vpn.fabseit.net` | Self-hosted Tailscale control plane. TLS handled directly by headscale (Let's Encrypt HTTP-01), not via ingress-nginx. |
 | Headplane | `headplane.halo.fabseit.net` | Headscale web UI. |
-| WireGuard | `192.168.8.51:51820` (UDP) | VPN. Pinned away from `halo-8` node. Multiple peers configured (see deployment env `PEERS`). |
+| WireGuard | `192.168.8.51:51820` (UDP) | VPN. Pinned away from `halo-8` node. Peers declared in deployment env `PEERS`; manage with `helper/wg-peer.sh` (see WireGuard VPN above). |
 | Filebrowser | `filebrowser.halo.fabseit.net` | Web file manager. |
 | Pingvin Share | `pingvin.halo.fabseit.net` | File sharing. |
 | Uptime Kuma | `uptime.halo.fabseit.net` | Uptime monitoring. |
