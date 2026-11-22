@@ -11,6 +11,8 @@ set -euo pipefail
 if ! command -v claude >/dev/null 2>&1; then
   echo "Installing Claude Code into $HOME/.local/bin ..."
   for i in 1 2 3 4 5; do
+    # Leftovers of an interrupted install would eat the small PVC.
+    rm -rf "$HOME/.cache/claude/staging" "$HOME"/.local/share/claude/versions/*.tmp.* 2>/dev/null || true
     curl -fsSL https://claude.ai/install.sh | bash && command -v claude >/dev/null && break
     echo "Install attempt $i failed; retrying in 10s"; sleep 10
   done

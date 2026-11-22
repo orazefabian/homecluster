@@ -1,7 +1,8 @@
 # Toolbox for on-demand Claude sessions (apps/claude-remote/README.md).
 # Node 22 + npm/pnpm/yarn (corepack), Python 3, build tools, git, gh, kubectl.
 # Claude Code itself is NOT baked in: the entrypoint installs it onto the auth
-# PVC on first start, so it self-updates without image rebuilds.
+# PVC on first start, so it self-updates without image rebuilds. Package
+# caches go to /work (the session's emptyDir), not the small auth PVC.
 FROM node:22-bookworm-slim
 
 ARG KUBECTL_VERSION=v1.31.5
@@ -35,6 +36,8 @@ USER 1000
 ENV HOME=/home/claude \
     COREPACK_HOME=/home/claude/.cache/corepack \
     COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
+    npm_config_cache=/work/.cache/npm \
+    PIP_CACHE_DIR=/work/.cache/pip \
     PATH=/home/claude/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 WORKDIR /work
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/entrypoint.sh"]
