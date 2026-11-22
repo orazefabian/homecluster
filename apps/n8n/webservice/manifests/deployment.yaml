@@ -51,6 +51,11 @@ spec:
                   key: POSTGRES_PASSWORD
             - name: GENERIC_TIMEZONE
               value: "Europe/Berlin"
+            # Trust the cluster CA (auto-mounted with the SA token), so HTTP
+            # nodes can call https://kubernetes.default.svc with TLS
+            # verification (Claude session launcher, apps/claude-remote).
+            - name: NODE_EXTRA_CA_CERTS
+              value: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
           volumeMounts:
             - name: n8n-data
               mountPath: /home/node/.n8n

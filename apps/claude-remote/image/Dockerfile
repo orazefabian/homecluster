@@ -1,13 +1,15 @@
-# Toolbox for the claude-remote pod. Claude Code itself is NOT baked in: the
-# entrypoint installs it onto the home PVC on first start, so it self-updates
-# without image rebuilds. Rebuild only to change the tools below.
-FROM debian:bookworm-slim
+# Toolbox for on-demand Claude sessions (apps/claude-remote/README.md).
+# Node 22 + npm/pnpm/yarn (corepack), Python 3, build tools, git, gh, kubectl.
+# Claude Code itself is NOT baked in: the entrypoint installs it onto the auth
+# PVC on first start, so it self-updates without image rebuilds.
+FROM node:22-bookworm-slim
 
 ARG KUBECTL_VERSION=v1.31.5
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
-      ca-certificates curl git jq less openssh-client procps ripgrep tini \
+      build-essential ca-certificates curl git jq less openssh-client procps \
+      python3 python3-pip python3-venv ripgrep tini unzip \
  && install -d -m 0755 /etc/apt/keyrings \
  && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
       -o /etc/apt/keyrings/githubcli-archive-keyring.gpg \
@@ -18,15 +20,20 @@ RUN apt-get update \
 
 RUN curl -fsSLo /usr/local/bin/kubectl \
       "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/$(dpkg --print-architecture)/kubectl" \
- && chmod 0755 /usr/local/bin/kubectl
+ && chmod 0755 /usr/local/bin/kubectl \
+ && corepack enable
 
-RUN useradd --uid 1000 --create-home --home-dir /home/claude --shell /bin/bash claude
+# The node image already has uid 1000 ("node"); rename it.
+RUN usermod -l claude -d /home/claude -m node && groupmod -n claude node \
+ && install -d -o 1000 -g 1000 /work
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod 0755 /usr/local/bin/entrypoint.sh
 
 USER 1000
 ENV HOME=/home/claude \
+    COREPACK_HOME=/home/claude/.cache/corepack \
+    COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
     PATH=/home/claude/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-WORKDIR /home/claude
+WORKDIR /work
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/entrypoint.sh"]

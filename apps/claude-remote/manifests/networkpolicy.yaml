@@ -1,13 +1,12 @@
-# Remote Control only dials out (Anthropic, GitHub, the API server); nothing
-# needs to connect to this pod. Egress is left open.
+# Session pods only dial out (claude.ai, GitHub, npm/PyPI, API server); nothing
+# connects to them. Longhorn's API is closed separately in
+# infrastructure/longhorn/manifests/networkpolicy-api.yaml.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: claude-remote
-  namespace: halo
+  name: deny-ingress
+  namespace: claude-sessions
 spec:
-  podSelector:
-    matchLabels:
-      app: claude-remote
+  podSelector: {}
   policyTypes:
     - Ingress

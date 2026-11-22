@@ -1,0 +1,61 @@
+# Longhorn's REST API (longhorn-manager :9500, proxied by longhorn-ui) has no
+# authentication: anything that reaches it can delete volumes and backups.
+# Close it to everything except Longhorn itself, ingress-nginx (UI, behind
+# basic auth) and Prometheus (metrics scrape). Primarily the last line of
+# defence for on-demand Claude sessions (apps/claude-remote), but it applies
+# to every pod in the cluster.
+# (Enforced by k3s's embedded kube-router network policy controller. No
+# Longhorn pod uses hostNetwork, so namespace/pod selectors suffice.)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: longhorn-manager-api
+  namespace: longhorn-system
+spec:
+  podSelector:
+    matchLabels:
+      app: longhorn-manager
+  policyTypes:
+    - Ingress
+  ingress:
+    # Conversion/admission webhooks (kube-apiserver, readiness probe) and the
+    # RWX recovery backend: open, as before. None of them manages backups.
+    - ports:
+        - port: 9501
+          protocol: TCP
+        - port: 9502
+          protocol: TCP
+        - port: 9503
+          protocol: TCP
+    - from:
+        - podSelector: {}   # longhorn-system: UI, CSI plugin, other managers
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - port: 9500
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: longhorn-ui
+  namespace: longhorn-system
+spec:
+  podSelector:
+    matchLabels:
+      app: longhorn-ui
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector: {}
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - port: 8000
+          protocol: TCP

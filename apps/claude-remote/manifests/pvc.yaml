@@ -1,16 +1,16 @@
-# $HOME of the claude-remote pod: Claude Code binary, ~/.claude (OAuth login,
-# settings, session history) and the repo clone + worktrees.
+# $HOME of every session pod: Claude Code binary, ~/.claude (OAuth login; the
+# refresh token rotates, so it needs writable storage rather than a Secret)
+# and ~/.claude.json. RWO also enforces one session at a time. Not backed up:
+# losing it only means logging in again.
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: claude-remote-home
-  namespace: halo
-  labels:
-    recurring-job-group.longhorn.io/default: "enabled"
+  name: claude-auth
+  namespace: claude-sessions
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 5Gi
+      storage: 1Gi
   storageClassName: longhorn

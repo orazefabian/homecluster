@@ -83,7 +83,7 @@ All PVCs use `storageClassName: longhorn` and `accessModes: ReadWriteOnce`.
 
 **Important**: Because PVCs are RWO, all Deployments that have persistent storage use `strategy: Recreate` (not RollingUpdate). A rolling update would try to schedule a new pod before the old one releases the volume.
 
-**Replica placement**: only halo-1 and halo-2 have a schedulable Longhorn disk (NVMe at `/mnt/nvme-storage`), so with 2 replicas every volume has exactly one replica on each. A pod on halo-0 or halo-8 has no local replica and does all I/O over 1 GbE (writes leave the node twice). The v1 engine round-robins reads across replicas, so `dataLocality` changes nothing here — node placement is the lever. Storage-heavy workloads (Immich, Paperless, Samba) therefore carry a required `nodeAffinity` on `kubernetes.io/hostname` in `[halo-1, halo-2]`. Prometheus and Alertmanager instead must avoid halo-0 (control plane, no fan) and only *prefer* halo-1/halo-2, so halo-8 remains a fallback. Longhorn volume metrics are scraped by Prometheus; see the "Longhorn / Volumes" Grafana dashboard.
+**Replica placement**: only halo-1 and halo-2 have a schedulable Longhorn disk (NVMe at `/mnt/nvme-storage`), so with 2 replicas every volume has exactly one replica on each. A pod on halo-0 or halo-8 has no local replica and does all I/O over 1 GbE (writes leave the node twice). The v1 engine round-robins reads across replicas, so `dataLocality` changes nothing here — node placement is the lever. Storage-heavy workloads (Immich, Paperless, Samba) therefore carry a required `nodeAffinity` on `kubernetes.io/hostname` in `[halo-1, halo-2]`. Prometheus and Alertmanager instead must avoid halo-0 (control plane, no fan) and only *prefer* halo-1/halo-2, so halo-8 remains a fallback. Longhorn volume metrics are scraped by Prometheus; see the "Longhorn / Volumes" Grafana dashboard. Longhorn's API has no auth, so `networkpolicy-api.yaml` limits `longhorn-manager:9500` to `longhorn-system` + Prometheus and `longhorn-ui` to ingress-nginx; the UI ingress uses basic auth.
 
 ### Backup schedule
 
@@ -129,7 +129,7 @@ All in namespace `halo`.
 | Monitoring | `monitoring.halo.fabseit.net` | Prometheus + Grafana (kube-prometheus-stack). `smartctl-exporter` DaemonSet adds SMART metrics for the physical disks (Longhorn iSCSI devices filtered out; halo-8's WD HDD is only read around real I/O so it can spin down) — see the header of `infrastructure/monitoring/manifests/smartctl-exporter.yaml`. Grafana dashboard "Disks / S.M.A.R.T." (`grafana-dashboard-smart.yaml`). Alerts → Discord (only actionable ones) + healthchecks.io dead-man's switch; rules in `manifests/prometheusrule-homelab.yaml`, routing in `manifests/alertmanager-config.yaml` (an `AlertmanagerConfig` CR, not `alertmanager.config` — AM 0.27 can't read the Discord URL from a file). See the "Alerting" section in `infrastructure/monitoring/README.md`. |
 | Samba Share | — | SMB file share, no ingress. |
 | DDClient | — | Dynamic DNS updater, no ingress. |
-| Claude Remote | — | `claude remote-control` server, driven from claude.ai/code (shows as **halo**). Read-only cluster RBAC without Secrets, repo-scoped GitHub PAT via ESO, home on PVC `claude-remote-home`. Toolbox image built by `.github/workflows/claude-remote-image.yml`; Claude Code self-installs onto the PVC. One-time login/clone bootstrap in `apps/claude-remote/README.md`. |
+| Claude sessions | — | **On-demand**, namespace `claude-sessions` (exception to halo). n8n form (`/form/claude-session`, Homepage link) creates a Job that clones an allowlisted repo and runs `claude remote-control --spawn session`; the pod disappears when the session ends. Modes: standard (read-only, no Secrets) / privileged (writes + exec in halo, alerting in monitoring; RBAC + ValidatingAdmissionPolicies keep it away from Longhorn backups). Both push via the `halo-claude-bot` account, PRs only. See `apps/claude-remote/README.md`. |
 | Architecture | `architecture.halo.fabseit.net` | Static cluster diagrams (nginx + one ConfigMap per page). Sources and update steps in `apps/architecture/README.md`. |
 
 ---
@@ -152,7 +152,8 @@ All in namespace `halo`.
 | `cloudflare-api-token-secret` | `cert-manager` | Cloudflare DNS-01 token |
 | `hetzner-s3-credentials` | `longhorn-system` | S3 backup credentials |
 | `alertmanager-notifications` | `monitoring` | Discord webhook + healthchecks.io ping URL for Alertmanager |
-| `claude-remote` | `halo` | `GH_TOKEN`: fine-grained PAT (this repo only) for the claude-remote pod |
+| `claude-session` | `claude-sessions` | `GH_TOKEN`: classic PAT of the `halo-claude-bot` GitHub account (Claude sessions) |
+| `longhorn-ui-auth` | `longhorn-system` | htpasswd for basic auth on the Longhorn UI ingress |
 | `tailscale-auth` | `halo` | Headscale subnet router auth key (`TS_AUTHKEY` from Vaultwarden; tailscale writes its state keys into the same Secret) |
 
 ---

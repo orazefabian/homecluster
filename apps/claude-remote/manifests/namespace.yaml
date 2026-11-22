@@ -1,0 +1,10 @@
+# On-demand Claude session Jobs (apps/claude-remote/README.md). Separate from
+# halo so the n8n launcher's Job-create right cannot mount halo volumes or
+# Secrets; PSA "restricted" rejects privileged/hostPath pod specs outright.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: claude-sessions
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest

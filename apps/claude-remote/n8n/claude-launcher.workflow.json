@@ -1,0 +1,313 @@
+{
+  "name": "Claude session launcher",
+  "nodes": [
+    {
+      "id": "1",
+      "name": "Claude session form",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "claude-session",
+      "parameters": {
+        "authentication": "n8nUserAuth",
+        "formTitle": "Claude session on halo",
+        "formDescription": "Starts a Claude Code session in the cluster. Open claude.ai/code about a minute after submitting and pick the new session. One session at a time; it is removed when the session ends (or after 8 h).\n\nstandard: read-only kubectl, no Secrets.\nprivileged: can change workloads and exec in halo, edit alerts/dashboards in monitoring. Never Longhorn, ArgoCD, ESO or RBAC.\n\nBoth modes push branches and open PRs as halo-claude-bot, never to main.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Action",
+              "fieldType": "dropdown",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Start"
+                  },
+                  {
+                    "option": "Stop"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Repository",
+              "fieldType": "dropdown",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "orazefabian/homecluster"
+                  },
+                  {
+                    "option": "orazefabian/lang-learn-app"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Mode",
+              "fieldType": "dropdown",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "standard"
+                  },
+                  {
+                    "option": "privileged"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Branch",
+              "fieldType": "text",
+              "placeholder": "default branch"
+            }
+          ]
+        },
+        "options": {
+          "path": "claude-session",
+          "buttonLabel": "Go"
+        }
+      }
+    },
+    {
+      "id": "2",
+      "name": "List session jobs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://kubernetes.default.svc/apis/batch/v1/namespaces/claude-sessions/jobs?labelSelector=app%3Dclaude-session",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "k8s claude-launcher"
+        }
+      }
+    },
+    {
+      "id": "3",
+      "name": "Decide",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Decide what to do from the form input and the currently existing Jobs.\n// The repo allowlist is enforced here too (a form POST can be hand-crafted).\nconst REPOS = [\"orazefabian/homecluster\", \"orazefabian/lang-learn-app\"];\nconst IMAGE = 'ghcr.io/orazefabian/homecluster/claude-remote:0.2.0';\n\nconst form = $('Claude session form').first().json;\nconst action = form['Action'];\nconst repo = form['Repository'];\nconst branch = (form['Branch'] || '').trim();\nconst mode = form['Mode'] === 'privileged' ? 'privileged' : 'standard';\n\nconst jobs = ($('List session jobs').first().json.items || []);\nconst running = jobs.filter(j => !(j.status?.conditions || []).some(\n  c => (c.type === 'Complete' || c.type === 'Failed') && c.status === 'True'));\n\nif (action === 'Stop') {\n  if (running.length === 0) return [{ json: { action: 'message', message: 'No session is running.' } }];\n  return running.map(j => ({ json: { action: 'stop', name: j.metadata.name } }));\n}\n\nif (running.length > 0) {\n  const j = running[0];\n  return [{ json: { action: 'message', message:\n    `A session is already running (${j.metadata.labels?.mode || 'standard'}: ${j.metadata.annotations?.['claude.halo/repo'] || j.metadata.name}). ` +\n    'Find it at claude.ai/code, or submit again with Action = Stop.' } }];\n}\nif (!REPOS.includes(repo)) return [{ json: { action: 'message', message: `Repository ${repo} is not allowed.` } }];\nif (branch && !/^[A-Za-z0-9_][A-Za-z0-9._\\/-]{0,199}$/.test(branch)) return [{ json: { action: 'message', message: 'Invalid branch name.' } }];\n\nconst labels = { app: 'claude-session', mode };\nconst env = [\n  { name: 'REPO', value: repo },\n  { name: 'SESSION_MODE', value: mode },\n  { name: 'GH_TOKEN', valueFrom: { secretKeyRef: { name: 'claude-session', key: 'GH_TOKEN', optional: true } } },\n];\nif (branch) env.push({ name: 'BRANCH', value: branch });\n\nconst job = {\n  apiVersion: 'batch/v1',\n  kind: 'Job',\n  metadata: { generateName: 'claude-session-', namespace: 'claude-sessions', labels,\n              annotations: { 'claude.halo/repo': repo } },\n  spec: {\n    backoffLimit: 0,\n    ttlSecondsAfterFinished: 120,\n    activeDeadlineSeconds: 28800,\n    template: {\n      metadata: { labels },\n      spec: {\n        serviceAccountName: mode === 'privileged' ? 'claude-session-admin' : 'claude-session',\n        restartPolicy: 'Never',\n        securityContext: { runAsNonRoot: true, runAsUser: 1000, runAsGroup: 1000, fsGroup: 1000,\n                           seccompProfile: { type: 'RuntimeDefault' } },\n        affinity: { nodeAffinity: {\n          requiredDuringSchedulingIgnoredDuringExecution: { nodeSelectorTerms: [{ matchExpressions: [\n            { key: 'kubernetes.io/hostname', operator: 'NotIn', values: ['halo-0'] }] }] },\n          preferredDuringSchedulingIgnoredDuringExecution: [{ weight: 100, preference: { matchExpressions: [\n            { key: 'kubernetes.io/hostname', operator: 'In', values: ['halo-1', 'halo-2'] }] } }] } },\n        containers: [{\n          name: 'claude',\n          image: IMAGE,\n          imagePullPolicy: 'IfNotPresent',\n          stdin: true,\n          tty: true,\n          env,\n          securityContext: { allowPrivilegeEscalation: false, capabilities: { drop: ['ALL'] } },\n          resources: { requests: { cpu: '500m', memory: '1Gi' }, limits: { memory: '4Gi' } },\n          volumeMounts: [{ name: 'home', mountPath: '/home/claude' }, { name: 'work', mountPath: '/work' }],\n        }],\n        volumes: [\n          { name: 'home', persistentVolumeClaim: { claimName: 'claude-auth' } },\n          { name: 'work', emptyDir: { sizeLimit: '10Gi' } },\n        ],\n      },\n    },\n  },\n};\nreturn [{ json: { action: 'start', job, repo, mode } }];"
+      }
+    },
+    {
+      "id": "4",
+      "name": "Route",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        720,
+        0
+      ],
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 3,
+        "output": "={{ ({ start: 0, stop: 1 })[$json.action] ?? 2 }}"
+      }
+    },
+    {
+      "id": "5",
+      "name": "Create session job",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        960,
+        -200
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://kubernetes.default.svc/apis/batch/v1/namespaces/claude-sessions/jobs",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.job) }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "k8s claude-launcher"
+        }
+      }
+    },
+    {
+      "id": "6",
+      "name": "Started",
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.5,
+      "position": [
+        1200,
+        -200
+      ],
+      "parameters": {
+        "operation": "completion",
+        "respondWith": "text",
+        "completionTitle": "Session starting",
+        "completionMessage": "={{ 'Job ' + $json.metadata.name + ' created (' + $('Decide').first().json.mode + ', ' + $('Decide').first().json.repo + '). Open claude.ai/code in about a minute.' }}"
+      }
+    },
+    {
+      "id": "7",
+      "name": "Delete session job",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        960,
+        0
+      ],
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://kubernetes.default.svc/apis/batch/v1/namespaces/claude-sessions/jobs/{{ $json.name }}?propagationPolicy=Background",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "k8s claude-launcher"
+        }
+      }
+    },
+    {
+      "id": "8",
+      "name": "Stopped",
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.5,
+      "position": [
+        1200,
+        0
+      ],
+      "parameters": {
+        "operation": "completion",
+        "respondWith": "text",
+        "completionTitle": "Session stopped",
+        "completionMessage": "The session pod is being removed. Unpushed work in it is gone."
+      }
+    },
+    {
+      "id": "9",
+      "name": "Message",
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.5,
+      "position": [
+        960,
+        200
+      ],
+      "parameters": {
+        "operation": "completion",
+        "respondWith": "text",
+        "completionTitle": "Nothing started",
+        "completionMessage": "={{ $json.message }}"
+      }
+    }
+  ],
+  "connections": {
+    "Claude session form": {
+      "main": [
+        [
+          {
+            "node": "List session jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List session jobs": {
+      "main": [
+        [
+          {
+            "node": "Decide",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decide": {
+      "main": [
+        [
+          {
+            "node": "Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route": {
+      "main": [
+        [
+          {
+            "node": "Create session job",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Delete session job",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create session job": {
+      "main": [
+        [
+          {
+            "node": "Started",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete session job": {
+      "main": [
+        [
+          {
+            "node": "Stopped",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false
+}
