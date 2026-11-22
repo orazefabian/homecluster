@@ -60,27 +60,35 @@ Known residual risks (in-cluster guardrails only, no off-cluster lock):
 If `halo/admin-user` (cluster-admin, hand-made in 2025) is no longer needed, delete it. It's the most
 dangerous object any `halo` workload can reach.
 
-## GitHub access
+## GitHub access: GitHub App
 
-Both modes push with **your fine-grained PAT** (Vaultwarden `claude-sessions/claude-session` → `GH_TOKEN`):
-- only the repos offered in the form
-- Contents + Pull requests read/write, nothing else (no Administration, so it can't change rulesets)
+Both modes act as a private **GitHub App** (yours, no extra account):
+- installed only on the repos offered in the form
+- Contents + Pull requests write; no Workflows (it can't edit `.github/workflows`), no Administration
 
-Each offered repo has a ruleset on `main`: require a pull request, **no bypass actors**. Sessions can
-push branches and open PRs, but never push to main. The ruleset applies to you too.
+Vaultwarden `claude-sessions/claude-session` holds `APP_ID`, `INSTALLATION_ID` and `PRIVATE_KEY_B64`.
+In the pod, `gh-app-token` signs a JWT with the key and exchanges it for a 1 h installation token
+(cached, renewed 5 min before expiry). `git` (credential helper `git-credential-ghapp`) and `gh` (wrapper
+in `/usr/local/bin`) both fetch tokens on demand, so 8 h sessions keep working. Commits are authored as
+`<app-slug>[bot]`.
 
-Trade-off: the token acts as you, so a session **can merge its own PR**, and ArgoCD would then deploy
-it. PRs and pushes show up as yours. Commits are authored as `Claude (halo)`. To make merging
-impossible, move to a GitHub App with a required approval (see the PR #151 discussion).
+Each offered repo has a ruleset on `main`:
+- require a PR with **1 approval**, block force pushes
+- bypass: **Repository admin, "for pull requests only"**
+
+So the app can push branches and open PRs, but can never push to or merge into main. You approve, or
+merge with your bypass, and ArgoCD deploys only that.
 
 ## Setup (once)
 
-1. **GitHub:**
-   - Create a fine-grained PAT: resource owner you, the offered repos only, Contents + Pull requests
-     read/write.
-   - Put it in Vaultwarden item `claude-sessions/claude-session`, hidden field `GH_TOKEN`, and put the
-     item ID in `manifests/externalsecret.yaml`.
-   - On each repo, add a ruleset for `main`: require a pull request, no bypass list.
+1. **GitHub App:**
+   - Create a private app under your account (Developer settings → GitHub Apps): webhook off,
+     Repository permissions Contents + Pull requests read/write, "Only on this account".
+   - Generate a private key, then install the app on the offered repos only.
+   - Vaultwarden item `claude-sessions/claude-session` gets hidden fields `APP_ID`, `INSTALLATION_ID`
+     (the number at the end of the installation URL) and `PRIVATE_KEY_B64` (`base64 -w0 <key>.pem`).
+     Delete the `.pem` afterwards. The item ID is already in `manifests/externalsecret.yaml`.
+   - Add the `main` ruleset described above to each repo.
 2. **Longhorn UI auth:**
    - Run `htpasswd -nB admin` and put the whole output line in Vaultwarden item
      `longhorn-system/longhorn-ui-auth`, hidden field `auth`. The item ID is already in
@@ -108,11 +116,11 @@ impossible, move to a GitHub App with a required approval (see the PR #151 discu
 
 - **Add a repo:**
   - add it to the form's Repository dropdown **and** to `REPOS` in the Decide node
-  - add the repo to the PAT and add the ruleset
+  - add the repo to the app installation and add the ruleset
   - re-export the workflow into `n8n/`
 - **Logs:** `kubectl -n claude-sessions logs job/<name>`. Failed Jobs also disappear after 120 s. To
   debug, raise `ttlSecondsAfterFinished` in the Decide node.
 - **Update the tools:** edit `image/`, then bump `IMAGE_TAG` in `.github/workflows/claude-remote-image.yml`,
   the `IMAGE` constant in the Decide node, and `bootstrap/login-pod.yaml` together. Claude Code itself
   updates itself on the PVC.
-- **Revoke everything:** remove the device in claude.ai settings, revoke the PAT, and delete the Job.
+- **Revoke everything:** remove the device in claude.ai settings, revoke the app's private key (or uninstall the app), and delete the Job.

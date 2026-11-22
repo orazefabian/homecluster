@@ -21,7 +21,7 @@
     { "id": "whisper", "type": "backend", "label": "Whisper", "sublabel": "Slovene ASR", "pos": [720, 370], "size": [130, 64] },
     { "id": "claude-rc", "type": "backend", "label": "Claude session Job", "sublabel": "on demand · remote-control", "pos": [880, 560], "size": [220, 64], "tag": "standard | privileged" },
     { "id": "claude-ai", "type": "external", "label": "claude.ai", "sublabel": "web · mobile app", "pos": [800, 720], "size": [150, 64] },
-    { "id": "github", "type": "external", "label": "GitHub", "sublabel": "fine-grained PAT · PRs", "pos": [1010, 720], "size": [170, 64] }
+    { "id": "github", "type": "external", "label": "GitHub", "sublabel": "GitHub App · PRs", "pos": [1010, 720], "size": [170, 64] }
   ],
   "boundaries": [
     { "kind": "region", "label": "namespace halo", "wraps": ["n8n", "dd-web", "homepage", "kuma", "speedtest", "n8n-pg", "piper", "dd-pg", "whisper"] },
