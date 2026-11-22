@@ -27,8 +27,9 @@ RUN curl -fsSLo /usr/local/bin/kubectl \
 RUN usermod -l claude -d /home/claude -m node && groupmod -n claude node \
  && install -d -o 1000 -g 1000 /work
 
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod 0755 /usr/local/bin/entrypoint.sh
+COPY entrypoint.sh gh-app-token git-credential-ghapp gh /usr/local/bin/
+RUN chmod 0755 /usr/local/bin/entrypoint.sh /usr/local/bin/gh-app-token \
+      /usr/local/bin/git-credential-ghapp /usr/local/bin/gh
 
 USER 1000
 ENV HOME=/home/claude \

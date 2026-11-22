@@ -33,12 +33,25 @@ fi
 name="${REPO#*/}"
 dir="/work/$name"
 
-if [[ -n "${GH_TOKEN:-}" ]]; then
-  git config --global credential.https://github.com.helper '!gh auth git-credential'
+# GitHub: as the GitHub App (README). git and gh fetch short-lived installation
+# tokens on demand; commits are authored as <app-slug>[bot].
+git_name="Claude (halo)"; git_email="claude-session@halo.fabseit.net"
+if [[ -n "${GH_APP_ID:-}" ]]; then
+  git config --global credential.https://github.com.helper ghapp
+  if gh-app-token >/dev/null; then
+    slug=$(curl -fsS -H "Authorization: Bearer $(gh-app-token --jwt)" \
+             -H "Accept: application/vnd.github+json" https://api.github.com/app | jq -r .slug)
+    uid=$(curl -fsS "https://api.github.com/users/${slug}%5Bbot%5D" | jq -r .id)
+    git_name="${slug}[bot]"; git_email="${uid}+${slug}[bot]@users.noreply.github.com"
+    echo "GitHub: acting as ${git_name}"
+  else
+    echo "WARNING: GitHub App token failed; continuing without push access" >&2
+  fi
+else
+  echo "WARNING: no GitHub App configured; continuing without push access" >&2
 fi
-# Pushes authenticate as the PAT owner; commits carry this identity.
-git config --global user.name  "${GIT_USER_NAME:-Claude (halo)}"
-git config --global user.email "${GIT_USER_EMAIL:-claude-session@halo.fabseit.net}"
+git config --global user.name  "$git_name"
+git config --global user.email "$git_email"
 
 echo "Cloning $REPO${BRANCH:+ ($BRANCH)} ..."
 git clone --depth 50 ${BRANCH:+--branch "$BRANCH"} "https://github.com/$REPO.git" "$dir"

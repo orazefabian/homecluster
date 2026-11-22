@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Wrapper in front of /usr/bin/gh: every call gets a fresh GitHub App token.
+if [[ -n "${GH_APP_ID:-}" ]]; then
+  if tok=$(gh-app-token 2>/dev/null); then
+    export GH_TOKEN="$tok"
+  else
+    echo "gh: could not get a GitHub App token, running unauthenticated" >&2
+  fi
+fi
+exec /usr/bin/gh "$@"
