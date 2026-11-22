@@ -5,15 +5,22 @@ kube-prometheus-stack:
   # Prometheus configuration
   prometheus:
     prometheusSpec:
-      # Keep off halo-0: it has no Longhorn disk (every TSDB write would go
-      # over the network via its instance-manager), it is the control-plane
-      # node, and it has no fan (idles ~84 °C). halo-1/halo-2 each hold a
-      # replica, so I/O stays local. Same pattern as Immich/Paperless.
+      # Never on halo-0: it is the control-plane node, has no fan (idles
+      # ~84 °C) and no Longhorn disk. Prefer halo-1/halo-2, which hold this
+      # volume's replicas (local I/O); halo-8 remains a fallback.
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: NotIn
+                    values:
+                      - halo-0
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
                   - key: kubernetes.io/hostname
                     operator: In
                     values:
@@ -146,15 +153,22 @@ kube-prometheus-stack:
     # config Secret entirely.
 
     alertmanagerSpec:
-      # Keep off halo-0: it has no Longhorn disk (writes would go over
-      # the network via its instance-manager), it is the control-plane
-      # node, and it has no fan (idles ~84 °C). halo-1/halo-2 each hold a
-      # replica, so I/O stays local. Same pattern as Immich/Paperless.
+      # Never on halo-0: it is the control-plane node, has no fan (idles
+      # ~84 °C) and no Longhorn disk. Prefer halo-1/halo-2, which hold this
+      # volume's replicas (local I/O); halo-8 remains a fallback.
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: NotIn
+                    values:
+                      - halo-0
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
                   - key: kubernetes.io/hostname
                     operator: In
                     values:
