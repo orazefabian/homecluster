@@ -9,8 +9,8 @@
 #
 # ${...} and $(...) are expanded by the image at render time, so the private
 # key is read from the PVC and never lives in git. Changing this template
-# alone does not re-render wg0.conf — run `helper/wg-peer.sh regen` (or
-# change PEERS) afterwards.
+# alone does not re-render wg0.conf; it is picked up at the next PEERS change,
+# or force it: delete /config/wg_confs/wg0.conf and restart the pod.
 apiVersion: v1
 kind: ConfigMap
 metadata:
