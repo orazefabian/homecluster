@@ -78,7 +78,7 @@ Here's how the repo is organized:
     - `cert-manager`: Automated TLS certificate management (deployed via Helm). 🔑
     - `metallb`: Load balancer for bare-metal clusters. ⚖️
     - `ingress-nginx`: HTTP and HTTPS routing for services (deployed via Helm). 🌍
-    - `secrets-backup`: Custom backup solution for k8s secrets. 📥
+    - `external-secrets`: Syncs k8s Secrets from Vaultwarden (External Secrets Operator, deployed via Helm). 🔐
     - `reloader`: Make your pods reload on secrets or configmap changes. ⟳
     - `kite`: Modern k8s dashboard.
 

@@ -30,8 +30,7 @@
     { "id": "pvc", "from": "workloads", "to": "longhorn", "label": "PVCs", "labelDy": 24 },
     { "id": "lh-nfs", "from": "longhorn", "to": "nfs", "label": "Tue / Sat", "fromSide": "bottom", "toSide": "top" },
     { "id": "lh-s3", "from": "longhorn", "to": "s3", "label": "monthly", "fromSide": "bottom", "toSide": "top" },
-    { "id": "eso-vw", "from": "eso", "to": "workloads", "label": "Vaultwarden → Secrets", "variant": "security" },
-    { "id": "sec-nfs", "from": "eso", "to": "nfs", "label": "legacy dump", "variant": "dashed", "fromSide": "bottom", "toSide": "top", "labelDy": 24 }
+    { "id": "eso-vw", "from": "eso", "to": "workloads", "label": "Vaultwarden → Secrets", "variant": "security" }
   ],
   "cards": [
     { "dot": "violet", "title": "GitOps", "items": ["Manifest + Helm ApplicationSets", "Helm: cert-manager, ingress-nginx, Longhorn, ESO", "Secrets: Vaultwarden is source of truth"] },

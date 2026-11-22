@@ -5278,8 +5278,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <path data-edge-from="workloads" data-edge-to="longhorn" data-edge-label="PVCs" data-edge-key="5" data-edge-id="pvc" data-composition-points="645,144;645,250" data-composition-crossover="halo" data-composition-independent="true" d="M 645 144 L 645 250" class="a-default" data-animate="edge" style="--step:5" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:6">
-          <path data-graph-role="automatic-crossover-underlay" d="M 638 314 L 638 369 Q 638 377 630 377 L 390 377 Q 382 377 382 385 L 382 440" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="longhorn" data-edge-to="nfs" data-edge-label="Tue / Sat" data-edge-key="6" data-edge-id="lh-nfs" data-composition-points="638,314;638,377;382,377;382,440" data-composition-crossover="halo" data-composition-independent="true" d="M 638 314 L 638 369 Q 638 377 630 377 L 390 377 Q 382 377 382 385 L 382 440" class="a-default" data-animate="edge" style="--step:6" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <path data-graph-role="automatic-crossover-underlay" d="M 638 314 L 638 369 Q 638 377 630 377 L 383 377 Q 375 377 375 385 L 375 440" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="longhorn" data-edge-to="nfs" data-edge-label="Tue / Sat" data-edge-key="6" data-edge-id="lh-nfs" data-composition-points="638,314;638,377;375,377;375,440" data-composition-crossover="halo" data-composition-independent="true" d="M 638 314 L 638 369 Q 638 377 630 377 L 383 377 Q 375 377 375 385 L 375 440" class="a-default" data-animate="edge" style="--step:6" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:7">
           <path data-graph-role="automatic-crossover-underlay" d="M 652 314 L 652 369 Q 652 377 660 377 L 847 377 Q 855 377 855 385 L 855 440" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
@@ -5288,10 +5288,6 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <g data-graph-role="automatic-crossover" style="--step:8">
           <path data-graph-role="automatic-crossover-underlay" d="M 460 282 L 502 282 Q 510 282 510 274 L 510 127 Q 510 119 518 119 L 560 119" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
           <path data-edge-from="eso" data-edge-to="workloads" data-edge-label="Vaultwarden → Secrets" data-edge-key="8" data-edge-id="eso-vw" data-composition-points="460,282;510,282;510,119;560,119" data-composition-crossover="halo" data-composition-independent="true" d="M 460 282 L 502 282 Q 510 282 510 274 L 510 127 Q 510 119 518 119 L 560 119" class="a-security" data-animate="edge" style="--step:8" stroke-width="1.5" marker-end="url(#arrowhead-security)"/>
-        </g>
-        <g data-graph-role="automatic-crossover" style="--step:9">
-          <path data-graph-role="automatic-crossover-underlay" d="M 368 314 L 368 440" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="eso" data-edge-to="nfs" data-edge-label="legacy dump" data-edge-key="9" data-edge-id="sec-nfs" data-composition-points="368,314;368,440" data-composition-crossover="halo" data-composition-independent="true" d="M 368 314 L 368 440" class="a-dashed" data-animate="edge" style="--step:9" stroke-width="1.5" marker-end="url(#arrowhead-dashed)"/>
         </g>
 
         <!-- Components -->
@@ -5431,8 +5427,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <text x="645" y="158" class="t-edge-default" font-size="8" text-anchor="middle">PVCs</text>
         </g>
         <g data-detail="context" data-edge-from="longhorn" data-edge-to="nfs" data-edge-label="Tue / Sat" data-edge-key="6" data-edge-id="lh-nfs">
-          <rect x="483.4" y="357" width="53.199999999999996" height="14" rx="3" class="c-mask"/>
-          <text x="510" y="367" class="t-edge-default" font-size="8" text-anchor="middle">Tue / Sat</text>
+          <rect x="479.9" y="357" width="53.199999999999996" height="14" rx="3" class="c-mask"/>
+          <text x="506.5" y="367" class="t-edge-default" font-size="8" text-anchor="middle">Tue / Sat</text>
         </g>
         <g data-detail="context" data-edge-from="longhorn" data-edge-to="s3" data-edge-label="monthly" data-edge-key="7" data-edge-id="lh-s3">
           <rect x="731.7" y="357" width="43.6" height="14" rx="3" class="c-mask"/>
@@ -5441,10 +5437,6 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <g data-detail="context" data-edge-from="eso" data-edge-to="workloads" data-edge-label="Vaultwarden → Secrets" data-edge-key="8" data-edge-id="eso-vw">
           <rect x="454.6" y="180.5" width="110.8" height="14" rx="3" class="c-mask"/>
           <text x="510" y="190.5" class="t-edge-security" font-size="8" text-anchor="middle">Vaultwarden → Secrets</text>
-        </g>
-        <g data-detail="context" data-edge-from="eso" data-edge-to="nfs" data-edge-label="legacy dump" data-edge-key="9" data-edge-id="sec-nfs">
-          <rect x="336.6" y="318" width="62.8" height="14" rx="3" class="c-mask"/>
-          <text x="368" y="328" class="t-edge-dashed" font-size="8" text-anchor="middle">legacy dump</text>
         </g>
 
         <!-- Boundary labels (foreground masks keep routes out of titles) -->
