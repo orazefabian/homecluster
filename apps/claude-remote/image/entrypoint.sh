@@ -56,6 +56,10 @@ git config --global user.email "$git_email"
 
 echo "Cloning $REPO ..."
 git clone --depth 50 "https://github.com/$REPO.git" "$dir"
+# --depth implies --single-branch: the fetch refspec would cover only the
+# default branch, so pushed branches get no origin/<branch> ref and
+# `gh pr create` aborts with "you must first push the current branch".
+git -C "$dir" config remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'
 
 # Never work on the default branch: pushes to it are rejected and a PR from
 # main to main can't exist. Start on a throwaway-named branch; Claude renames
