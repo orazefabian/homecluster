@@ -1,0 +1,26 @@
+# Server config template for the linuxserver/wireguard image. The init
+# container copies it to /config/templates/server.conf on every start; the
+# image renders /config/wg_confs/wg0.conf from it whenever PEERS (or another
+# server env var) changes, then appends one [Peer] block per peer.
+#
+# Same as the image's default template, plus the DNS DNAT rules: every DNS
+# query from a VPN client is redirected to Pi-hole (192.168.8.53). Keeping
+# them here, not patched into wg0.conf, means they survive regeneration.
+#
+# ${...} and $(...) are expanded by the image at render time, so the private
+# key is read from the PVC and never lives in git. Changing this template
+# alone does not re-render wg0.conf — run `helper/wg-peer.sh regen` (or
+# change PEERS) afterwards.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wireguard-server-template
+  namespace: halo
+data:
+  server.conf: |
+    [Interface]
+    Address = ${INTERFACE}.1
+    ListenPort = 51820
+    PrivateKey = $(cat /config/server/privatekey-server)
+    PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o eth+ -j MASQUERADE; iptables -t nat -A PREROUTING -i %i -p udp --dport 53 -j DNAT --to-destination 192.168.8.53:53; iptables -t nat -A PREROUTING -i %i -p tcp --dport 53 -j DNAT --to-destination 192.168.8.53:53
+    PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o eth+ -j MASQUERADE; iptables -t nat -D PREROUTING -i %i -p udp --dport 53 -j DNAT --to-destination 192.168.8.53:53; iptables -t nat -D PREROUTING -i %i -p tcp --dport 53 -j DNAT --to-destination 192.168.8.53:53
