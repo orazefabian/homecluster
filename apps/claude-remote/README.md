@@ -109,6 +109,8 @@ merge with your bypass, and ArgoCD deploys only that.
      `Bearer <token>`. Get the token from
      `kubectl -n claude-sessions get secret n8n-claude-launcher-token -o jsonpath='{.data.token}' | base64 -d`.
    - Select the credential in the three HTTP nodes and activate the workflow.
+   - Check that the form node's **Options → Form Path** is `claude-session`. Exports before this fix
+     had the path replaced by a random ID on import.
    - The form uses **n8n User Auth**, so only logged-in n8n users can open it, even though n8n is also
      public at `n8n.fabseit.net`.
 
