@@ -78,6 +78,10 @@ spec:
           - name: kite
             path: ./infrastructure/kite/manifests
             namespace: kube-system
+          # Cookie login in front of the Longhorn UI (replaces basic auth).
+          - name: oauth2-proxy
+            path: ./infrastructure/oauth2-proxy/manifests
+            namespace: oauth2-proxy
 
   template:
     metadata:

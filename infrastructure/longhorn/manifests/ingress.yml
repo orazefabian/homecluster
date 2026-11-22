@@ -5,10 +5,12 @@ metadata:
   namespace: longhorn-system
   annotations:
     # The Longhorn UI has no login of its own and can delete backups.
-    # Secret from externalsecret-ui-auth.yaml (Vaultwarden).
-    nginx.ingress.kubernetes.io/auth-type: basic
-    nginx.ingress.kubernetes.io/auth-secret: longhorn-ui-auth
-    nginx.ingress.kubernetes.io/auth-realm: Longhorn
+    # Cookie login via oauth2-proxy (infrastructure/oauth2-proxy), not basic
+    # auth: iOS Safari never sends basic-auth credentials on WebSocket
+    # upgrades, and the UI's live-update sockets each raised a login popup.
+    # /oauth2/* on these hosts is served by the Ingress in that namespace.
+    nginx.ingress.kubernetes.io/auth-url: http://oauth2-proxy.oauth2-proxy.svc.cluster.local/oauth2/auth
+    nginx.ingress.kubernetes.io/auth-signin: https://$host/oauth2/sign_in?rd=$escaped_request_uri
 spec:
   ingressClassName: nginx
   # Reachable as both longhorn.halo.fabseit.net and longhorn.fabseit.net. The

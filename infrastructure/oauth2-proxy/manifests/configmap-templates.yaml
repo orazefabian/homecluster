@@ -1,0 +1,47 @@
+# Replaces oauth2-proxy's sign-in page. The default page always shows a
+# "Sign in with <provider>" button, which would lead to the dummy Google
+# provider; this one has only the username/password form. error.html is not
+# overridden, so oauth2-proxy uses its built-in one.
+# Template fields: https://github.com/oauth2-proxy/oauth2-proxy/blob/master/pkg/app/pagewriter/sign_in.html
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: oauth2-proxy-templates
+  namespace: oauth2-proxy
+data:
+  sign_in.html: |
+    {{define "sign_in.html"}}
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>Sign in · halo</title>
+      <style>
+        :root { color-scheme: light dark; }
+        body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+               font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: Canvas; color: CanvasText; }
+        form { width: min(20rem, 90vw); display: flex; flex-direction: column; gap: .75rem; }
+        h1 { font-size: 1.25rem; margin: 0 0 .5rem; }
+        label { font-size: .875rem; }
+        input { font-size: 1rem; padding: .6rem; border: 1px solid #8888; border-radius: .4rem; background: Field; color: FieldText; }
+        button { font-size: 1rem; padding: .65rem; border: 0; border-radius: .4rem; background: #2563eb; color: #fff; cursor: pointer; }
+        .error { color: #dc2626; font-size: .875rem; margin: 0; }
+      </style>
+    </head>
+    <body>
+      <form method="POST" action="{{.ProxyPrefix}}/sign_in">
+        <h1>Sign in</h1>
+        <input type="hidden" name="rd" value="{{.Redirect}}">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" autocomplete="username" autocapitalize="none" autocorrect="off" required autofocus>
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" autocomplete="current-password" required>
+        {{ if eq .StatusCode 400 401 }}
+        <p class="error">Invalid username or password.</p>
+        {{ end }}
+        <button type="submit">Sign in</button>
+      </form>
+    </body>
+    </html>
+    {{end}}

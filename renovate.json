@@ -9,7 +9,7 @@
   "kubernetes": {
     "fileMatch": [
       "^apps/.+\\.ya?ml$",
-      "^infrastructure/(metallb|kite|reloader|external-secrets)/manifests/.+\\.ya?ml$"
+      "^infrastructure/(metallb|kite|reloader|external-secrets|oauth2-proxy)/manifests/.+\\.ya?ml$"
     ]
   },
   "helmv3": {
@@ -151,6 +151,11 @@
       "matchFileNames": ["infrastructure/kite/**"],
       "groupName": "infra: kite",
       "groupSlug": "infra-kite"
+    },
+    {
+      "matchFileNames": ["infrastructure/oauth2-proxy/**"],
+      "groupName": "infra: oauth2-proxy",
+      "groupSlug": "infra-oauth2-proxy"
     },
     {
       "matchFileNames": ["infrastructure/reloader/**"],

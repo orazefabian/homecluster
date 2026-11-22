@@ -83,7 +83,7 @@ All PVCs use `storageClassName: longhorn` and `accessModes: ReadWriteOnce`.
 
 **Important**: Because PVCs are RWO, all Deployments that have persistent storage use `strategy: Recreate` (not RollingUpdate). A rolling update would try to schedule a new pod before the old one releases the volume.
 
-**Replica placement**: only halo-1 and halo-2 have a schedulable Longhorn disk (NVMe at `/mnt/nvme-storage`), so with 2 replicas every volume has exactly one replica on each. A pod on halo-0 or halo-8 has no local replica and does all I/O over 1 GbE (writes leave the node twice). The v1 engine round-robins reads across replicas, so `dataLocality` changes nothing here — node placement is the lever. Storage-heavy workloads (Immich, Paperless, Samba) therefore carry a required `nodeAffinity` on `kubernetes.io/hostname` in `[halo-1, halo-2]`. Prometheus and Alertmanager instead must avoid halo-0 (control plane, no fan) and only *prefer* halo-1/halo-2, so halo-8 remains a fallback. Longhorn volume metrics are scraped by Prometheus; see the "Longhorn / Volumes" Grafana dashboard. Longhorn's API has no auth, so `networkpolicy-api.yaml` limits `longhorn-manager:9500` to `longhorn-system` + Prometheus and `longhorn-ui` to ingress-nginx; the UI ingress uses basic auth.
+**Replica placement**: only halo-1 and halo-2 have a schedulable Longhorn disk (NVMe at `/mnt/nvme-storage`), so with 2 replicas every volume has exactly one replica on each. A pod on halo-0 or halo-8 has no local replica and does all I/O over 1 GbE (writes leave the node twice). The v1 engine round-robins reads across replicas, so `dataLocality` changes nothing here — node placement is the lever. Storage-heavy workloads (Immich, Paperless, Samba) therefore carry a required `nodeAffinity` on `kubernetes.io/hostname` in `[halo-1, halo-2]`. Prometheus and Alertmanager instead must avoid halo-0 (control plane, no fan) and only *prefer* halo-1/halo-2, so halo-8 remains a fallback. Longhorn volume metrics are scraped by Prometheus; see the "Longhorn / Volumes" Grafana dashboard. Longhorn's API has no auth, so `networkpolicy-api.yaml` limits `longhorn-manager:9500` to `longhorn-system` + Prometheus and `longhorn-ui` to ingress-nginx; the UI ingress requires a login through oauth2-proxy (`infrastructure/oauth2-proxy/`, cookie session; plain basic auth broke on iOS Safari, which never sends it on the UI's WebSockets).
 
 ### Backup schedule
 
@@ -153,7 +153,8 @@ All in namespace `halo`.
 | `hetzner-s3-credentials` | `longhorn-system` | S3 backup credentials |
 | `alertmanager-notifications` | `monitoring` | Discord webhook + healthchecks.io ping URL for Alertmanager |
 | `claude-session` | `claude-sessions` | GitHub App ID, installation ID and private key (base64) for Claude sessions |
-| `longhorn-ui-auth` | `longhorn-system` | htpasswd for basic auth on the Longhorn UI ingress |
+| `oauth2-proxy-htpasswd` | `oauth2-proxy` | htpasswd for the oauth2-proxy login (Longhorn UI); Vaultwarden item `longhorn-system/longhorn-ui-auth` |
+| `oauth2-proxy-cookie-secret` | `oauth2-proxy` | Session cookie key, generated once by an ESO `Password` generator (not in Vaultwarden; losing it only forces a new login) |
 | `tailscale-auth` | `halo` | Headscale subnet router auth key (`TS_AUTHKEY` from Vaultwarden; tailscale writes its state keys into the same Secret) |
 
 ---

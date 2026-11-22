@@ -1,7 +1,7 @@
 # Longhorn's REST API (longhorn-manager :9500, proxied by longhorn-ui) has no
 # authentication: anything that reaches it can delete volumes and backups.
 # Close it to everything except Longhorn itself, ingress-nginx (UI, behind
-# basic auth) and Prometheus (metrics scrape). Primarily the last line of
+# the oauth2-proxy login) and Prometheus (metrics scrape). Primarily the last line of
 # defence for on-demand Claude sessions (apps/claude-remote), but it applies
 # to every pod in the cluster.
 # (Enforced by k3s's embedded kube-router network policy controller. No
