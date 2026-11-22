@@ -37,7 +37,7 @@ Bitwarden app ──edit──▶ Vaultwarden (halo/bitwarden; PVC backed up to 
   `app.kubernetes.io/instance` tracking label. ArgoCD then treats the Secret as its own resource that
   isn't in git, and auto-prune **deletes it** on the next sync. The annotations are a second safeguard:
   never prune it, and ignore it when comparing.
-- `refreshInterval: 1h`. The bridge pulls from Vaultwarden every 2 minutes (its liveness probe POSTs `/sync`). If Vaultwarden or the bridge is down,
+- `refreshInterval: 15m` (17 small requests per 15 min against the in-cluster bridge; negligible). The bridge pulls from Vaultwarden every 2 minutes (its liveness probe POSTs `/sync`). If Vaultwarden or the bridge is down,
   Secrets simply stop updating. Running apps are unaffected.
 - To have a value changed in Vaultwarden roll the pod automatically, put `reloader.stakater.com/auto: "true"`
   in the Deployment's **metadata** annotations. Use it for API keys and tokens. **Don't** use it for
@@ -83,7 +83,7 @@ metadata:
   name: pihole-secret
   namespace: halo
 spec:
-  refreshInterval: 1h
+  refreshInterval: 15m
   secretStoreRef:
     kind: ClusterSecretStore
     name: bitwarden-fields
@@ -125,7 +125,7 @@ in `default` (legacy, #93).
 
 ## Day to day
 
-- **Change a value:** edit the field in the Bitwarden app. It lands within about an hour. To get it in now:
+- **Change a value:** edit the field in the Bitwarden app. It lands within about 17 minutes at most (bridge sync up to 2 min + refresh up to 15 min). To get it in now:
   `kubectl -n <ns> annotate externalsecret <name> force-sync=$(date +%s) --overwrite`
   (the bridge syncs every 2 min. To skip that wait, restart it: `kubectl -n external-secrets rollout restart deploy/bitwarden-cli`).
 - **New Secret:** see "Adding a Secret" above.
