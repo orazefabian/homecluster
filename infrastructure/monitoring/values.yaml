@@ -98,10 +98,15 @@ kube-prometheus-stack:
   # only TargetDown (node flaps), one CrashLooping, NodeSystemSaturation and
   # one ReplicasMismatch fired at warning+.
   defaultRules:
+    rules:
+      # KubeAPIErrorBudgetBurn (SLO burn-rate math, noise on k3s) is the only
+      # alert in this group. Disabling it via `disabled:` renders the group
+      # with `rules: null`, which the PrometheusRule CRD rejects - so turn
+      # off the whole group instead.
+      kubeApiserverSlos: false
     disabled:
       KubeCPUOvercommit: true        # always true when one node is gone
       KubeMemoryOvercommit: true
-      KubeAPIErrorBudgetBurn: true   # SLO burn-rate math, noise on k3s
       NodeSystemSaturation: true     # Pi load averages
       # Replaced by PVCUsageHigh (plain thresholds); predict_linear flaps on
       # the Prometheus TSDB's compaction sawtooth.
