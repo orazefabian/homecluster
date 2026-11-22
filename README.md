@@ -53,6 +53,7 @@ Here's how the repo is organized:
 │   ├── secets-backup/
 │   ├── reloader/
 │   ├── kite/
+│   ├── oauth2-proxy/
 └── argocd-bootstrap.yaml
 ```
 
@@ -81,6 +82,7 @@ Here's how the repo is organized:
     - `external-secrets`: Syncs k8s Secrets from Vaultwarden (External Secrets Operator, deployed via Helm). 🔐
     - `reloader`: Make your pods reload on secrets or configmap changes. ⟳
     - `kite`: Modern k8s dashboard.
+    - `oauth2-proxy`: Cookie-based login in front of UIs without their own auth (Longhorn). 🔐
 
 3. **ArgoCD Bootstrap Configuration** (`argocd-bootstrap.yaml`):
     This file defines a bootstrap Application that monitors the `infrastructure/argocd` directory, enabling ArgoCD to manage its own configuration updates automatically.

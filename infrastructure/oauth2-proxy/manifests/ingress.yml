@@ -1,0 +1,34 @@
+# Serves /oauth2/* (sign-in form, auth check) on each protected host, so the
+# session cookie is set host-only on that host. ingress-nginx merges this with
+# the app's own Ingress for the same host.
+#
+# To protect another app:
+#   1. add its host(s) here and in certificate.yaml
+#   2. on the app's Ingress set
+#        nginx.ingress.kubernetes.io/auth-url: http://oauth2-proxy.oauth2-proxy.svc.cluster.local/oauth2/auth
+#        nginx.ingress.kubernetes.io/auth-signin: https://$host/oauth2/sign_in?rd=$escaped_request_uri
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: oauth2-proxy
+  namespace: oauth2-proxy
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: longhorn.halo.fabseit.net
+      http: &http
+        paths:
+          - path: /oauth2
+            pathType: Prefix
+            backend:
+              service:
+                name: oauth2-proxy
+                port:
+                  number: 80
+    - host: longhorn.fabseit.net
+      http: *http
+  tls:
+    - hosts:
+        - longhorn.halo.fabseit.net
+        - longhorn.fabseit.net
+      secretName: oauth2-proxy-prod-tls

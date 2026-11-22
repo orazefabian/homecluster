@@ -56,7 +56,7 @@ claude.ai cannot start anything on the cluster itself: Remote Control only lists
    through a PR.
 3. **The Longhorn API is closed for everyone** (`infrastructure/longhorn/manifests/networkpolicy-api.yaml`).
    `longhorn-manager:9500` only accepts `longhorn-system` and Prometheus, and `longhorn-ui` only accepts
-   ingress-nginx. The UI sits behind basic auth.
+   ingress-nginx. The UI sits behind an oauth2-proxy login (`infrastructure/oauth2-proxy/`).
 
 Known residual risks (in-cluster guardrails only, no off-cluster lock):
 - A workload in `halo` could talk NFS to halo-8 directly if its exports allow unprivileged source ports
@@ -98,8 +98,9 @@ merge with your bypass, and ArgoCD deploys only that.
 2. **Longhorn UI auth:**
    - Run `htpasswd -nB admin` and put the whole output line in Vaultwarden item
      `longhorn-system/longhorn-ui-auth`, hidden field `auth`. The item ID is already in
-     `infrastructure/longhorn/manifests/externalsecret-ui-auth.yaml`.
-   - Until the Secret exists, ingress-nginx answers the Longhorn host with 503.
+     `infrastructure/oauth2-proxy/manifests/externalsecret.yaml`. oauth2-proxy shows a login form
+     for it (cookie session; plain basic auth broke the UI's WebSockets on iOS Safari).
+   - Until the Secret exists, the oauth2-proxy pod can't start and the Longhorn host answers 500.
 3. **Image:** after the first push to main builds it, set the ghcr package
    `homecluster/claude-remote` to **public**. There's no pull secret.
 4. **Claude login:**

@@ -1,0 +1,18 @@
+# The /oauth2 Ingress must live in this namespace (an Ingress can only point at
+# Services in its own namespace) and shares hosts with the protected apps, so
+# it needs a cert for those hosts here too. Add the host of every app that
+# gets the auth-url annotations.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: oauth2-proxy-prod
+  namespace: oauth2-proxy
+spec:
+  secretName: oauth2-proxy-prod-tls
+  issuerRef:
+    name: cloudflare-clusterissuer-prod
+    kind: ClusterIssuer
+  commonName: "longhorn.halo.fabseit.net"
+  dnsNames:
+    - "longhorn.halo.fabseit.net"
+    - "longhorn.fabseit.net"

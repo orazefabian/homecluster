@@ -1,0 +1,121 @@
+# Cookie-based login in front of UIs that have no auth of their own (today:
+# Longhorn). ingress-nginx asks /oauth2/auth before every request
+# (auth-url annotation); without a valid session cookie the browser is sent
+# to /oauth2/sign_in. Replaces plain basic auth because iOS Safari/WebKit
+# never sends basic-auth credentials on WebSocket upgrades, so the Longhorn
+# UI's live-update sockets each raised a new login popup. Cookies are sent.
+#
+# Stateless: the session lives in the encrypted cookie, so no PVC.
+# Only the htpasswd form is used. oauth2-proxy still insists on an OAuth
+# provider, so "google" is configured with dummy credentials and its button
+# is removed by the custom sign-in template (configmap-templates.yaml).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oauth2-proxy
+  namespace: oauth2-proxy
+  labels:
+    app: oauth2-proxy
+  annotations:
+    # Restart when the htpasswd or the sign-in template changes.
+    reloader.stakater.com/auto: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oauth2-proxy
+  template:
+    metadata:
+      labels:
+        app: oauth2-proxy
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: oauth2-proxy
+          image: quay.io/oauth2-proxy/oauth2-proxy:v7.15.6
+          args:
+            - --http-address=0.0.0.0:4180
+            - --reverse-proxy=true
+            # Auth-only: nginx proxies the real app, never oauth2-proxy.
+            - --upstream=static://202
+            - --provider=google
+            - --client-id=unused
+            - --client-secret=unused
+            - --htpasswd-file=/etc/oauth2-proxy/htpasswd/auth
+            - --display-htpasswd-form=true
+            - --email-domain=*
+            - --custom-templates-dir=/etc/oauth2-proxy/templates
+            # Host-only cookie (no --cookie-domain): each protected host logs
+            # in separately and the cookie never reaches other apps.
+            - --cookie-name=_oauth2_proxy
+            - --cookie-secure=true
+            - --cookie-samesite=lax
+            - --cookie-expire=168h
+            - --silence-ping-logging=true
+          env:
+            - name: OAUTH2_PROXY_COOKIE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: oauth2-proxy-cookie-secret
+                  key: password
+          ports:
+            - name: http
+              containerPort: 4180
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: http
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: htpasswd
+              mountPath: /etc/oauth2-proxy/htpasswd
+              readOnly: true
+            - name: templates
+              mountPath: /etc/oauth2-proxy/templates
+              readOnly: true
+      volumes:
+        - name: htpasswd
+          secret:
+            secretName: oauth2-proxy-htpasswd
+        - name: templates
+          configMap:
+            name: oauth2-proxy-templates
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oauth2-proxy
+  namespace: oauth2-proxy
+  labels:
+    app: oauth2-proxy
+spec:
+  selector:
+    app: oauth2-proxy
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
