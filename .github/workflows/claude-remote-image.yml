@@ -1,8 +1,10 @@
 name: Build claude-remote image
 
 # Builds apps/claude-remote/image for arm64 (all halo nodes) and pushes it to
-# ghcr.io/orazefabian/homecluster/claude-remote:<IMAGE_TAG>. Bump IMAGE_TAG and
-# the tag in apps/claude-remote/manifests/deployment.yaml together.
+# ghcr.io/orazefabian/homecluster/claude-remote:<IMAGE_TAG> and :latest.
+# Sessions and the login pod use :latest with imagePullPolicy Always, so a
+# merged image change is picked up by the next session. Bump IMAGE_TAG
+# anyway, so every build also stays addressable by version.
 
 on:
   pull_request:
@@ -42,4 +44,6 @@ jobs:
           context: apps/claude-remote/image
           platforms: linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ env.IMAGE }}:${{ env.IMAGE_TAG }}
+          tags: |
+            ${{ env.IMAGE }}:${{ env.IMAGE_TAG }}
+            ${{ env.IMAGE }}:latest

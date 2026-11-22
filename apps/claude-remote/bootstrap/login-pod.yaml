@@ -30,7 +30,8 @@ spec:
                 values: [halo-0]
   containers:
     - name: claude
-      image: ghcr.io/orazefabian/homecluster/claude-remote:0.2.2
+      image: ghcr.io/orazefabian/homecluster/claude-remote:latest
+      imagePullPolicy: Always
       env:
         - name: MODE
           value: login
