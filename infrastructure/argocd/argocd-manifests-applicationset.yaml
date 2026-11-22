@@ -63,9 +63,6 @@ spec:
           - name: dober-dan
             path: ./apps/dober-dan
             namespace: halo
-          - name: secrets-backup
-            path: ./infrastructure/secrets-backup/manifests
-            namespace: secrets-backup
           # Vaultwarden bridge + ClusterSecretStores; the operator itself is
           # external-secrets-helm in the Helm ApplicationSet.
           - name: external-secrets

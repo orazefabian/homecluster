@@ -13,7 +13,7 @@ The configuration is now split into multiple files for better organization and p
    - Uses ArgoCD's `directory` source type with `recurse: true`
    - Includes:
      - All apps in the `apps/` directory
-     - Manifest-only infrastructure: metallb, secrets-backup, reloader, kite
+     - Manifest-only infrastructure: metallb, reloader, kite, external-secrets (Vaultwarden bridge + stores)
 
 2. **argocd-helm-applicationset.yaml**
    - Manages Helm chart-based infrastructure components
