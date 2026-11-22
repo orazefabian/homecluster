@@ -14,7 +14,7 @@
       "parameters": {
         "authentication": "n8nUserAuth",
         "formTitle": "Claude session on halo",
-        "formDescription": "Starts a Claude Code session in the cluster. Open claude.ai/code about a minute after submitting and pick the new session. One session at a time; it is removed when the session ends (or after 8 h).\n\nstandard: read-only kubectl, no Secrets.\nprivileged: can change workloads and exec in halo, edit alerts/dashboards in monitoring. Never Longhorn, ArgoCD, ESO or RBAC.\n\nBoth modes push branches and open PRs as halo-claude-bot, never to main.",
+        "formDescription": "Starts a Claude Code session in the cluster. Open claude.ai/code about a minute after submitting and pick the new session. One session at a time; it is removed when the session ends (or after 8 h).\n\nstandard: read-only kubectl, no Secrets.\nprivileged: can change workloads and exec in halo, edit alerts/dashboards in monitoring. Never Longhorn, ArgoCD, ESO or RBAC.\n\nBoth modes push branches and open PRs, never to main.",
         "formFields": {
           "values": [
             {

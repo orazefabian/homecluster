@@ -27,7 +27,7 @@ claude.ai cannot start anything on the cluster itself: Remote Control only lists
 | Read cluster-wide | yes, except Secrets | yes, except Secrets |
 | `halo` | read | create/modify/delete workloads, Services, Ingresses, ConfigMaps, PVCs, Jobs; exec, logs, port-forward; create Secrets (never read them) |
 | `monitoring` | read | ConfigMaps (dashboards), PrometheusRules, Service/PodMonitors, AlertmanagerConfigs |
-| GitHub | push branches, open PRs | same |
+| GitHub | push branches, open PRs (never main) | same |
 
 **What privileged mode must never do: delete Longhorn backups.** These layers enforce it:
 
@@ -60,31 +60,31 @@ Known residual risks (in-cluster guardrails only, no off-cluster lock):
 If `halo/admin-user` (cluster-admin, hand-made in 2025) is no longer needed, delete it. It's the most
 dangerous object any `halo` workload can reach.
 
-## GitHub: bot account
+## GitHub access
 
-Both modes push as the machine user **halo-claude-bot** (classic PAT, scope `repo`, Vaultwarden
-`claude-sessions/claude-session` → `GH_TOKEN`). Fine-grained PATs can't reach repos owned by another
-personal account.
+Both modes push with **your fine-grained PAT** (Vaultwarden `claude-sessions/claude-session` → `GH_TOKEN`):
+- only the repos offered in the form
+- Contents + Pull requests read/write, nothing else (no Administration, so it can't change rulesets)
 
-Per offered repo:
-- the bot is a collaborator with **Write**
-- a ruleset on `main` requires a PR with 1 approval, and the bot gets no bypass
+Each offered repo has a ruleset on `main`: require a pull request, **no bypass actors**. Sessions can
+push branches and open PRs, but never push to main. The ruleset applies to you too.
 
-So Claude can open PRs but can't push to main or merge, and ArgoCD only deploys what you approved.
+Trade-off: the token acts as you, so a session **can merge its own PR**, and ArgoCD would then deploy
+it. PRs and pushes show up as yours. Commits are authored as `Claude (halo)`. To make merging
+impossible, move to a GitHub App with a required approval (see the PR #151 discussion).
 
 ## Setup (once)
 
-1. **Bot:**
-   - Create the GitHub user `halo-claude-bot` and invite it as a Write collaborator on each repo in the
-     form.
-   - Create a classic PAT with scope `repo`.
-   - Put the PAT in Vaultwarden item `claude-sessions/claude-session`, hidden field `GH_TOKEN`, and put
-     the item ID in `manifests/externalsecret.yaml`.
-   - Add the `main` ruleset to each repo.
+1. **GitHub:**
+   - Create a fine-grained PAT: resource owner you, the offered repos only, Contents + Pull requests
+     read/write.
+   - Put it in Vaultwarden item `claude-sessions/claude-session`, hidden field `GH_TOKEN`, and put the
+     item ID in `manifests/externalsecret.yaml`.
+   - On each repo, add a ruleset for `main`: require a pull request, no bypass list.
 2. **Longhorn UI auth:**
-   - Run `htpasswd -nB admin` and put the output in Vaultwarden item `longhorn-system/longhorn-ui-auth`,
-     hidden field `auth`.
-   - Put the item ID in `infrastructure/longhorn/manifests/externalsecret-ui-auth.yaml`.
+   - Run `htpasswd -nB admin` and put the whole output line in Vaultwarden item
+     `longhorn-system/longhorn-ui-auth`, hidden field `auth`. The item ID is already in
+     `infrastructure/longhorn/manifests/externalsecret-ui-auth.yaml`.
    - Until the Secret exists, ingress-nginx answers the Longhorn host with 503.
 3. **Image:** after the first push to main builds it, set the ghcr package
    `homecluster/claude-remote` to **public**. There's no pull secret.
@@ -108,11 +108,11 @@ So Claude can open PRs but can't push to main or merge, and ArgoCD only deploys 
 
 - **Add a repo:**
   - add it to the form's Repository dropdown **and** to `REPOS` in the Decide node
-  - invite the bot and add the ruleset
+  - add the repo to the PAT and add the ruleset
   - re-export the workflow into `n8n/`
 - **Logs:** `kubectl -n claude-sessions logs job/<name>`. Failed Jobs also disappear after 120 s. To
   debug, raise `ttlSecondsAfterFinished` in the Decide node.
 - **Update the tools:** edit `image/`, then bump `IMAGE_TAG` in `.github/workflows/claude-remote-image.yml`,
   the `IMAGE` constant in the Decide node, and `bootstrap/login-pod.yaml` together. Claude Code itself
   updates itself on the PVC.
-- **Revoke everything:** remove the device in claude.ai settings, revoke the bot PAT, and delete the Job.
+- **Revoke everything:** remove the device in claude.ai settings, revoke the PAT, and delete the Job.
