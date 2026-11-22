@@ -1,6 +1,6 @@
 # $HOME of every session pod: Claude Code binary, ~/.claude (OAuth login; the
 # refresh token rotates, so it needs writable storage rather than a Secret)
-# and ~/.claude.json. RWO also enforces one session at a time. 5 Gi: the
+# and ~/.claude.json. RWO also enforces one session at a time. 10 Gi: the
 # native binary is ~250 MB and the installer keeps a staging copy plus old
 # versions (1 Gi filled up on the first install). Not backed up:
 # losing it only means logging in again.
@@ -14,5 +14,5 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 5Gi
+      storage: 10Gi
   storageClassName: longhorn
