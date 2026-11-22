@@ -90,10 +90,48 @@ kube-prometheus-stack:
     defaultDashboardsEnabled: true
     defaultDashboardsTimezone: UTC
 
-  # AlertManager configuration - minimal setup
+  # ---------------------------------------------------------------- alerting
+  # Goal: only actionable alerts reach Discord. Default rules that are always
+  # true or flappy on a 4-node Pi cluster are disabled; homelab-specific rules
+  # (disks, Longhorn, backups, certs, ...) live in
+  # manifests/prometheusrule-homelab.yaml. Measured before enabling (30d):
+  # only TargetDown (node flaps), one CrashLooping, NodeSystemSaturation and
+  # one ReplicasMismatch fired at warning+.
+  defaultRules:
+    disabled:
+      KubeCPUOvercommit: true        # always true when one node is gone
+      KubeMemoryOvercommit: true
+      KubeAPIErrorBudgetBurn: true   # SLO burn-rate math, noise on k3s
+      NodeSystemSaturation: true     # Pi load averages
+      # Replaced by PVCUsageHigh (plain thresholds); predict_linear flaps on
+      # the Prometheus TSDB's compaction sawtooth.
+      KubePersistentVolumeFillingUp: true
+
+  customRules:
+    # The 4 firings in 30d were all short node flaps. A dead node is reported
+    # by HomelabNodeDown (and inhibits this one).
+    TargetDown:
+      for: 30m
+
+  # AlertManager configuration
   alertmanager:
     enabled: true
+
+    # Routing, receivers and inhibit rules live in the AlertmanagerConfig CR
+    # manifests/alertmanager-config.yaml (operator-native: it inlines the
+    # Discord/healthchecks URLs from the ESO Secret alertmanager-notifications).
+    # Not in alertmanager.config here because Alertmanager 0.27 (this chart)
+    # rejects discord webhook_url_file, and the URL must stay out of git.
+    # With alertmanagerConfiguration set, the operator ignores the chart's
+    # config Secret entirely.
+
     alertmanagerSpec:
+      alertmanagerConfiguration:
+        name: homelab
+        templates:
+          - configMap:
+              name: alertmanager-templates
+              key: homelab.tmpl
       resources:
         requests:
           cpu: 25m
