@@ -51,6 +51,12 @@ spec:
                   key: POSTGRES_PASSWORD
             - name: GENERIC_TIMEZONE
               value: "Europe/Berlin"
+            # Public base URL, so the editor shows real form/webhook URLs
+            # instead of http://localhost:5678.
+            - name: WEBHOOK_URL
+              value: https://n8n.halo.fabseit.net/
+            - name: N8N_EDITOR_BASE_URL
+              value: https://n8n.halo.fabseit.net/
             # Trust the cluster CA (auto-mounted with the SA token), so HTTP
             # nodes can call https://kubernetes.default.svc with TLS
             # verification (Claude session launcher, apps/claude-remote).

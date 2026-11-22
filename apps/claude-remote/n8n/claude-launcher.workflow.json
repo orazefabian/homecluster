@@ -10,7 +10,7 @@
         0,
         0
       ],
-      "webhookId": "claude-session",
+      "webhookId": "7f3c2a91-5b6e-4d0a-9c8e-2f1b4a6d8e30",
       "parameters": {
         "authentication": "n8nUserAuth",
         "formTitle": "Claude session on halo",
