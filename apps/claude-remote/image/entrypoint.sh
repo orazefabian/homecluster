@@ -36,8 +36,9 @@ dir="/work/$name"
 if [[ -n "${GH_TOKEN:-}" ]]; then
   git config --global credential.https://github.com.helper '!gh auth git-credential'
 fi
-git config --global user.name  "${GIT_USER_NAME:-halo-claude-bot}"
-git config --global user.email "${GIT_USER_EMAIL:-halo-claude-bot@users.noreply.github.com}"
+# Pushes authenticate as the PAT owner; commits carry this identity.
+git config --global user.name  "${GIT_USER_NAME:-Claude (halo)}"
+git config --global user.email "${GIT_USER_EMAIL:-claude-session@halo.fabseit.net}"
 
 echo "Cloning $REPO${BRANCH:+ ($BRANCH)} ..."
 git clone --depth 50 ${BRANCH:+--branch "$BRANCH"} "https://github.com/$REPO.git" "$dir"

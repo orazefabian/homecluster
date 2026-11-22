@@ -129,7 +129,7 @@ All in namespace `halo`.
 | Monitoring | `monitoring.halo.fabseit.net` | Prometheus + Grafana (kube-prometheus-stack). `smartctl-exporter` DaemonSet adds SMART metrics for the physical disks (Longhorn iSCSI devices filtered out; halo-8's WD HDD is only read around real I/O so it can spin down) — see the header of `infrastructure/monitoring/manifests/smartctl-exporter.yaml`. Grafana dashboard "Disks / S.M.A.R.T." (`grafana-dashboard-smart.yaml`). Alerts → Discord (only actionable ones) + healthchecks.io dead-man's switch; rules in `manifests/prometheusrule-homelab.yaml`, routing in `manifests/alertmanager-config.yaml` (an `AlertmanagerConfig` CR, not `alertmanager.config` — AM 0.27 can't read the Discord URL from a file). See the "Alerting" section in `infrastructure/monitoring/README.md`. |
 | Samba Share | — | SMB file share, no ingress. |
 | DDClient | — | Dynamic DNS updater, no ingress. |
-| Claude sessions | — | **On-demand**, namespace `claude-sessions` (exception to halo). n8n form (`/form/claude-session`, Homepage link) creates a Job that clones an allowlisted repo and runs `claude remote-control --spawn session`; the pod disappears when the session ends. Modes: standard (read-only, no Secrets) / privileged (writes + exec in halo, alerting in monitoring; RBAC + ValidatingAdmissionPolicies keep it away from Longhorn backups). Both push via the `halo-claude-bot` account, PRs only. See `apps/claude-remote/README.md`. |
+| Claude sessions | — | **On-demand**, namespace `claude-sessions` (exception to halo). n8n form (`/form/claude-session`, Homepage link) creates a Job that clones an allowlisted repo and runs `claude remote-control --spawn session`; the pod disappears when the session ends. Modes: standard (read-only, no Secrets) / privileged (writes + exec in halo, alerting in monitoring; RBAC + ValidatingAdmissionPolicies keep it away from Longhorn backups). Both push with a repo-scoped fine-grained PAT; `main` rulesets (no bypass) allow PRs only. See `apps/claude-remote/README.md`. |
 | Architecture | `architecture.halo.fabseit.net` | Static cluster diagrams (nginx + one ConfigMap per page). Sources and update steps in `apps/architecture/README.md`. |
 
 ---
@@ -152,7 +152,7 @@ All in namespace `halo`.
 | `cloudflare-api-token-secret` | `cert-manager` | Cloudflare DNS-01 token |
 | `hetzner-s3-credentials` | `longhorn-system` | S3 backup credentials |
 | `alertmanager-notifications` | `monitoring` | Discord webhook + healthchecks.io ping URL for Alertmanager |
-| `claude-session` | `claude-sessions` | `GH_TOKEN`: classic PAT of the `halo-claude-bot` GitHub account (Claude sessions) |
+| `claude-session` | `claude-sessions` | `GH_TOKEN`: fine-grained PAT (offered repos, Contents + PRs) for Claude sessions |
 | `longhorn-ui-auth` | `longhorn-system` | htpasswd for basic auth on the Longhorn UI ingress |
 | `tailscale-auth` | `halo` | Headscale subnet router auth key (`TS_AUTHKEY` from Vaultwarden; tailscale writes its state keys into the same Secret) |
 
