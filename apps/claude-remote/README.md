@@ -122,7 +122,8 @@ merge with your bypass, and ArgoCD deploys only that.
   - re-export the workflow into `n8n/`
 - **Logs:** `kubectl -n claude-sessions logs job/<name>`. Failed Jobs also disappear after 120 s. To
   debug, raise `ttlSecondsAfterFinished` in the Decide node.
-- **Update the tools:** edit `image/`, then bump `IMAGE_TAG` in `.github/workflows/claude-remote-image.yml`,
-  the `IMAGE` constant in the Decide node, and `bootstrap/login-pod.yaml` together. Claude Code itself
-  updates itself on the PVC.
+- **Update the tools:** edit `image/`, bump `IMAGE_TAG` in `.github/workflows/claude-remote-image.yml`,
+  and merge. The build pushes that tag and `:latest`. Sessions and the login pod run `:latest` with
+  `imagePullPolicy: Always`, so the next session uses the new image and n8n needs no change. Claude Code
+  itself updates itself on the PVC.
 - **Revoke everything:** remove the device in claude.ai settings, revoke the app's private key (or uninstall the app), and delete the Job.
