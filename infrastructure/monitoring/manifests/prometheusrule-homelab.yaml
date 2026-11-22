@@ -1,0 +1,297 @@
+# Homelab alerts, routed to Discord by Alertmanager (see values.yaml,
+# alertmanager.config). Rule of thumb: every alert here must mean "go do
+# something". severity=critical additionally pings @here.
+#
+# Notes on metric choices (checked against the live Prometheus, 2026-11-22):
+# - Volume fullness uses kubelet_volume_stats_* (filesystem usage seen by the
+#   pod). longhorn_volume_actual_size_bytes includes snapshot data and is often
+#   >100% of capacity, so it says nothing about "volume is full".
+#   job="kubelet" because k3s also exposes the same series under job="apiserver".
+# - The WD HDD on halo-8 is only read by smartctl-exporter around real I/O
+#   (see smartctl-exporter.yaml), so its series have multi-day gaps. Disk rules
+#   aggregate by (node, device) - which also drops the pod label, so exporter
+#   restarts don't duplicate alerts - and look back with last_over_time.
+# - longhorn_volume_robustness is "unknown" for detached volumes; only
+#   degraded/faulted are alerted on.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: homelab
+  namespace: monitoring
+  labels:
+    # kube-prometheus-stack only picks up rules carrying its release label.
+    release: monitoring-helm
+spec:
+  groups:
+    # ------------------------------------------------------------------ disks
+    - name: homelab.disks
+      rules:
+        - alert: SmartDeviceFailing
+          expr: last_over_time(max by (node, device) (smartctl_device_smart_status)[8d:10m]) == 0
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Disk {{ $labels.node }}/{{ $labels.device }} reports SMART health FAILED"
+            description: >-
+              The drive's own self-assessment says it is failing. Check the latest
+              Longhorn/NFS backup, then replace the drive. Details:
+              `smartctl -a /dev/{{ $labels.device }}` on {{ $labels.node }}.
+        - alert: NvmeCriticalWarning
+          expr: max by (node, device) (smartctl_device_critical_warning) > 0
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: "NVMe {{ $labels.node }}/{{ $labels.device }} has critical warning flags set ({{ $value }})"
+            description: >-
+              Bitmask: 1 spare low, 2 temperature, 4 reliability degraded,
+              8 read-only, 16 volatile backup failed. Anything but a transient
+              temperature flag means: plan a replacement.
+        - alert: NvmeSpareLow
+          expr: >-
+            max by (node, device) (smartctl_device_available_spare)
+              <= max by (node, device) (smartctl_device_available_spare_threshold)
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: "NVMe {{ $labels.node }}/{{ $labels.device }} has used up its spare blocks"
+            description: Available spare is at or below the vendor threshold. Replace the drive.
+        - alert: NvmeMediaErrors
+          # Fires for ~1 day after new errors appear, then resolves on its own.
+          expr: >-
+            max by (node, device) (smartctl_device_media_errors)
+              > max by (node, device) (smartctl_device_media_errors offset 1d)
+          labels:
+            severity: warning
+          annotations:
+            summary: "NVMe {{ $labels.node }}/{{ $labels.device }} logged new media errors in the last 24h"
+            description: Unrecovered data integrity errors. One-off is worth watching; a rising count means replace.
+        - alert: NvmeWearHigh
+          expr: max by (node, device) (smartctl_device_percentage_used) >= 80
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: "NVMe {{ $labels.node }}/{{ $labels.device }} is {{ $value }}% through its rated endurance"
+            description: Not failing yet, but buy a replacement.
+        - alert: AtaSectorsPending
+          # Absolute: pending/uncorrectable sectors are unreadable data right now.
+          # Stays firing while the counter is non-zero - silence it after acting.
+          expr: >-
+            last_over_time(max by (node, device, attribute_name) (smartctl_device_attribute{attribute_value_type="raw",
+            attribute_name=~"Current_Pending_Sector|Offline_Uncorrectable|Reported_Uncorrect"})[8d:10m]) > 0
+          labels:
+            severity: critical
+          annotations:
+            summary: "Disk {{ $labels.node }}/{{ $labels.device }}: {{ $labels.attribute_name }} = {{ $value }}"
+            description: >-
+              Sectors the drive could not read. Verify backups on this disk
+              (halo-8 sda = NFS SSD target, sdb = NFS HDD target) and replace it.
+        - alert: AtaSectorsReallocated
+          # Growth only (vs. 1 day ago): a few old reallocations are normal wear.
+          expr: >-
+            last_over_time(max by (node, device) (smartctl_device_attribute{attribute_value_type="raw", attribute_name="Reallocated_Sector_Ct"})[8d:10m])
+              > last_over_time(max by (node, device) (smartctl_device_attribute{attribute_value_type="raw", attribute_name="Reallocated_Sector_Ct"})[8d:10m] offset 1d)
+          labels:
+            severity: warning
+          annotations:
+            summary: "Disk {{ $labels.node }}/{{ $labels.device }} reallocated more sectors (now {{ $value }})"
+            description: The drive is remapping bad sectors. Keep an eye on it; if it keeps growing, replace it.
+        - alert: DiskTemperatureHigh
+          expr: >-
+            max by (node, device) (smartctl_device_temperature{temperature_type="current", device=~"nvme.*"}) > 70
+            or
+            max by (node, device) (smartctl_device_temperature{temperature_type="current", device=~"sd.*"}) > 55
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Disk {{ $labels.node }}/{{ $labels.device }} at {{ $value }}°C"
+            description: Sustained heat shortens drive life. Check airflow / heatsink.
+        - alert: SmartDataStale
+          # The HDD only refreshes around backups (Tue/Sat), so allow 8 days.
+          expr: >-
+            time() - last_over_time(timestamp(max by (node, device) (smartctl_device_smart_status))[14d:10m])
+              > 8 * 86400
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: "No SMART data from {{ $labels.node }}/{{ $labels.device }} for over 8 days"
+            description: >-
+              Disk unplugged/renamed (USB), or smartctl-exporter lost it - a
+              replugged USB disk needs `kubectl -n monitoring rollout restart ds/smartctl-exporter`.
+
+    # --------------------------------------------------------------- longhorn
+    - name: homelab.longhorn
+      rules:
+        - alert: LonghornVolumeFaulted
+          expr: max by (pvc_namespace, pvc, volume) (longhorn_volume_robustness{state="faulted"}) == 1
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Longhorn volume {{ $labels.pvc_namespace }}/{{ $labels.pvc }} is FAULTED"
+            description: No healthy replica left - the app using it is down. Check the Longhorn UI; restore from backup if replicas can't be salvaged.
+        - alert: LonghornVolumeDegraded
+          # 1h: a node reboot degrades volumes until the rebuild finishes.
+          expr: max by (pvc_namespace, pvc, volume) (longhorn_volume_robustness{state="degraded"}) == 1
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: "Longhorn volume {{ $labels.pvc_namespace }}/{{ $labels.pvc }} degraded for over 1h"
+            description: Running on one replica and not rebuilding. Check that halo-1 and halo-2 are up and their Longhorn disks are schedulable.
+        - alert: LonghornNodeNotReady
+          expr: max by (node) (longhorn_node_status{condition="ready"}) == 0
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Longhorn node {{ $labels.node }} is not ready"
+            description: Replicas on this node are unavailable. Check longhorn-manager on {{ $labels.node }}.
+        - alert: LonghornDiskNotReady
+          # default-disk-* are the OS-disk defaults; no replicas are scheduled there.
+          expr: max by (node, disk) (longhorn_disk_status{condition="ready", disk!~"default-disk-.*"}) == 0
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Longhorn disk {{ $labels.node }}/{{ $labels.disk }} is not ready"
+            description: Mount gone or disk failing. Check the mount and the SMART alerts for this node.
+        - alert: LonghornDiskUsageHigh
+          expr: >-
+            max by (node, disk) (longhorn_disk_usage_bytes{disk!~"default-disk-.*"})
+              / max by (node, disk) (longhorn_disk_capacity_bytes{disk!~"default-disk-.*"}) > 0.80
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: "Longhorn disk {{ $labels.node }}/{{ $labels.disk }} is {{ $value | humanizePercentage }} full"
+            description: Longhorn stops scheduling replicas at 75% used (25% minimal available). Clean up snapshots/volumes or add disk.
+        - alert: PVCUsageHigh
+          expr: >-
+            max by (namespace, persistentvolumeclaim) (
+              kubelet_volume_stats_used_bytes{job="kubelet"} / kubelet_volume_stats_capacity_bytes{job="kubelet"}
+            ) > 0.85
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: "PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is {{ $value | humanizePercentage }} full"
+            description: Expand the PVC (Longhorn supports online expansion) or clean up.
+        - alert: PVCUsageHigh
+          expr: >-
+            max by (namespace, persistentvolumeclaim) (
+              kubelet_volume_stats_used_bytes{job="kubelet"} / kubelet_volume_stats_capacity_bytes{job="kubelet"}
+            ) > 0.95
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: "PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is {{ $value | humanizePercentage }} full"
+            description: The app is about to fail writes. Expand the PVC now.
+
+    # ---------------------------------------------------------------- backups
+    - name: homelab.backups
+      rules:
+        - alert: LonghornBackupFailed
+          # Enum: 0 New, 1 Pending, 2 InProgress, 3 Completed, 4 Error, 5 Unknown.
+          # Error backups stay until deleted, so this keeps firing until cleaned up.
+          expr: max by (volume, backup) (longhorn_backup_state) == 4
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Longhorn backup {{ $labels.backup }} of {{ $labels.volume }} failed"
+            description: >-
+              Check the backup target (NFS on halo-8 / Hetzner S3) in the Longhorn UI,
+              then delete the failed backup.
+        - alert: LonghornBackupStale
+          # Every backed-up volume is in a weekly group (Tue or Sat). Prometheus
+          # and Alertmanager PVCs are deliberately never backed up.
+          expr: >-
+            max by (pvc_namespace, pvc, volume) (
+              (time() - longhorn_volume_last_backup_at{pvc!~"prometheus-.*|alertmanager-.*"})
+              and longhorn_volume_last_backup_at > 0
+            ) > 9 * 86400
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: "No backup of {{ $labels.pvc_namespace }}/{{ $labels.pvc }} for {{ $value | humanizeDuration }}"
+            description: Weekly recurring backup did not run or failed. Check the RecurringJobs and backup target in the Longhorn UI.
+
+    # -------------------------------------------------------------- workloads
+    - name: homelab.workloads
+      rules:
+        - alert: ContainerOOMKilled
+          expr: >-
+            (max by (namespace, pod, container) (increase(kube_pod_container_status_restarts_total[15m])) > 0)
+            and on (namespace, pod, container)
+            (max by (namespace, pod, container) (kube_pod_container_status_last_terminated_reason{reason="OOMKilled"}) == 1)
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }}) was OOM-killed"
+            description: Raise its memory limit or find out why it grew.
+
+    # ------------------------------------------------------------------ nodes
+    - name: homelab.nodes
+      rules:
+        - alert: HomelabNodeDown
+          # Inhibits the follow-up noise (TargetDown, degraded volumes, ...) in
+          # Alertmanager, so a dead node is one message.
+          expr: max by (node) (kube_node_status_condition{condition="Ready", status="true"}) == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Node {{ $labels.node }} is NotReady"
+            description: Powered off, network down, or k3s crashed. Workloads pinned to it (HA on halo-0) are down.
+        - alert: NodeTemperatureHigh
+          # 85°C is the Raspberry Pi 5 hard-throttle point. halo-0 idles ~84°C
+          # (2026-11), so 80 would fire permanently.
+          expr: >-
+            max by (instance, nodename) (
+              node_thermal_zone_temp * on (instance) group_left (nodename) node_uname_info
+            ) > 85
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.nodename }} CPU at {{ $value }}°C for 30 min (throttling)"
+            description: Check the fan/heatsink and what's loading the node.
+
+    # ------------------------------------------------------------------ certs
+    - name: homelab.certs
+      rules:
+        - alert: CertificateNotReady
+          expr: max by (namespace, name) (certmanager_certificate_ready_status{condition="False"}) == 1
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: "Certificate {{ $labels.namespace }}/{{ $labels.name }} is not ready"
+            description: >-
+              Renewal failing. `kubectl -n {{ $labels.namespace }} describe certificate {{ $labels.name }}`;
+              usual cause is the Cloudflare API token (DNS-01).
+        - alert: CertificateExpiringSoon
+          # cert-manager renews 30 days ahead, so <14d means renewal has failed for ~2 weeks.
+          expr: min by (namespace, name) (certmanager_certificate_expiration_timestamp_seconds - time()) < 14 * 86400
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: "Certificate {{ $labels.namespace }}/{{ $labels.name }} expires in {{ $value | humanizeDuration }}"
+            description: cert-manager has not managed to renew it. See CertificateNotReady / cert-manager logs.
+        - alert: CertificateExpiringSoon
+          expr: min by (namespace, name) (certmanager_certificate_expiration_timestamp_seconds - time()) < 3 * 86400
+          for: 1h
+          labels:
+            severity: critical
+          annotations:
+            summary: "Certificate {{ $labels.namespace }}/{{ $labels.name }} expires in {{ $value | humanizeDuration }}"
+            description: HTTPS for these hosts breaks when it expires. Fix renewal now.

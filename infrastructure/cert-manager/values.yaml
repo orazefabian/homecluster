@@ -8,3 +8,17 @@ podDnsConfig:
   nameservers:
     - "1.1.1.1"
     - "9.9.9.9"
+
+# Values for the cert-manager subchart must sit under its name. NOTE: the keys
+# above are top-level and therefore NOT applied to the subchart (the running
+# controller has none of those extraArgs) - left as-is on purpose, fixing
+# them changes DNS-01 behaviour and is a separate change.
+cert-manager:
+  # Scraped by kube-prometheus-stack for the certificate expiry/readiness
+  # alerts in infrastructure/monitoring/manifests/prometheusrule-homelab.yaml.
+  prometheus:
+    servicemonitor:
+      enabled: true
+      labels:
+        # kube-prometheus-stack only picks up ServiceMonitors with its release label.
+        release: monitoring-helm

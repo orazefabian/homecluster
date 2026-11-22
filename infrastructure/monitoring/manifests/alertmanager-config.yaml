@@ -1,0 +1,116 @@
+# Global Alertmanager configuration (referenced by name from values.yaml:
+# alertmanager.alertmanagerSpec.alertmanagerConfiguration). The operator turns
+# this into alertmanager.yaml, inlining the webhook URLs from the ESO Secret
+# alertmanager-notifications (alertmanager-notifications.externalsecret.yaml).
+# Because it is the *global* config, no namespace matcher is added.
+#
+# If the Secret or a key is missing, the operator keeps the last good config
+# and logs the error - Alertmanager itself keeps running.
+#
+# Routing:
+#   Watchdog           -> healthchecks.io every 5 min (dead-man's switch: it
+#                         emails/Discords when the pings stop)
+#   info / none        -> dropped
+#   critical           -> Discord, reminder every 6h while firing
+#   everything else    -> Discord, reminder every 24h while firing
+#
+# No @here on critical: discord `content` needs Alertmanager >= 0.28 and this
+# CRD (operator v0.79) has no field for it yet. Revisit on the next
+# kube-prometheus-stack upgrade.
+#
+# Silence an alert: Alertmanager UI via
+#   kubectl -n monitoring port-forward svc/monitoring-helm-kube-prome-alertmanager 9093
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: homelab
+  namespace: monitoring
+spec:
+  route:
+    receiver: discord
+    groupBy: [alertname, namespace]
+    groupWait: 1m
+    groupInterval: 10m
+    repeatInterval: 24h
+    routes:
+      - receiver: healthchecks
+        matchers:
+          - { name: alertname, matchType: "=", value: Watchdog }
+        groupWait: 0s
+        groupInterval: 1m
+        repeatInterval: 5m
+      - receiver: "null"
+        matchers:
+          - { name: alertname, matchType: "=", value: InfoInhibitor }
+      - receiver: "null"
+        matchers:
+          - { name: severity, matchType: "=~", value: "info|none" }
+      - receiver: discord
+        matchers:
+          - { name: severity, matchType: "=", value: critical }
+        repeatInterval: 6h
+
+  inhibitRules:
+    # kube-prometheus-stack defaults.
+    - sourceMatch: [{ name: severity, matchType: "=", value: critical }]
+      targetMatch: [{ name: severity, matchType: "=~", value: "warning|info" }]
+      equal: [namespace, alertname]
+    - sourceMatch: [{ name: severity, matchType: "=", value: warning }]
+      targetMatch: [{ name: severity, matchType: "=", value: info }]
+      equal: [namespace, alertname]
+    - sourceMatch: [{ name: alertname, matchType: "=", value: InfoInhibitor }]
+      targetMatch: [{ name: severity, matchType: "=", value: info }]
+      equal: [namespace]
+    # A dead node is one message, not ten: mute the follow-up symptoms
+    # cluster-wide while any node is down (rules: prometheusrule-homelab.yaml).
+    - sourceMatch: [{ name: alertname, matchType: "=", value: HomelabNodeDown }]
+      targetMatch:
+        - name: alertname
+          matchType: "=~"
+          value: "TargetDown|LonghornVolumeDegraded|LonghornNodeNotReady|KubePodNotReady|KubeDeploymentReplicasMismatch|KubeStatefulSetReplicasMismatch|KubeDaemonSetRolloutStuck|KubeNodeNotReady|KubeNodeUnreachable"
+
+  receivers:
+    - name: "null"
+    - name: healthchecks
+      webhookConfigs:
+        - urlSecret:
+            name: alertmanager-notifications
+            key: healthchecks-url
+          sendResolved: false
+    - name: discord
+      discordConfigs:
+        - apiURL:
+            name: alertmanager-notifications
+            key: discord-webhook-url
+          sendResolved: true
+          title: '{{ template "homelab.title" . }}'
+          message: '{{ template "homelab.message" . }}'
+---
+# Notification templates for the Discord receiver above.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-templates
+  namespace: monitoring
+data:
+  homelab.tmpl: |-
+    {{ define "homelab.title" -}}
+    {{ if eq .Status "firing" }}{{ if eq .CommonLabels.severity "critical" }}🔴{{ else }}🟠{{ end }} {{ .CommonLabels.alertname }}{{ if gt (len .Alerts.Firing) 1 }} ×{{ len .Alerts.Firing }}{{ end }}
+    {{- else }}✅ {{ .CommonLabels.alertname }} resolved{{ end }}
+    {{- end }}
+
+    {{ define "homelab.message" -}}
+    {{ range .Alerts.Firing -}}
+    **{{ or .Annotations.summary .Labels.alertname }}**
+    {{ with .Annotations.description }}{{ . }}
+    {{ end }}
+    {{- with .Labels.node }}node `{{ . }}` {{ end }}
+    {{- with .Labels.persistentvolumeclaim }}pvc `{{ . }}` {{ end }}
+    {{- with .Labels.pod }}pod `{{ . }}` {{ end }}
+    {{- with .Labels.namespace }}ns `{{ . }}`{{ end }}
+
+    {{ end -}}
+    {{ range .Alerts.Resolved -}}
+    ~~{{ or .Annotations.summary .Labels.alertname }}~~
+    {{ end -}}
+    {{- end }}

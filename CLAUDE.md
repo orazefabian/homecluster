@@ -126,7 +126,7 @@ All in namespace `halo`.
 | Pingvin Share | `pingvin.halo.fabseit.net` | File sharing. |
 | Uptime Kuma | `uptime.halo.fabseit.net` | Uptime monitoring. |
 | Speedtest | `speedtest.halo.fabseit.net` | Network speed testing. |
-| Monitoring | `monitoring.halo.fabseit.net` | Prometheus + Grafana (kube-prometheus-stack). `smartctl-exporter` DaemonSet adds SMART metrics for the physical disks (Longhorn iSCSI devices filtered out; halo-8's WD HDD is only read around real I/O so it can spin down) — see the header of `infrastructure/monitoring/manifests/smartctl-exporter.yaml`. Grafana dashboard "Disks / S.M.A.R.T." (`grafana-dashboard-smart.yaml`). |
+| Monitoring | `monitoring.halo.fabseit.net` | Prometheus + Grafana (kube-prometheus-stack). `smartctl-exporter` DaemonSet adds SMART metrics for the physical disks (Longhorn iSCSI devices filtered out; halo-8's WD HDD is only read around real I/O so it can spin down) — see the header of `infrastructure/monitoring/manifests/smartctl-exporter.yaml`. Grafana dashboard "Disks / S.M.A.R.T." (`grafana-dashboard-smart.yaml`). Alerts → Discord (only actionable ones) + healthchecks.io dead-man's switch; rules in `manifests/prometheusrule-homelab.yaml`, routing in `manifests/alertmanager-config.yaml` (an `AlertmanagerConfig` CR, not `alertmanager.config` — AM 0.27 can't read the Discord URL from a file). See the "Alerting" section in `infrastructure/monitoring/README.md`. |
 | Samba Share | — | SMB file share, no ingress. |
 | DDClient | — | Dynamic DNS updater, no ingress. |
 | Architecture | `architecture.halo.fabseit.net` | Static cluster diagrams (nginx + one ConfigMap per page). Sources and update steps in `apps/architecture/README.md`. |
@@ -150,6 +150,7 @@ All in namespace `halo`.
 | `local-fabseit-net-prod-tls` | `halo` | Wildcard TLS cert (cert-manager) |
 | `cloudflare-api-token-secret` | `cert-manager` | Cloudflare DNS-01 token |
 | `hetzner-s3-credentials` | `longhorn-system` | S3 backup credentials |
+| `alertmanager-notifications` | `monitoring` | Discord webhook + healthchecks.io ping URL for Alertmanager |
 | `tailscale-auth` | `halo` | Headscale subnet router auth key (`TS_AUTHKEY` from Vaultwarden; tailscale writes its state keys into the same Secret) |
 
 ---
