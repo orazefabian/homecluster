@@ -3,6 +3,9 @@ kind: Deployment
 metadata:
   name: ddclient
   namespace: halo # Change the namespace if needed
+  annotations:
+    # Restart when the ESO-rendered ddclient-conf Secret changes (Vaultwarden edit).
+    reloader.stakater.com/auto: "true"
 spec:
   replicas: 1
   strategy:
@@ -15,6 +18,28 @@ spec:
       labels:
         app: ddclient
     spec:
+      # ddclient.conf comes from Vaultwarden: ESO renders it into the Secret
+      # ddclient-conf (externalsecret.yaml), and this init container copies it
+      # into an emptyDir at /config. It is copied rather than mounted because the
+      # image's init runs `lsiown -R /config` and `chmod 600 /config/*`, which
+      # fail on a read-only Secret mount. Nothing in /config needs to persist
+      # (the cache lives in /run), so the old ddclient-config PVC is unused.
+      initContainers:
+      - name: config-from-secret
+        image: busybox:1.38-musl
+        command: ["sh", "-c", "cp /secret/ddclient.conf /config/ddclient.conf"]
+        resources:
+          requests:
+            memory: "8Mi"
+            cpu: "10m"
+          limits:
+            memory: "32Mi"
+        volumeMounts:
+        - name: config-volume
+          mountPath: /config
+        - name: ddclient-conf
+          mountPath: /secret
+          readOnly: true
       containers:
       - name: ddclient
         image: lscr.io/linuxserver/ddclient:latest
@@ -38,5 +63,8 @@ spec:
           readOnly: false
       volumes:
       - name: config-volume
-        persistentVolumeClaim:
-          claimName: ddclient-config # Links to the ConfigMap defined below
+        emptyDir: {}
+      - name: ddclient-conf
+        secret:
+          secretName: ddclient-conf
+          defaultMode: 0400
