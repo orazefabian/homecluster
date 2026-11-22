@@ -51,6 +51,11 @@ spec:
                   key: POSTGRES_PASSWORD
             - name: GENERIC_TIMEZONE
               value: "Europe/Berlin"
+            # Public base URL. Without it n8n builds form redirects and the URLs
+            # shown in the editor from http://localhost:5678, so Form Ending
+            # pages never load and executions stay "Waiting".
+            - name: WEBHOOK_URL
+              value: https://n8n.halo.fabseit.net/
             # Trust the cluster CA (auto-mounted with the SA token), so HTTP
             # nodes can call https://kubernetes.default.svc with TLS
             # verification (Claude session launcher, apps/claude-remote).
