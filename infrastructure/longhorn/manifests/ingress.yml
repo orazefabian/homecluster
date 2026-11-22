@@ -3,6 +3,12 @@ kind: Ingress
 metadata:
   name: longhorn
   namespace: longhorn-system
+  annotations:
+    # The Longhorn UI has no login of its own and can delete backups.
+    # Secret from externalsecret-ui-auth.yaml (Vaultwarden).
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: longhorn-ui-auth
+    nginx.ingress.kubernetes.io/auth-realm: Longhorn
 spec:
   ingressClassName: nginx
   # Reachable as both longhorn.halo.fabseit.net and longhorn.fabseit.net. The

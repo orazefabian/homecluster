@@ -1,31 +1,32 @@
-# Read-only, cluster-wide, WITHOUT Secrets. The pod can diagnose but not
-# change anything: no write verbs, no exec, no port-forward. Changes go through
-# a PR and ArgoCD. Built from the aggregated `view` role, which already omits
-# Secrets, plus what `view` lacks for debugging (nodes, PVs, storage, CRDs,
-# events, metrics).
+# --- Both session modes: read-only, cluster-wide, WITHOUT Secrets ----------
+# Built from the aggregated `view` role (already omits Secrets) plus what
+# `view` lacks for debugging. Privileged mode adds writes in rbac-admin.yaml.
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: claude-remote
-  namespace: halo
+  name: claude-session
+  namespace: claude-sessions
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: claude-remote-view
+  name: claude-session-view
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: view
 subjects:
   - kind: ServiceAccount
-    name: claude-remote
-    namespace: halo
+    name: claude-session
+    namespace: claude-sessions
+  - kind: ServiceAccount
+    name: claude-session-admin
+    namespace: claude-sessions
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: claude-remote-extra-read
+  name: claude-session-extra-read
 rules:
   - apiGroups: [""]
     resources: [nodes, persistentvolumes, namespaces, events]
@@ -39,11 +40,13 @@ rules:
   - apiGroups: [rbac.authorization.k8s.io]
     resources: [roles, rolebindings, clusterroles, clusterrolebindings]
     verbs: [get, list, watch]
+  - apiGroups: [admissionregistration.k8s.io]
+    resources: ["*"]
+    verbs: [get, list, watch]
   - apiGroups: [metrics.k8s.io]
     resources: [nodes, pods]
     verbs: [get, list]
-  # CRs that `view` does not aggregate (ArgoCD, Longhorn, cert-manager, ESO,
-  # monitoring, MetalLB, Traefik/ingress). ExternalSecrets only reference
+  # CRs that `view` does not aggregate. ExternalSecrets only reference
   # Vaultwarden item IDs, never values.
   - apiGroups:
       - argoproj.io
@@ -60,12 +63,60 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: claude-remote-extra-read
+  name: claude-session-extra-read
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: claude-remote-extra-read
+  name: claude-session-extra-read
 subjects:
   - kind: ServiceAccount
-    name: claude-remote
-    namespace: halo
+    name: claude-session
+    namespace: claude-sessions
+  - kind: ServiceAccount
+    name: claude-session-admin
+    namespace: claude-sessions
+---
+# --- n8n launcher: start/stop session Jobs, nothing else --------------------
+# Token: the Secret below is filled in by the token controller (nothing is
+# committed). Paste it once into the n8n credential (README).
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: n8n-claude-launcher
+  namespace: claude-sessions
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: n8n-claude-launcher-token
+  namespace: claude-sessions
+  annotations:
+    kubernetes.io/service-account.name: n8n-claude-launcher
+type: kubernetes.io/service-account-token
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: n8n-claude-launcher
+  namespace: claude-sessions
+rules:
+  - apiGroups: [batch]
+    resources: [jobs]
+    verbs: [create, get, list, delete]
+  - apiGroups: [""]
+    resources: [pods]
+    verbs: [get, list]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: n8n-claude-launcher
+  namespace: claude-sessions
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: n8n-claude-launcher
+subjects:
+  - kind: ServiceAccount
+    name: n8n-claude-launcher
+    namespace: claude-sessions

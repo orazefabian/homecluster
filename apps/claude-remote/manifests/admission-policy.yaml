@@ -1,0 +1,152 @@
+# Guardrails for the privileged session ServiceAccount that RBAC cannot
+# express (see rbac-admin.yaml). Every policy matches only requests made by
+# system:serviceaccount:claude-sessions:claude-session-admin, so nothing else
+# in the cluster is affected. Goal: no path to node root or to cluster-admin,
+# and thereby none to Longhorn's backups.
+#
+# 1. No pod (directly or via a workload template) with host access, privilege,
+#    extra capabilities, or the cluster-admin ServiceAccount/token.
+#    Side effect: it cannot edit Home Assistant, WireGuard or the subnet
+#    router (they are privileged). Do those via a PR.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: claude-admin-pods
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["*"]
+        resources: [pods]
+        operations: [CREATE, UPDATE]
+      - apiGroups: [apps]
+        apiVersions: ["*"]
+        resources: [deployments, statefulsets, daemonsets, replicasets]
+        operations: [CREATE, UPDATE]
+      - apiGroups: [batch]
+        apiVersions: ["*"]
+        resources: [jobs, cronjobs]
+        operations: [CREATE, UPDATE]
+  matchConditions:
+    - name: privileged-claude-session
+      expression: request.userInfo.username == 'system:serviceaccount:claude-sessions:claude-session-admin'
+  variables:
+    - name: spec
+      expression: >-
+        object.kind == 'Pod' ? object.spec :
+        object.kind == 'CronJob' ? object.spec.jobTemplate.spec.template.spec :
+        object.spec.template.spec
+    - name: containers
+      expression: >-
+        variables.spec.containers +
+        (has(variables.spec.initContainers) ? variables.spec.initContainers : [])
+    - name: volumes
+      expression: "has(variables.spec.volumes) ? variables.spec.volumes : []"
+    - name: forbiddenSecrets
+      expression: "['admin-user']"
+  validations:
+    - expression: >-
+        !(has(variables.spec.hostNetwork) && variables.spec.hostNetwork) &&
+        !(has(variables.spec.hostPID) && variables.spec.hostPID) &&
+        !(has(variables.spec.hostIPC) && variables.spec.hostIPC)
+      message: hostNetwork/hostPID/hostIPC are not allowed for privileged Claude sessions.
+    - expression: >-
+        variables.volumes.all(v, !has(v.hostPath) && !has(v.nfs) && !has(v.iscsi))
+      message: hostPath, nfs and iscsi volumes are not allowed for privileged Claude sessions.
+    - expression: >-
+        variables.containers.all(c, !has(c.securityContext) || (
+          !(has(c.securityContext.privileged) && c.securityContext.privileged) &&
+          !(has(c.securityContext.capabilities) && has(c.securityContext.capabilities.add) &&
+            size(c.securityContext.capabilities.add) > 0)))
+      message: privileged containers and added capabilities are not allowed for privileged Claude sessions.
+    - expression: >-
+        !(has(variables.spec.serviceAccountName) && variables.spec.serviceAccountName == 'admin-user') &&
+        !(has(variables.spec.serviceAccount) && variables.spec.serviceAccount == 'admin-user')
+      message: the admin-user ServiceAccount (cluster-admin) is off limits.
+    - expression: >-
+        variables.volumes.all(v,
+          !(has(v.secret) && has(v.secret.secretName) && v.secret.secretName in variables.forbiddenSecrets) &&
+          !(has(v.projected) && has(v.projected.sources) && v.projected.sources.exists(s,
+              has(s.secret) && has(s.secret.name) && s.secret.name in variables.forbiddenSecrets))) &&
+        variables.containers.all(c,
+          (!has(c.env) || c.env.all(e, !(has(e.valueFrom) && has(e.valueFrom.secretKeyRef) &&
+              e.valueFrom.secretKeyRef.name in variables.forbiddenSecrets))) &&
+          (!has(c.envFrom) || c.envFrom.all(e, !(has(e.secretRef) && e.secretRef.name in variables.forbiddenSecrets))))
+      message: the admin-user token Secret is off limits.
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: claude-admin-pods
+spec:
+  policyName: claude-admin-pods
+  validationActions: [Deny]
+---
+# 2. No exec/attach/port-forward into the privileged pods in halo: a shell in
+#    any of them is root on that node.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: claude-admin-exec
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["*"]
+        resources: [pods/exec, pods/attach, pods/portforward]
+        operations: [CONNECT]
+  matchConditions:
+    - name: privileged-claude-session
+      expression: request.userInfo.username == 'system:serviceaccount:claude-sessions:claude-session-admin'
+  validations:
+    - expression: >-
+        !['homeassistant-', 'wireguard-', 'headscale-subnet-router-'].exists(p, request.name.startsWith(p))
+      message: exec into privileged pods (Home Assistant, WireGuard, subnet router) is not allowed for Claude sessions.
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: claude-admin-exec
+spec:
+  policyName: claude-admin-exec
+  validationActions: [Deny]
+---
+# 3. No routing around the Longhorn NetworkPolicy via ingress-nginx (which may
+#    reach longhorn-ui): no ExternalName Services, no nginx snippet annotations.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: claude-admin-routing
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["*"]
+        resources: [services]
+        operations: [CREATE, UPDATE]
+      - apiGroups: [networking.k8s.io]
+        apiVersions: ["*"]
+        resources: [ingresses]
+        operations: [CREATE, UPDATE]
+  matchConditions:
+    - name: privileged-claude-session
+      expression: request.userInfo.username == 'system:serviceaccount:claude-sessions:claude-session-admin'
+  validations:
+    - expression: >-
+        object.kind != 'Service' || !has(object.spec.type) || object.spec.type != 'ExternalName'
+      message: ExternalName Services are not allowed for Claude sessions.
+    - expression: >-
+        object.kind != 'Ingress' || !has(object.metadata.annotations) ||
+        object.metadata.annotations.all(k, !k.contains('snippet'))
+      message: nginx snippet annotations are not allowed for Claude sessions.
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: claude-admin-routing
+spec:
+  policyName: claude-admin-routing
+  validationActions: [Deny]

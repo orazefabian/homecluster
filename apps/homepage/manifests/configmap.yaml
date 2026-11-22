@@ -273,6 +273,10 @@ data:
             namespace: halo
             app: n8n
             podSelector: app=n8n
+        - Claude session:
+            href: https://n8n.halo.fabseit.net/form/claude-session
+            description: Start/stop an on-demand Claude Code session
+            icon: mdi-robot-outline
         - Bitwarden:
             href: https://bitwarden.halo.fabseit.net
             description: Password manager

@@ -1,0 +1,55 @@
+# One-time (or after the login expires): log the shared claude-auth PVC into
+# your Claude subscription. Not part of manifests/, so ArgoCD ignores it.
+#   kubectl apply -f apps/claude-remote/bootstrap/login-pod.yaml
+#   kubectl -n claude-sessions exec -it claude-login -- claude auth login
+#   kubectl -n claude-sessions delete pod claude-login
+# No session may be running (the PVC is RWO).
+apiVersion: v1
+kind: Pod
+metadata:
+  name: claude-login
+  namespace: claude-sessions
+spec:
+  serviceAccountName: claude-session
+  automountServiceAccountToken: false
+  restartPolicy: Never
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values: [halo-0]
+  containers:
+    - name: claude
+      image: ghcr.io/orazefabian/homecluster/claude-remote:0.2.0
+      env:
+        - name: MODE
+          value: login
+      stdin: true
+      tty: true
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: [ALL]
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          memory: 1Gi
+      volumeMounts:
+        - name: home
+          mountPath: /home/claude
+  volumes:
+    - name: home
+      persistentVolumeClaim:
+        claimName: claude-auth

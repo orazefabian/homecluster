@@ -1,0 +1,102 @@
+# Privileged session mode: may change workloads in halo (incl. exec) and
+# alerting/dashboards in monitoring, but must never be able to delete Longhorn
+# backups. RBAC is additive, so the protection is in what is NOT granted:
+#   - nothing in longhorn-system, argocd, external-secrets, kube-system
+#   - no longhorn.io / external-secrets.io / argoproj.io writes anywhere
+#   - no rbac or admissionregistration writes (cannot widen its own rights)
+#   - no cluster-scoped writes (PVs, nodes, namespaces, CRDs)
+#   - no endpoints/endpointslices (no hand-made Services onto foreign pods)
+#   - no serviceaccounts/token, pods/ephemeralcontainers
+#   - Secrets: create only. No get/list/watch/update/patch, all of which
+#     return the stored value; halo/admin-user (cluster-admin) has a token
+#     Secret there.
+# What RBAC cannot express is enforced by admission-policy.yaml.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: claude-session-admin
+  namespace: claude-sessions
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: claude-session-admin-halo
+rules:
+  - apiGroups: [""]
+    resources:
+      - pods
+      - pods/log
+      - pods/exec
+      - pods/attach
+      - pods/portforward
+      - services
+      - configmaps
+      - persistentvolumeclaims
+    verbs: ["*"]
+  - apiGroups: [""]
+    resources: [secrets]
+    verbs: [create]
+  - apiGroups: [apps]
+    resources: [deployments, deployments/scale, statefulsets, statefulsets/scale, daemonsets, replicasets, replicasets/scale]
+    verbs: ["*"]
+  - apiGroups: [batch]
+    resources: [jobs, cronjobs]
+    verbs: ["*"]
+  - apiGroups: [autoscaling]
+    resources: [horizontalpodautoscalers]
+    verbs: ["*"]
+  - apiGroups: [policy]
+    resources: [poddisruptionbudgets]
+    verbs: ["*"]
+  - apiGroups: [networking.k8s.io]
+    resources: [ingresses, networkpolicies]
+    verbs: ["*"]
+  - apiGroups: [cert-manager.io]
+    resources: [certificates]
+    verbs: ["*"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: claude-session-admin
+  namespace: halo
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: claude-session-admin-halo
+subjects:
+  - kind: ServiceAccount
+    name: claude-session-admin
+    namespace: claude-sessions
+---
+# monitoring: alert rules, scrape targets, Alertmanager routes, Grafana
+# dashboards (ConfigMaps). No exec and no Prometheus/Alertmanager CRs or
+# workloads: Prometheus pods may reach Longhorn's API (metrics scrape).
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: claude-session-admin-monitoring
+rules:
+  - apiGroups: [""]
+    resources: [configmaps]
+    verbs: ["*"]
+  - apiGroups: [monitoring.coreos.com]
+    resources: [prometheusrules, servicemonitors, podmonitors, alertmanagerconfigs]
+    verbs: ["*"]
+  - apiGroups: [""]
+    resources: [pods/log]
+    verbs: [get]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: claude-session-admin
+  namespace: monitoring
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: claude-session-admin-monitoring
+subjects:
+  - kind: ServiceAccount
+    name: claude-session-admin
+    namespace: claude-sessions
