@@ -19,7 +19,7 @@ on:
 
 env:
   IMAGE: ghcr.io/orazefabian/homecluster/claude-remote
-  IMAGE_TAG: 0.2.1
+  IMAGE_TAG: 0.2.2
 
 permissions:
   contents: read

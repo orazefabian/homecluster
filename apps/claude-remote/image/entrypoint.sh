@@ -58,11 +58,15 @@ git config --global user.email "$git_email"
 echo "Cloning $REPO${BRANCH:+ ($BRANCH)} ..."
 git clone --depth 50 ${BRANCH:+--branch "$BRANCH"} "https://github.com/$REPO.git" "$dir"
 
-# Pre-accept the folder-trust prompt; nobody is at a terminal to answer it.
+# Pre-accept the two one-time prompts; nobody is at a terminal to answer
+# them, and an unanswered one leaves the session hanging invisibly:
+#  - folder trust for the clone
+#  - "Enable Remote Control? (y/n)" (remoteDialogSeen)
 cfg="$HOME/.claude.json"
 [[ -s "$cfg" ]] || echo '{}' > "$cfg"
 tmp="$(mktemp)"
-jq --arg d "$dir" '.projects[$d] = ((.projects[$d] // {}) + {hasTrustDialogAccepted: true})' "$cfg" > "$tmp"
+jq --arg d "$dir" '.remoteDialogSeen = true
+  | .projects[$d] = ((.projects[$d] // {}) + {hasTrustDialogAccepted: true})' "$cfg" > "$tmp"
 mv "$tmp" "$cfg"
 
 cd "$dir"

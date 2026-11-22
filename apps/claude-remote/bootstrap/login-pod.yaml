@@ -30,7 +30,7 @@ spec:
                 values: [halo-0]
   containers:
     - name: claude
-      image: ghcr.io/orazefabian/homecluster/claude-remote:0.2.1
+      image: ghcr.io/orazefabian/homecluster/claude-remote:0.2.2
       env:
         - name: MODE
           value: login
