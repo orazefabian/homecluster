@@ -76,18 +76,15 @@ kube-prometheus-stack:
         recurring-job.longhorn.io/random-volumes: "enabled"
         recurring-job.longhorn.io/s3-monthly-backup: "enabled"
 
-    # Admin credentials are managed via the chart's default auto-generated password.
-    # The password is stored in a Kubernetes Secret created by the Grafana subchart.
-    # Retrieve it with:
-    # kubectl get secret -n monitoring monitoring-helm-grafana -o jsonpath="{.data.admin-password}" | base64 --decode
-    #
-    # To set a custom password, uncomment and set adminPassword below:
-    # adminPassword: "change-me"
-    #
-    # For production use, create a Secret with keys "admin-user" and "admin-password"
-    # and reference it (preferred method):
-    # admin:
-    #   existingSecret: monitoring-grafana-admin
+    # Admin login comes from Vaultwarden (item monitoring/monitoring-grafana-admin)
+    # via ESO: manifests/grafana-admin.externalsecret.yaml -> Secret
+    # monitoring-grafana-admin (keys admin-user / admin-password). Without this
+    # the chart generated a Secret with its default password "prom-operator".
+    # Grafana stores the password in its DB on the PVC, so a change in
+    # Vaultwarden also needs a one-time `grafana cli admin reset-admin-password`
+    # (command in the ExternalSecret's header).
+    admin:
+      existingSecret: monitoring-grafana-admin
 
     # Default dashboards
     defaultDashboardsEnabled: true
