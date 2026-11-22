@@ -63,6 +63,9 @@ spec:
           - name: dober-dan
             path: ./apps/dober-dan
             namespace: halo
+          - name: claude-remote-app
+            path: ./apps/claude-remote/manifests
+            namespace: halo
           # Vaultwarden bridge + ClusterSecretStores; the operator itself is
           # external-secrets-helm in the Helm ApplicationSet.
           - name: external-secrets

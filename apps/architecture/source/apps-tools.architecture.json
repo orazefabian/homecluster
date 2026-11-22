@@ -5,7 +5,7 @@
     "title": "Automation & Tools",
     "quality_profile": "showcase",
     "output": "apps/architecture/manifests/site/apps-tools.html",
-    "viewBox": [1220, 480]
+    "viewBox": [1220, 640]
   },
   "components": [
     { "id": "lan", "type": "frontend", "label": "LAN Clients", "sublabel": "192.168.8.0/24", "pos": [40, 40], "size": [170, 64] },
@@ -18,10 +18,13 @@
     { "id": "n8n-pg", "type": "database", "label": "Postgres 15", "sublabel": "n8n data", "pos": [230, 370], "size": [170, 64] },
     { "id": "piper", "type": "backend", "label": "Piper", "sublabel": "Slovene TTS", "pos": [410, 370], "size": [130, 64] },
     { "id": "dd-pg", "type": "database", "label": "Postgres 17", "sublabel": "learning history", "pos": [560, 370], "size": [140, 64] },
-    { "id": "whisper", "type": "backend", "label": "Whisper", "sublabel": "Slovene ASR", "pos": [720, 370], "size": [130, 64] }
+    { "id": "whisper", "type": "backend", "label": "Whisper", "sublabel": "Slovene ASR", "pos": [720, 370], "size": [130, 64] },
+    { "id": "claude-rc", "type": "backend", "label": "Claude Remote", "sublabel": "remote-control · RO RBAC", "pos": [900, 370], "size": [200, 64] },
+    { "id": "claude-ai", "type": "external", "label": "claude.ai", "sublabel": "web · mobile app", "pos": [840, 540], "size": [150, 64] },
+    { "id": "github", "type": "external", "label": "GitHub", "sublabel": "this repo · PRs", "pos": [1030, 540], "size": [150, 64] }
   ],
   "boundaries": [
-    { "kind": "region", "label": "namespace halo", "wraps": ["n8n", "dd-web", "homepage", "kuma", "speedtest", "n8n-pg", "piper", "dd-pg", "whisper"] }
+    { "kind": "region", "label": "namespace halo", "wraps": ["n8n", "dd-web", "homepage", "kuma", "speedtest", "n8n-pg", "piper", "dd-pg", "whisper", "claude-rc"] }
   ],
   "connections": [
     { "id": "lan-https", "from": "lan", "to": "ingress", "label": "HTTPS", "variant": "emphasis" },
@@ -33,9 +36,12 @@
     { "id": "n8n-sql", "from": "n8n", "to": "n8n-pg", "label": "SQL", "fromSide": "bottom", "toSide": "top", "labelDy": 24 },
     { "id": "dd-tts", "from": "dd-web", "to": "piper", "label": "TTS", "fromSide": "bottom", "toSide": "top" },
     { "id": "dd-sql", "from": "dd-web", "to": "dd-pg", "label": "SQL", "fromSide": "bottom", "toSide": "top" },
-    { "id": "dd-asr", "from": "dd-web", "to": "whisper", "label": "ASR", "fromSide": "bottom", "toSide": "top" }
+    { "id": "dd-asr", "from": "dd-web", "to": "whisper", "label": "ASR", "fromSide": "bottom", "toSide": "top" },
+    { "id": "rc-claude", "from": "claude-rc", "to": "claude-ai", "label": "outbound", "variant": "dashed", "fromSide": "bottom", "toSide": "top" },
+    { "id": "rc-github", "from": "claude-rc", "to": "github", "label": "PRs", "variant": "dashed", "fromSide": "bottom", "toSide": "top" }
   ],
   "cards": [
-    { "dot": "cyan", "title": "Hosts", "items": ["<app>(.halo).fabseit.net for all", "n8n · dober-dan · dashboard", "uptime · speedtest"] }
+    { "dot": "cyan", "title": "Hosts", "items": ["<app>(.halo).fabseit.net for all", "n8n · dober-dan · dashboard", "uptime · speedtest"] },
+    { "dot": "violet", "title": "Claude Remote", "items": ["No ingress: dials out to claude.ai", "kubectl read-only, no Secrets", "changes only via PR + ArgoCD"] }
   ]
 }

@@ -1,0 +1,45 @@
+name: Build claude-remote image
+
+# Builds apps/claude-remote/image for arm64 (all halo nodes) and pushes it to
+# ghcr.io/orazefabian/homecluster/claude-remote:<IMAGE_TAG>. Bump IMAGE_TAG and
+# the tag in apps/claude-remote/manifests/deployment.yaml together.
+
+on:
+  pull_request:
+    paths:
+      - 'apps/claude-remote/image/**'
+      - '.github/workflows/claude-remote-image.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/claude-remote/image/**'
+      - '.github/workflows/claude-remote-image.yml'
+  workflow_dispatch:
+
+env:
+  IMAGE: ghcr.io/orazefabian/homecluster/claude-remote
+  IMAGE_TAG: 0.1.0
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        if: github.event_name != 'pull_request'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: apps/claude-remote/image
+          platforms: linux/arm64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ env.IMAGE }}:${{ env.IMAGE_TAG }}
